@@ -48,6 +48,31 @@ nav {
   margin: 8px 0 0;
 }
 
+.sorter {
+  align-items: center;
+  color: inherit;
+  display: inline-flex;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.sorter:hover {
+  text-decoration: underline;
+}
+
+.sorter.active {
+  font-weight: 700;
+}
+
+.sort-indicator {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.sorter.active .sort-indicator {
+  color: currentColor;
+}
+
 .tab-list {
   display: flex;
   gap: 8px;

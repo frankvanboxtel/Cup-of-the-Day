@@ -74,6 +74,9 @@ type AuthorStats = {
   latestEvent: number | null;
 };
 
+type SortDirection = "asc" | "desc";
+type SortType = "text" | "number";
+
 const projectRoot = path.resolve(__dirname, "..");
 const resultsDirectory = path.join(projectRoot, "results");
 const outputDirectory = path.join(projectRoot, "html");
@@ -513,6 +516,84 @@ function buildPodium(
     .filter((group) => group.entries.length > 0);
 }
 
+function renderSortableHeader(
+  label: string,
+  key: string,
+  type: SortType,
+  defaultDirection: SortDirection,
+  isActive = false,
+): string {
+  const indicator = isActive ? (defaultDirection === "asc" ? "▲" : "▼") : "↕";
+
+  return `<th><a href="#" class="sorter${isActive ? " active" : ""}" data-sort-key="${escapeHtml(key)}" data-sort-type="${type}" data-sort-default-direction="${defaultDirection}" data-sort-direction="${isActive ? defaultDirection : ""}">${escapeHtml(label)} <span class="sort-indicator" aria-hidden="true">${indicator}</span></a></th>`;
+}
+
+function renderSortDataAttributes(
+  values: Record<string, string | number | null | undefined>,
+): string {
+  return Object.entries(values)
+    .map(
+      ([key, value]) =>
+        ` data-sort-${key}="${escapeHtml(value === null || value === undefined ? "" : String(value))}"`,
+    )
+    .join("");
+}
+
+function normalizeTextSortValue(value: string | null | undefined): string {
+  return normalizeSearchText(value ?? "");
+}
+
+function normalizeNumberSortValue(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
+    return "";
+  }
+
+  return String(value);
+}
+
+function normalizeTimeSortValue(value: string | null | undefined): string {
+  const milliseconds = parseRaceTimeToMilliseconds(value);
+  return milliseconds === null ? "" : String(milliseconds);
+}
+
+function parseRaceTimeToMilliseconds(
+  value: string | null | undefined,
+): number | null {
+  const normalized = value?.trim() ?? "";
+
+  if (!normalized || normalized === "-" || /^dnf$/i.test(normalized)) {
+    return null;
+  }
+
+  if (/^\d+(?:[.,]\d+)?$/.test(normalized)) {
+    return Math.round(Number(normalized.replace(",", ".")) * 1000);
+  }
+
+  if (!normalized.includes(":")) {
+    return null;
+  }
+
+  const parts = normalized.split(":").map((part) => part.trim());
+
+  if (
+    parts.length === 0 ||
+    parts.some(
+      (part) =>
+        part.length === 0 || Number.isNaN(Number(part.replace(",", "."))),
+    )
+  ) {
+    return null;
+  }
+
+  let totalSeconds = 0;
+
+  for (const part of parts) {
+    totalSeconds = totalSeconds * 60 + Number(part.replace(",", "."));
+  }
+
+  return Math.round(totalSeconds * 1000);
+}
+
 async function writeIndexPage(
   eventRecords: EventRecord[],
   driverFileNames: Map<string, string>,
@@ -529,9 +610,17 @@ async function writeIndexPage(
       const fastestDriver = eventRecord.fastestTimeDriver
         ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, ".")
         : "-";
+      const sortAttributes = renderSortDataAttributes({
+        event: eventRecord.nr,
+        map: normalizeTextSortValue(eventRecord.map),
+        author: normalizeTextSortValue(eventRecord.authors.join(", ")),
+        "fastest-time": normalizeTimeSortValue(eventRecord.fastestTime),
+        "fastest-driver": normalizeTextSortValue(eventRecord.fastestTimeDriver),
+        "fastest-round": normalizeTextSortValue(eventRecord.fastestTimeRound),
+      });
 
       return `
-        <tr>
+        <tr${sortAttributes}>
           <td><a href="events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
           <td><a href="events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${authors}</td>
@@ -548,15 +637,15 @@ async function writeIndexPage(
     `
       <h1>Cup of the Day Overview</h1>
       <p>${eventRecords.length} events indexed from generated JSON files.</p>
-      <table>
+      <table data-sort-table>
         <thead>
           <tr>
-            <th>Event</th>
-            <th>Map</th>
-            <th>Author</th>
-            <th>Fastest Time</th>
-            <th>Fastest Driver</th>
-            <th>Fastest Round</th>
+            ${renderSortableHeader("Event", "event", "number", "asc", true)}
+            ${renderSortableHeader("Map", "map", "text", "asc")}
+            ${renderSortableHeader("Author", "author", "text", "asc")}
+            ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
+            ${renderSortableHeader("Fastest Driver", "fastest-driver", "text", "asc")}
+            ${renderSortableHeader("Fastest Round", "fastest-round", "text", "asc")}
             <th>Podium</th>
           </tr>
         </thead>
@@ -592,9 +681,15 @@ async function writeDriverIndexPage(
       const searchTerms = normalizeSearchText(
         [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
       );
+      const sortAttributes = renderSortDataAttributes({
+        driver: normalizeTextSortValue(driverRecord.canonicalName),
+        starts: normalizeNumberSortValue(stats.starts),
+        wins: normalizeNumberSortValue(stats.wins),
+        "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
+      });
 
       return `
-        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}">
+        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
           <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
           <td>${aliasSummary}</td>
           <td>${stats.starts}</td>
@@ -622,14 +717,14 @@ async function writeDriverIndexPage(
         >
         <p class="search-summary" data-driver-search-summary>${driverRecords.length} drivers shown</p>
       </div>
-      <table>
+      <table data-sort-table>
         <thead>
           <tr>
-            <th>Driver</th>
+            ${renderSortableHeader("Driver", "driver", "text", "asc")}
             <th>Aliases</th>
-            <th>Starts</th>
-            <th>Wins</th>
-            <th>Fastest Times</th>
+            ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
+            ${renderSortableHeader("Wins", "wins", "number", "desc")}
+            ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
             <th>Author Page</th>
           </tr>
         </thead>
@@ -653,15 +748,22 @@ async function writeEventPage(
   authorFileNames: Map<string, string>,
 ): Promise<void> {
   const resultRows = eventRecord.results
-    .map(
-      (result) => `
-        <tr>
+    .map((result) => {
+      const sortAttributes = renderSortDataAttributes({
+        placing: normalizeNumberSortValue(result.placing),
+        driver: normalizeTextSortValue(result.name),
+        time: normalizeTimeSortValue(result.time),
+        "elimination-round": normalizeTextSortValue(result.eliminationRound),
+      });
+
+      return `
+        <tr${sortAttributes}>
           <td>${result.placing ?? "-"}</td>
           <td>${renderDriverLink(result.name, driverFileNames, "..")}</td>
           <td>${escapeHtml(result.time)}</td>
           <td>${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
-        </tr>`,
-    )
+        </tr>`;
+    })
     .join("\n");
 
   const content = renderLayout(
@@ -682,13 +784,13 @@ async function writeEventPage(
         </tbody>
       </table>
       <h2>Results</h2>
-      <table>
+      <table data-sort-table>
         <thead>
           <tr>
-            <th>Placing</th>
-            <th>Driver</th>
-            <th>Time</th>
-            <th>Elimination Round</th>
+            ${renderSortableHeader("Placing", "placing", "number", "asc", true)}
+            ${renderSortableHeader("Driver", "driver", "text", "asc")}
+            ${renderSortableHeader("Time", "time", "number", "asc")}
+            ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
           </tr>
         </thead>
         <tbody>
@@ -986,9 +1088,18 @@ function renderRaceResultsSection(
   }
 
   const rows = buildDriverTimeline(driverRecord, eventRecords)
-    .map(
-      ({ eventRecord, result }) => `
-        <tr${result === null ? ' class="did-not-race"' : ""}>
+    .map(({ eventRecord, result }) => {
+      const sortAttributes = renderSortDataAttributes({
+        event: normalizeNumberSortValue(eventRecord.nr),
+        map: normalizeTextSortValue(eventRecord.map),
+        author: normalizeTextSortValue(eventRecord.authors.join(", ")),
+        placing: normalizeNumberSortValue(result?.placing),
+        time: normalizeTimeSortValue(result?.time),
+        "elimination-round": normalizeTextSortValue(result?.eliminationRound),
+      });
+
+      return `
+        <tr${result === null ? ' class="did-not-race"' : ""}${sortAttributes}>
           <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
           <td><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
@@ -996,22 +1107,22 @@ function renderRaceResultsSection(
           <td>${result?.placing ?? "-"}</td>
           <td>${result === null ? "-" : escapeHtml(result.time)}</td>
           <td>${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
-        </tr>`,
-    )
+        </tr>`;
+    })
     .join("\n");
 
   return `
     <h2>Race Results</h2>
-    <table>
+    <table data-sort-table>
       <thead>
         <tr>
-          <th>Event</th>
-          <th>Map</th>
-          <th>Author</th>
+          ${renderSortableHeader("Event", "event", "number", "asc", true)}
+          ${renderSortableHeader("Map", "map", "text", "asc")}
+          ${renderSortableHeader("Author", "author", "text", "asc")}
           <th>Status</th>
-          <th>Placing</th>
-          <th>Time</th>
-          <th>Elimination Round</th>
+          ${renderSortableHeader("Placing", "placing", "number", "asc")}
+          ${renderSortableHeader("Time", "time", "number", "asc")}
+          ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
         </tr>
       </thead>
       <tbody>
@@ -1063,9 +1174,19 @@ function renderTracksSection(
       const winners = eventRecord.results.filter(
         (result) => result.placing === 1,
       );
+      const sortAttributes = renderSortDataAttributes({
+        event: normalizeNumberSortValue(eventRecord.nr),
+        map: normalizeTextSortValue(eventRecord.map),
+        authors: normalizeTextSortValue(eventRecord.authors.join(", ")),
+        winner: normalizeTextSortValue(
+          winners.map((result) => result.name).join(", "),
+        ),
+        "fastest-time": normalizeTimeSortValue(eventRecord.fastestTime),
+        "fastest-driver": normalizeTextSortValue(eventRecord.fastestTimeDriver),
+      });
 
       return `
-        <tr>
+        <tr${sortAttributes}>
           <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
           <td><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
@@ -1078,15 +1199,15 @@ function renderTracksSection(
 
   return `
     <h2>Tracks</h2>
-    <table>
+    <table data-sort-table>
       <thead>
         <tr>
-          <th>Event</th>
-          <th>Map</th>
-          <th>All Authors</th>
-          <th>Winner</th>
-          <th>Fastest Time</th>
-          <th>Fastest Driver</th>
+          ${renderSortableHeader("Event", "event", "number", "asc", true)}
+          ${renderSortableHeader("Map", "map", "text", "asc")}
+          ${renderSortableHeader("All Authors", "authors", "text", "asc")}
+          ${renderSortableHeader("Winner", "winner", "text", "asc")}
+          ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
+          ${renderSortableHeader("Fastest Driver", "fastest-driver", "text", "asc")}
         </tr>
       </thead>
       <tbody>
@@ -1252,6 +1373,122 @@ function renderLayout(
 
           driverSearchInput.addEventListener("input", updateDriverFilter);
           updateDriverFilter();
+        }
+
+        for (const table of document.querySelectorAll("[data-sort-table]")) {
+          const tbody = table.tBodies[0];
+
+          if (!tbody) {
+            continue;
+          }
+
+          const sorters = Array.from(table.querySelectorAll(".sorter[data-sort-key]"));
+
+          if (sorters.length === 0) {
+            continue;
+          }
+
+          const updateSorterState = (activeSorter, direction) => {
+            for (const sorter of sorters) {
+              const isActive = sorter === activeSorter;
+              sorter.classList.toggle("active", isActive);
+              sorter.dataset.sortDirection = isActive ? direction : "";
+              sorter.setAttribute("aria-pressed", String(isActive));
+
+              const indicator = sorter.querySelector(".sort-indicator");
+              if (indicator) {
+                indicator.textContent = isActive
+                  ? direction === "asc"
+                    ? "▲"
+                    : "▼"
+                  : "↕";
+              }
+
+              const headerCell = sorter.closest("th");
+              if (headerCell) {
+                headerCell.setAttribute(
+                  "aria-sort",
+                  isActive
+                    ? direction === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : "none",
+                );
+              }
+            }
+          };
+
+          const sortRows = (sorter, direction) => {
+            const sortKey = sorter.dataset.sortKey;
+            const sortType = sorter.dataset.sortType || "text";
+
+            if (!sortKey) {
+              return;
+            }
+
+            const rows = Array.from(tbody.querySelectorAll("tr")).map((row, index) => ({
+              row,
+              index,
+            }));
+
+            rows.sort((left, right) => {
+              const leftValue = left.row.getAttribute("data-sort-" + sortKey) || "";
+              const rightValue = right.row.getAttribute("data-sort-" + sortKey) || "";
+              const leftEmpty = leftValue.length === 0;
+              const rightEmpty = rightValue.length === 0;
+
+              if (leftEmpty || rightEmpty) {
+                if (leftEmpty && rightEmpty) {
+                  return left.index - right.index;
+                }
+
+                return leftEmpty ? 1 : -1;
+              }
+
+              let comparison = 0;
+
+              if (sortType === "number") {
+                comparison = Number(leftValue) - Number(rightValue);
+              } else {
+                comparison = leftValue.localeCompare(rightValue, undefined, {
+                  numeric: true,
+                  sensitivity: "base",
+                });
+              }
+
+              if (comparison === 0) {
+                comparison = left.index - right.index;
+              }
+
+              return direction === "asc" ? comparison : -comparison;
+            });
+
+            tbody.append(...rows.map((entry) => entry.row));
+            updateSorterState(sorter, direction);
+          };
+
+          const initialSorter = sorters.find((sorter) => sorter.classList.contains("active")) || sorters[0];
+
+          if (initialSorter) {
+            sortRows(
+              initialSorter,
+              initialSorter.dataset.sortDefaultDirection || "asc",
+            );
+          }
+
+          for (const sorter of sorters) {
+            sorter.addEventListener("click", (event) => {
+              event.preventDefault();
+
+              const nextDirection = sorter.classList.contains("active")
+                ? sorter.dataset.sortDirection === "asc"
+                  ? "desc"
+                  : "asc"
+                : sorter.dataset.sortDefaultDirection || "asc";
+
+              sortRows(sorter, nextDirection);
+            });
+          }
         }
       });
     </script>
