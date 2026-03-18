@@ -38,6 +38,27 @@ type AuthorRecord = {
   tracks: EventRecord[];
 };
 
+type DriverResultRecord = {
+  eventRecord: EventRecord;
+  result: ResultEntry;
+};
+
+type DriverStats = {
+  starts: number;
+  wins: number;
+  podiums: number;
+  bestFinish: number | null;
+  fastestTimes: number;
+};
+
+type AuthorStats = {
+  tracks: number;
+  soloTracks: number;
+  coAuthoredTracks: number;
+  firstEvent: number | null;
+  latestEvent: number | null;
+};
+
 const projectRoot = path.resolve(__dirname, "..");
 const resultsDirectory = path.join(projectRoot, "results");
 const outputDirectory = path.join(projectRoot, "html");
@@ -49,6 +70,12 @@ async function main(): Promise<void> {
   const eventRecords = await loadEventRecords();
   const driverRecords = buildDriverRecords(eventRecords);
   const authorRecords = buildAuthorRecords(eventRecords);
+  const driverRecordsByName = new Map(
+    driverRecords.map((record) => [record.name, record]),
+  );
+  const authorRecordsByName = new Map(
+    authorRecords.map((record) => [record.name, record]),
+  );
 
   await rm(outputDirectory, { recursive: true, force: true });
   await Promise.all([
@@ -71,10 +98,20 @@ async function main(): Promise<void> {
       writeEventPage(eventRecord, driverFileNames, authorFileNames),
     ),
     ...driverRecords.map((driverRecord) =>
-      writeDriverPage(driverRecord, authorFileNames),
+      writeDriverPage(
+        driverRecord,
+        authorRecordsByName,
+        driverFileNames,
+        authorFileNames,
+      ),
     ),
     ...authorRecords.map((authorRecord) =>
-      writeAuthorPage(authorRecord, driverFileNames, authorFileNames),
+      writeAuthorPage(
+        authorRecord,
+        driverRecordsByName,
+        driverFileNames,
+        authorFileNames,
+      ),
     ),
   ]);
 
@@ -308,16 +345,103 @@ async function writeEventPage(
 
 async function writeDriverPage(
   driverRecord: DriverRecord,
+  authorRecordsByName: Map<string, AuthorRecord>,
+  driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
 ): Promise<void> {
-  const driverResults = driverRecord.results
+  const matchingAuthorRecord =
+    authorRecordsByName.get(driverRecord.name) ?? null;
+  const driverResults = getDriverResultRecords(driverRecord);
+
+  const content = renderLayout(
+    driverRecord.name,
+    `
+      <h1>${escapeHtml(driverRecord.name)}</h1>
+      ${renderProfileMetadata(
+        driverRecord,
+        matchingAuthorRecord,
+        driverFileNames,
+        authorFileNames,
+        "..",
+      )}
+      ${renderProfileTabs(
+        renderRaceResultsSection(driverRecord, authorFileNames),
+        renderTracksSection(
+          matchingAuthorRecord,
+          driverFileNames,
+          authorFileNames,
+        ),
+        "race-results",
+      )}
+    `,
+    {
+      pageTitle: driverRecord.name,
+      rootPrefix: "..",
+    },
+  );
+
+  await writeFile(
+    path.join(driversDirectory, driverRecord.htmlFileName),
+    content,
+    "utf8",
+  );
+}
+
+async function writeAuthorPage(
+  authorRecord: AuthorRecord,
+  driverRecordsByName: Map<string, DriverRecord>,
+  driverFileNames: Map<string, string>,
+  authorFileNames: Map<string, string>,
+): Promise<void> {
+  const matchingDriverRecord =
+    driverRecordsByName.get(authorRecord.name) ?? null;
+
+  const content = renderLayout(
+    authorRecord.name,
+    `
+      <h1>${escapeHtml(authorRecord.name)}</h1>
+      ${renderProfileMetadata(
+        matchingDriverRecord,
+        authorRecord,
+        driverFileNames,
+        authorFileNames,
+        "..",
+      )}
+      ${renderProfileTabs(
+        renderRaceResultsSection(matchingDriverRecord, authorFileNames),
+        renderTracksSection(authorRecord, driverFileNames, authorFileNames),
+        "tracks",
+      )}
+    `,
+    {
+      pageTitle: authorRecord.name,
+      rootPrefix: "..",
+    },
+  );
+
+  await writeFile(
+    path.join(authorsDirectory, authorRecord.htmlFileName),
+    content,
+    "utf8",
+  );
+}
+
+function getDriverResultRecords(
+  driverRecord: DriverRecord,
+): DriverResultRecord[] {
+  return driverRecord.results
     .flatMap((eventRecord) =>
       eventRecord.results
         .filter((result) => result.name === driverRecord.name)
         .map((result) => ({ eventRecord, result })),
     )
     .sort((left, right) => left.eventRecord.nr - right.eventRecord.nr);
+}
 
+function buildDriverStats(
+  driverName: string,
+  driverResults: DriverResultRecord[],
+): DriverStats {
   const wins = driverResults.filter(
     (entry) => entry.result.placing === 1,
   ).length;
@@ -335,8 +459,156 @@ async function writeDriverPage(
 
     return best;
   }, null);
+  const fastestTimes = driverResults.filter(
+    (entry) => entry.eventRecord.fastestTimeDriver === driverName,
+  ).length;
 
-  const rows = driverResults
+  return {
+    starts: driverResults.length,
+    wins,
+    podiums,
+    bestFinish,
+    fastestTimes,
+  };
+}
+
+function buildAuthorStats(authorRecord: AuthorRecord): AuthorStats {
+  const sortedTracks = [...authorRecord.tracks].sort(
+    (left, right) => left.nr - right.nr,
+  );
+  const soloTracks = sortedTracks.filter(
+    (eventRecord) => eventRecord.authors.length === 1,
+  ).length;
+
+  return {
+    tracks: sortedTracks.length,
+    soloTracks,
+    coAuthoredTracks: sortedTracks.length - soloTracks,
+    firstEvent: sortedTracks[0]?.nr ?? null,
+    latestEvent: sortedTracks.at(-1)?.nr ?? null,
+  };
+}
+
+function renderProfileMetadata(
+  driverRecord: DriverRecord | null,
+  authorRecord: AuthorRecord | null,
+  driverFileNames: Map<string, string>,
+  authorFileNames: Map<string, string>,
+  rootPrefix: string,
+): string {
+  return `
+    <h2>Metadata</h2>
+    <div class="meta-grid">
+      ${renderDriverMetadataTable(driverRecord, authorFileNames, rootPrefix)}
+      ${renderAuthorMetadataTable(authorRecord, driverFileNames, rootPrefix)}
+    </div>
+  `;
+}
+
+function renderDriverMetadataTable(
+  driverRecord: DriverRecord | null,
+  authorFileNames: Map<string, string>,
+  rootPrefix: string,
+): string {
+  if (driverRecord === null) {
+    return `
+      <section>
+        <h3>Driver Metadata</h3>
+        <p>No race results found for this name.</p>
+      </section>
+    `;
+  }
+
+  const driverResults = getDriverResultRecords(driverRecord);
+  const stats = buildDriverStats(driverRecord.name, driverResults);
+  const authorPage = authorFileNames.has(driverRecord.name)
+    ? renderAuthorLinks([driverRecord.name], authorFileNames, rootPrefix)
+    : "-";
+
+  return `
+    <section>
+      <h3>Driver Metadata</h3>
+      <table>
+        <tbody>
+          <tr><th>Starts</th><td>${stats.starts}</td></tr>
+          <tr><th>Wins</th><td>${stats.wins}</td></tr>
+          <tr><th>Podiums</th><td>${stats.podiums}</td></tr>
+          <tr><th>Best Finish</th><td>${stats.bestFinish ?? "-"}</td></tr>
+          <tr><th>Fastest Times</th><td>${stats.fastestTimes}</td></tr>
+          <tr><th>Author Page</th><td>${authorPage}</td></tr>
+        </tbody>
+      </table>
+    </section>
+  `;
+}
+
+function renderAuthorMetadataTable(
+  authorRecord: AuthorRecord | null,
+  driverFileNames: Map<string, string>,
+  rootPrefix: string,
+): string {
+  if (authorRecord === null) {
+    return `
+      <section>
+        <h3>Author Metadata</h3>
+        <p>No authored tracks found for this name.</p>
+      </section>
+    `;
+  }
+
+  const stats = buildAuthorStats(authorRecord);
+  const driverPage = driverFileNames.has(authorRecord.name)
+    ? renderDriverLink(authorRecord.name, driverFileNames, rootPrefix)
+    : "-";
+
+  return `
+    <section>
+      <h3>Author Metadata</h3>
+      <table>
+        <tbody>
+          <tr><th>Tracks</th><td>${stats.tracks}</td></tr>
+          <tr><th>Solo Tracks</th><td>${stats.soloTracks}</td></tr>
+          <tr><th>Co-Authored Tracks</th><td>${stats.coAuthoredTracks}</td></tr>
+          <tr><th>First Event</th><td>${stats.firstEvent ?? "-"}</td></tr>
+          <tr><th>Latest Event</th><td>${stats.latestEvent ?? "-"}</td></tr>
+          <tr><th>Driver Page</th><td>${driverPage}</td></tr>
+        </tbody>
+      </table>
+    </section>
+  `;
+}
+
+function renderProfileTabs(
+  raceResultsContent: string,
+  tracksContent: string,
+  defaultTab: "race-results" | "tracks",
+): string {
+  return `
+    <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
+      <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks</button>
+    </div>
+    <section id="race-results" class="tab-panel" role="tabpanel">
+      ${raceResultsContent}
+    </section>
+    <section id="tracks" class="tab-panel" role="tabpanel" hidden>
+      ${tracksContent}
+    </section>
+  `;
+}
+
+function renderRaceResultsSection(
+  driverRecord: DriverRecord | null,
+  authorFileNames: Map<string, string>,
+): string {
+  if (driverRecord === null) {
+    return `
+      <h2>Race Results</h2>
+      <p>No race results found for this name.</p>
+    `;
+  }
+
+  const rows = getDriverResultRecords(driverRecord)
     .map(
       ({ eventRecord, result }) => `
         <tr>
@@ -350,54 +622,39 @@ async function writeDriverPage(
     )
     .join("\n");
 
-  const content = renderLayout(
-    driverRecord.name,
-    `
-      <h1>${escapeHtml(driverRecord.name)}</h1>
-      <table>
-        <tbody>
-          <tr><th>Starts</th><td>${driverResults.length}</td></tr>
-          <tr><th>Wins</th><td>${wins}</td></tr>
-          <tr><th>Podiums</th><td>${podiums}</td></tr>
-          <tr><th>Best Finish</th><td>${bestFinish ?? "-"}</td></tr>
-        </tbody>
-      </table>
-      <h2>Results</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Event</th>
-            <th>Map</th>
-            <th>Author</th>
-            <th>Placing</th>
-            <th>Time</th>
-            <th>Elimination Round</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `,
-    {
-      pageTitle: driverRecord.name,
-      rootPrefix: "..",
-    },
-  );
-
-  await writeFile(
-    path.join(driversDirectory, driverRecord.htmlFileName),
-    content,
-    "utf8",
-  );
+  return `
+    <h2>Race Results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Map</th>
+          <th>Author</th>
+          <th>Placing</th>
+          <th>Time</th>
+          <th>Elimination Round</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
 }
 
-async function writeAuthorPage(
-  authorRecord: AuthorRecord,
+function renderTracksSection(
+  authorRecord: AuthorRecord | null,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
-): Promise<void> {
-  const rows = authorRecord.tracks
+): string {
+  if (authorRecord === null) {
+    return `
+      <h2>Tracks</h2>
+      <p>No authored tracks found for this name.</p>
+    `;
+  }
+
+  const rows = [...authorRecord.tracks]
     .sort((left, right) => left.nr - right.nr)
     .map((eventRecord) => {
       const winners = eventRecord.results.filter(
@@ -416,43 +673,24 @@ async function writeAuthorPage(
     })
     .join("\n");
 
-  const content = renderLayout(
-    authorRecord.name,
-    `
-      <h1>${escapeHtml(authorRecord.name)}</h1>
-      <table>
-        <tbody>
-          <tr><th>Tracks</th><td>${authorRecord.tracks.length}</td></tr>
-        </tbody>
-      </table>
-      <h2>Created Tracks</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Event</th>
-            <th>Map</th>
-            <th>All Authors</th>
-            <th>Winner</th>
-            <th>Fastest Time</th>
-            <th>Fastest Driver</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `,
-    {
-      pageTitle: authorRecord.name,
-      rootPrefix: "..",
-    },
-  );
-
-  await writeFile(
-    path.join(authorsDirectory, authorRecord.htmlFileName),
-    content,
-    "utf8",
-  );
+  return `
+    <h2>Tracks</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Map</th>
+          <th>All Authors</th>
+          <th>Winner</th>
+          <th>Fastest Time</th>
+          <th>Fastest Driver</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
 }
 
 function renderPodium(
@@ -540,6 +778,34 @@ function renderLayout(
         margin-bottom: 16px;
       }
 
+      .meta-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+
+      .tab-list {
+        display: flex;
+        gap: 8px;
+        margin: 20px 0 16px;
+      }
+
+      .tab-button {
+        border: 1px solid #999;
+        background: #f3f3f3;
+        cursor: pointer;
+        padding: 6px 10px;
+      }
+
+      .tab-button.is-active {
+        background: #dfe8f6;
+        font-weight: bold;
+      }
+
+      .tab-panel[hidden] {
+        display: none;
+      }
+
       table {
         border-collapse: collapse;
         width: 100%;
@@ -562,6 +828,64 @@ function renderLayout(
         color: #0047ab;
       }
     </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        for (const tabList of document.querySelectorAll("[data-tabs]")) {
+          const buttons = Array.from(
+            tabList.querySelectorAll("[data-tab-target]"),
+          );
+
+          const activate = (targetId) => {
+            for (const button of buttons) {
+              const isActive = button.dataset.tabTarget === targetId;
+              button.classList.toggle("is-active", isActive);
+              button.setAttribute("aria-selected", String(isActive));
+            }
+
+            for (const button of buttons) {
+              const target = button.dataset.tabTarget;
+              if (!target) {
+                continue;
+              }
+
+              const panel = document.getElementById(target);
+              if (panel) {
+                panel.hidden = panel.id !== targetId;
+              }
+            }
+          };
+
+          const requestedHash = window.location.hash.replace("#", "");
+          const defaultTab = tabList.dataset.defaultTab || buttons[0]?.dataset.tabTarget;
+          const initialTab = buttons.some(
+            (button) => button.dataset.tabTarget === requestedHash,
+          )
+            ? requestedHash
+            : defaultTab;
+
+          if (initialTab) {
+            activate(initialTab);
+          }
+
+          for (const button of buttons) {
+            button.addEventListener("click", () => {
+              const targetId = button.dataset.tabTarget;
+              if (!targetId) {
+                return;
+              }
+
+              activate(targetId);
+
+              if (window.history?.replaceState) {
+                window.history.replaceState(null, "", "#" + targetId);
+              } else {
+                window.location.hash = targetId;
+              }
+            });
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     <nav>
