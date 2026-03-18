@@ -58,6 +58,20 @@ type DriverTimelineRecord = {
   result: ResultEntry | null;
 };
 
+type RaceResultsGraphPoint = {
+  eventNumber: number;
+  placing: number | null;
+  title: string;
+};
+
+type RaceResultsGraphSeries = {
+  id: string;
+  label: string;
+  color: string;
+  href: string | null;
+  points: RaceResultsGraphPoint[];
+};
+
 type DriverStats = {
   starts: number;
   wins: number;
@@ -109,10 +123,18 @@ const outputDirectory = path.join(projectRoot, "html");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const placingsDirectory = path.join(outputDirectory, "placings");
+const raceResultsGraphDirectory = path.join(
+  outputDirectory,
+  "race-results-graph",
+);
 const authorsDirectory = path.join(outputDirectory, "authors");
 const indexFilePath = path.join(outputDirectory, "index.html");
 const driverIndexFilePath = path.join(driversDirectory, "index.html");
 const placingsIndexFilePath = path.join(placingsDirectory, "index.html");
+const raceResultsGraphIndexFilePath = path.join(
+  raceResultsGraphDirectory,
+  "index.html",
+);
 const manualAliasListPath = path.join(
   projectRoot,
   "data",
@@ -125,6 +147,21 @@ const generatedAliasListPath = path.join(
 );
 const initialElo = 1500;
 const eloKFactor = 32;
+const graphMaxPlacing = 20;
+const graphOverflowBucket = graphMaxPlacing + 1;
+const combinedGraphMaxSelection = 3;
+const graphPalette = [
+  "#0047ab",
+  "#d1495b",
+  "#2a9d8f",
+  "#f4a261",
+  "#6c5ce7",
+  "#e76f51",
+  "#264653",
+  "#8ab17d",
+  "#c1121f",
+  "#577590",
+];
 
 async function main(): Promise<void> {
   const aliasResolver = await loadAliasResolver();
@@ -146,6 +183,7 @@ async function main(): Promise<void> {
     rm(eventsDirectory, { recursive: true, force: true }),
     rm(driversDirectory, { recursive: true, force: true }),
     rm(placingsDirectory, { recursive: true, force: true }),
+    rm(raceResultsGraphDirectory, { recursive: true, force: true }),
     rm(authorsDirectory, { recursive: true, force: true }),
   ]);
 
@@ -153,6 +191,7 @@ async function main(): Promise<void> {
     mkdir(eventsDirectory, { recursive: true }),
     mkdir(driversDirectory, { recursive: true }),
     mkdir(placingsDirectory, { recursive: true }),
+    mkdir(raceResultsGraphDirectory, { recursive: true }),
     mkdir(authorsDirectory, { recursive: true }),
   ]);
 
@@ -176,6 +215,7 @@ async function main(): Promise<void> {
       eventRatings.summary,
     ),
     writePlacingsIndexPage(driverRecords, eventRatings.summary),
+    writeRaceResultsGraphIndexPage(driverRecords, eventRecords),
     ...eventRecords.map((eventRecord) =>
       writeEventPage(eventRecord, driverFileNames, authorFileNames),
     ),
@@ -1108,6 +1148,48 @@ async function writePlacingsIndexPage(
   await writeFile(placingsIndexFilePath, content, "utf8");
 }
 
+async function writeRaceResultsGraphIndexPage(
+  driverRecords: DriverRecord[],
+  eventRecords: EventRecord[],
+): Promise<void> {
+  const winnerRecords = [...driverRecords]
+    .filter((driverRecord) => getDriverWinCount(driverRecord) >= 5)
+    .sort(
+      (left, right) =>
+        getDriverWinCount(right) - getDriverWinCount(left) ||
+        getDriverResultRecords(right).length -
+          getDriverResultRecords(left).length ||
+        left.canonicalName.localeCompare(right.canonicalName),
+    );
+  const series = winnerRecords.map((driverRecord, index) =>
+    buildRaceResultsGraphSeries(
+      driverRecord,
+      eventRecords,
+      graphPalette[index % graphPalette.length] ?? "#0047ab",
+      `../drivers/${driverRecord.htmlFileName}`,
+    ),
+  );
+  const defaultVisibleIds = series
+    .slice(0, combinedGraphMaxSelection)
+    .map((entry) => entry.id);
+
+  const content = renderLayout(
+    "Race Results Graph",
+    `
+      <h1>Race Results Graph</h1>
+      <p>Combined placing graph for drivers with five wins or more. Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
+      ${renderRaceResultsGraphSelector(series, defaultVisibleIds)}
+      ${renderRaceResultsGraphSvg(series, eventRecords, true, defaultVisibleIds, "combined-race-results")}
+    `,
+    {
+      pageTitle: "Race Results Graph",
+      rootPrefix: "..",
+    },
+  );
+
+  await writeFile(raceResultsGraphIndexFilePath, content, "utf8");
+}
+
 async function writeEventPage(
   eventRecord: EventRecord,
   driverFileNames: Map<string, string>,
@@ -1208,6 +1290,7 @@ async function writeDriverPage(
           authorFileNames,
           driverRatingHistory,
         ),
+        renderRaceResultsGraphSection(driverRecord, eventRecords),
         renderPlacingsSection(driverRecord),
         renderTracksSection(
           matchingAuthorRecord,
@@ -1261,6 +1344,7 @@ async function writeAuthorPage(
           authorFileNames,
           driverRatingHistory,
         ),
+        renderRaceResultsGraphSection(matchingDriverRecord, eventRecords),
         renderPlacingsSection(matchingDriverRecord),
         renderTracksSection(authorRecord, driverFileNames, authorFileNames),
         "tracks",
@@ -1349,7 +1433,7 @@ function buildAuthorStats(authorRecord: AuthorRecord): AuthorStats {
     soloTracks,
     coAuthoredTracks: sortedTracks.length - soloTracks,
     firstEvent: sortedTracks[0]?.nr ?? null,
-    latestEvent: sortedTracks.at(-1)?.nr ?? null,
+    latestEvent: sortedTracks[sortedTracks.length - 1]?.nr ?? null,
   };
 }
 
@@ -1469,18 +1553,23 @@ function renderAuthorMetadataTable(
 
 function renderProfileTabs(
   raceResultsContent: string,
+  raceResultsGraphContent: string,
   placingsContent: string,
   tracksContent: string,
-  defaultTab: "race-results" | "placings" | "tracks",
+  defaultTab: "race-results" | "race-results-graph" | "placings" | "tracks",
 ): string {
   return `
     <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Race Results Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks</button>
     </div>
     <section id="race-results" class="tab-panel" role="tabpanel">
       ${raceResultsContent}
+    </section>
+    <section id="race-results-graph" class="tab-panel" role="tabpanel" hidden>
+      ${raceResultsGraphContent}
     </section>
     <section id="placings" class="tab-panel" role="tabpanel" hidden>
       ${placingsContent}
@@ -1585,6 +1674,39 @@ function buildDriverTimeline(
   }));
 }
 
+function renderRaceResultsGraphSection(
+  driverRecord: DriverRecord | null,
+  eventRecords: EventRecord[],
+): string {
+  if (driverRecord === null) {
+    return `
+      <h2>Race Results Graph</h2>
+      <p>No race results found for this name.</p>
+    `;
+  }
+
+  const series = [
+    buildRaceResultsGraphSeries(
+      driverRecord,
+      eventRecords,
+      graphPalette[0],
+      null,
+    ),
+  ];
+
+  return `
+    <h2>Race Results Graph</h2>
+    <p class="graph-note">Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
+    ${renderRaceResultsGraphSvg(
+      series,
+      eventRecords,
+      true,
+      series.map((entry) => entry.id),
+      null,
+    )}
+  `;
+}
+
 function renderPlacingsSection(driverRecord: DriverRecord | null): string {
   if (driverRecord === null) {
     return `
@@ -1634,6 +1756,227 @@ function buildPlacingCounts(driverRecord: DriverRecord): number[] {
   }
 
   return counts;
+}
+
+function buildRaceResultsGraphSeries(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  color: string,
+  href: string | null,
+): RaceResultsGraphSeries {
+  const points = buildDriverTimeline(driverRecord, eventRecords).map(
+    ({ eventRecord, result }) => ({
+      eventNumber: eventRecord.nr,
+      placing:
+        result?.placing === null || result?.placing === undefined
+          ? null
+          : result.placing <= graphMaxPlacing
+            ? Math.max(1, result.placing)
+            : graphOverflowBucket,
+      title:
+        result?.placing === null || result?.placing === undefined
+          ? `COTD ${eventRecord.nr}: no placing`
+          : `${formatPlacingLabel(result.placing)} - COTD ${eventRecord.nr} ${eventRecord.map}`,
+    }),
+  );
+
+  return {
+    id: stableId(driverRecord.canonicalName),
+    label: driverRecord.canonicalName,
+    color,
+    href,
+    points,
+  };
+}
+
+function renderRaceResultsGraphSvg(
+  series: RaceResultsGraphSeries[],
+  eventRecords: EventRecord[],
+  showPoints: boolean,
+  visibleSeriesIds: string[],
+  graphId: string | null,
+): string {
+  if (series.length === 0 || eventRecords.length === 0) {
+    return '<p class="graph-empty">No graph data available.</p>';
+  }
+
+  const width = 960;
+  const height = 380;
+  const marginTop = 20;
+  const marginRight = 20;
+  const marginBottom = 42;
+  const marginLeft = 48;
+  const plotWidth = width - marginLeft - marginRight;
+  const plotHeight = height - marginTop - marginBottom;
+  const firstEvent = eventRecords[0]?.nr ?? 1;
+  const lastEvent = eventRecords[eventRecords.length - 1]?.nr ?? firstEvent;
+  const eventSpan = Math.max(1, lastEvent - firstEvent);
+  const yTicks = [1, 3, 6, 10, 15, 20, graphOverflowBucket];
+  const xTicks = buildGraphEventTicks(firstEvent, lastEvent);
+  const xForEvent = (eventNumber: number): number =>
+    marginLeft + ((eventNumber - firstEvent) / eventSpan) * plotWidth;
+  const yForPlacing = (placing: number): number =>
+    marginTop + ((placing - 1) / (graphOverflowBucket - 1)) * plotHeight;
+
+  const yGrid = yTicks
+    .map((placing) => {
+      const y = yForPlacing(placing);
+      const label =
+        placing === graphOverflowBucket
+          ? `${graphMaxPlacing}+`
+          : String(placing);
+
+      return `
+        <line class="graph-grid" x1="${marginLeft}" y1="${y}" x2="${width - marginRight}" y2="${y}"></line>
+        <text class="graph-label" x="${marginLeft - 10}" y="${y + 4}" text-anchor="end">${label}</text>`;
+    })
+    .join("\n");
+
+  const xGrid = xTicks
+    .map((eventNumber) => {
+      const x = xForEvent(eventNumber);
+
+      return `
+        <line class="graph-grid" x1="${x}" y1="${marginTop}" x2="${x}" y2="${height - marginBottom}"></line>
+        <text class="graph-label" x="${x}" y="${height - marginBottom + 18}" text-anchor="middle">${eventNumber}</text>`;
+    })
+    .join("\n");
+
+  const paths = series
+    .map((entry, seriesIndex) => {
+      const isVisible = visibleSeriesIds.includes(entry.id);
+      const segments = buildGraphSegments(entry.points);
+      const pathMarkup = segments
+        .map((segment) => {
+          const pathData = segment
+            .map((point, index) => {
+              const x = xForEvent(point.eventNumber);
+              const y = yForPlacing(point.placing);
+
+              return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+            })
+            .join(" ");
+
+          return `<path class="graph-line graph-series-${seriesIndex}" d="${pathData}" stroke="${entry.color}"></path>`;
+        })
+        .join("\n");
+      const pointMarkup = showPoints
+        ? entry.points
+            .filter(
+              (point): point is RaceResultsGraphPoint & { placing: number } =>
+                point.placing !== null,
+            )
+            .map((point) => {
+              const x = xForEvent(point.eventNumber);
+              const y = yForPlacing(point.placing);
+
+              return `<circle class="graph-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3" fill="${entry.color}"><title>${escapeHtml(`${entry.label} - ${point.title}`)}</title></circle>`;
+            })
+            .join("\n")
+        : "";
+
+      return `<g class="graph-series${isVisible ? "" : " is-hidden"}" data-graph-series="${escapeHtml(entry.id)}">${pathMarkup}\n${pointMarkup}</g>`;
+    })
+    .join("\n");
+  const graphRootAttribute =
+    graphId === null ? "" : ` data-graph-root="${escapeHtml(graphId)}"`;
+
+  return `
+    <div class="graph-card">
+      <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Race results graph"${graphRootAttribute}>
+        ${yGrid}
+        ${xGrid}
+        <line class="graph-axis" x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${height - marginBottom}"></line>
+        <line class="graph-axis" x1="${marginLeft}" y1="${height - marginBottom}" x2="${width - marginRight}" y2="${height - marginBottom}"></line>
+        <text class="graph-label" x="${width / 2}" y="${height - 8}" text-anchor="middle">Event</text>
+        <text class="graph-label" x="18" y="${height / 2}" text-anchor="middle" transform="rotate(-90 18 ${height / 2})">Placing</text>
+        ${paths}
+      </svg>
+    </div>
+  `;
+}
+
+function buildGraphSegments(
+  points: RaceResultsGraphPoint[],
+): Array<Array<RaceResultsGraphPoint & { placing: number }>> {
+  const segments: Array<Array<RaceResultsGraphPoint & { placing: number }>> =
+    [];
+  let currentSegment: Array<RaceResultsGraphPoint & { placing: number }> = [];
+
+  for (const point of points) {
+    if (point.placing === null) {
+      if (currentSegment.length > 0) {
+        segments.push(currentSegment);
+        currentSegment = [];
+      }
+
+      continue;
+    }
+
+    currentSegment.push({ ...point, placing: point.placing });
+  }
+
+  if (currentSegment.length > 0) {
+    segments.push(currentSegment);
+  }
+
+  return segments;
+}
+
+function buildGraphEventTicks(firstEvent: number, lastEvent: number): number[] {
+  const ticks = new Set<number>([firstEvent, lastEvent]);
+
+  for (
+    let eventNumber = Math.ceil(firstEvent / 10) * 10;
+    eventNumber < lastEvent;
+    eventNumber += 10
+  ) {
+    ticks.add(eventNumber);
+  }
+
+  return Array.from(ticks).sort((left, right) => left - right);
+}
+
+function renderRaceResultsGraphSelector(
+  series: RaceResultsGraphSeries[],
+  defaultVisibleIds: string[],
+): string {
+  if (series.length === 0) {
+    return '<p class="graph-empty">No drivers matched the five-win filter.</p>';
+  }
+
+  const items = series
+    .map((entry) => {
+      const swatch = `<span class="graph-swatch" style="background:${entry.color}"></span>`;
+      const label = escapeHtml(entry.label);
+      const checked = defaultVisibleIds.includes(entry.id) ? " checked" : "";
+      const linkedLabel =
+        entry.href === null
+          ? `<span class="graph-control-name">${label}</span>`
+          : `<a href="${entry.href}" class="graph-control-link">${label}</a>`;
+
+      return `
+        <label class="graph-control-item" data-graph-control>
+          <input type="checkbox" value="${escapeHtml(entry.id)}"${checked}>
+          ${swatch}
+          ${linkedLabel}
+        </label>`;
+    })
+    .join("\n");
+
+  return `
+    <div class="graph-controls" data-graph-picker data-graph-target="combined-race-results" data-graph-max-selected="${combinedGraphMaxSelection}">
+      <p class="graph-note">Select up to ${combinedGraphMaxSelection} racers. The top ${combinedGraphMaxSelection} are enabled by default.</p>
+      <div class="graph-control-list">
+        ${items}
+      </div>
+    </div>`;
+}
+
+function getDriverWinCount(driverRecord: DriverRecord): number {
+  return getDriverResultRecords(driverRecord).filter(
+    (entry) => entry.result.placing === 1,
+  ).length;
 }
 
 function buildResultRowClassName(placing: number | null): string {
@@ -1906,6 +2249,60 @@ function renderLayout(
           updateDriverFilter();
         }
 
+        for (const picker of document.querySelectorAll("[data-graph-picker]")) {
+          const graphTarget = picker.getAttribute("data-graph-target") || "";
+          const maxSelected = Number(picker.getAttribute("data-graph-max-selected") || "0");
+          const checkboxes = Array.from(
+            picker.querySelectorAll('input[type="checkbox"]'),
+          );
+
+          if (!graphTarget || checkboxes.length === 0) {
+            continue;
+          }
+
+          const graphRoot = document.querySelector(
+            '[data-graph-root="' + graphTarget + '"]',
+          );
+
+          const updateGraphSelection = (changedCheckbox) => {
+            if (changedCheckbox) {
+              const checkedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+
+              if (maxSelected > 0 && checkedCount > maxSelected) {
+                changedCheckbox.checked = false;
+              }
+            }
+
+            const selectedIds = new Set(
+              checkboxes
+                .filter((checkbox) => checkbox.checked)
+                .map((checkbox) => checkbox.value),
+            );
+
+            for (const checkbox of checkboxes) {
+              checkbox.disabled =
+                maxSelected > 0 &&
+                selectedIds.size >= maxSelected &&
+                !checkbox.checked;
+            }
+
+            if (!graphRoot) {
+              return;
+            }
+
+            for (const seriesGroup of graphRoot.querySelectorAll("[data-graph-series]")) {
+              const seriesId = seriesGroup.getAttribute("data-graph-series") || "";
+              seriesGroup.classList.toggle("is-hidden", !selectedIds.has(seriesId));
+            }
+          };
+
+          for (const checkbox of checkboxes) {
+            checkbox.addEventListener("change", () => updateGraphSelection(checkbox));
+          }
+
+          updateGraphSelection();
+        }
+
         for (const table of document.querySelectorAll("[data-sort-table]")) {
           const tbody = table.tBodies[0];
 
@@ -2029,6 +2426,7 @@ function renderLayout(
       <a href="${options.rootPrefix}/index.html">Overview</a>
       <a href="${options.rootPrefix}/drivers/index.html">Drivers</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>
+      <a href="${options.rootPrefix}/race-results-graph/index.html">Race Results Graph</a>
     </nav>
     ${bodyContent}
   </body>

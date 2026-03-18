@@ -129,6 +129,93 @@ thead th {
   text-align: center;
 }
 
+.graph-card {
+  border: 1px solid #999;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding: 12px;
+}
+
+.graph-controls {
+  margin: 0 0 16px;
+}
+
+.graph-control-list {
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.graph-control-item {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.graph-control-item input {
+  margin: 0;
+}
+
+.graph-control-link,
+.graph-control-name {
+  color: inherit;
+  text-decoration: none;
+}
+
+.graph-control-link:hover {
+  text-decoration: underline;
+}
+
+.graph-svg {
+  display: block;
+  height: auto;
+  min-width: 760px;
+  width: 100%;
+}
+
+.graph-series.is-hidden {
+  display: none;
+}
+
+.graph-grid {
+  stroke: #ddd;
+  stroke-width: 1;
+}
+
+.graph-axis {
+  stroke: #666;
+  stroke-width: 1;
+}
+
+.graph-label {
+  fill: #555;
+  font-size: 12px;
+}
+
+.graph-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.graph-point {
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.graph-note,
+.graph-empty {
+  color: #555;
+}
+
+.graph-swatch {
+  border-radius: 999px;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
 .is-zero {
   background: #f1f1f1;
   color: #999;
@@ -159,8 +246,7 @@ thead th {
 .result.result-23,
 .result.result-24,
 .result.result-25 {
-  .placings-column {
-  }
+  --result-style-hook: initial;
 }
 
 .placingNo.placing-1,
@@ -188,6 +274,11 @@ thead th {
 .placingNo.placing-23,
 .placingNo.placing-24,
 .placingNo.placing-25 {
+  --placing-style-hook: initial;
+}
+
+.placings-column {
+  --placings-column-hook: initial;
 }
 
 th,
