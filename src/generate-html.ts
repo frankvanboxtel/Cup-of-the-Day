@@ -19,6 +19,13 @@ type CupResultFile = {
   results: ResultEntry[];
 };
 
+type AliasList = Record<string, string[]>;
+
+type AliasResolver = {
+  canonicalByName: Map<string, string>;
+  aliasesByCanonical: Map<string, string[]>;
+};
+
 type EventRecord = CupResultFile & {
   jsonFileName: string;
   htmlFileName: string;
@@ -27,14 +34,17 @@ type EventRecord = CupResultFile & {
 };
 
 type DriverRecord = {
-  name: string;
+  canonicalName: string;
   htmlFileName: string;
-  results: EventRecord[];
+  aliases: string[];
+  fastestTimes: number;
+  results: DriverResultRecord[];
 };
 
 type AuthorRecord = {
-  name: string;
+  canonicalName: string;
   htmlFileName: string;
+  aliases: string[];
   tracks: EventRecord[];
 };
 
@@ -71,16 +81,27 @@ const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const authorsDirectory = path.join(outputDirectory, "authors");
 const indexFilePath = path.join(outputDirectory, "index.html");
+const manualAliasListPath = path.join(
+  projectRoot,
+  "data",
+  "player-aliases.json",
+);
+const generatedAliasListPath = path.join(
+  projectRoot,
+  "data",
+  "player-aliases.generated.json",
+);
 
 async function main(): Promise<void> {
+  const aliasResolver = await loadAliasResolver();
   const eventRecords = await loadEventRecords();
-  const driverRecords = buildDriverRecords(eventRecords);
-  const authorRecords = buildAuthorRecords(eventRecords);
+  const driverRecords = buildDriverRecords(eventRecords, aliasResolver);
+  const authorRecords = buildAuthorRecords(eventRecords, aliasResolver);
   const driverRecordsByName = new Map(
-    driverRecords.map((record) => [record.name, record]),
+    driverRecords.map((record) => [record.canonicalName, record]),
   );
   const authorRecordsByName = new Map(
-    authorRecords.map((record) => [record.name, record]),
+    authorRecords.map((record) => [record.canonicalName, record]),
   );
 
   await mkdir(outputDirectory, { recursive: true });
@@ -98,10 +119,14 @@ async function main(): Promise<void> {
   ]);
 
   const driverFileNames = new Map(
-    driverRecords.map((record) => [record.name, record.htmlFileName]),
+    driverRecords.flatMap((record) =>
+      record.aliases.map((alias) => [alias, record.htmlFileName] as const),
+    ),
   );
   const authorFileNames = new Map(
-    authorRecords.map((record) => [record.name, record.htmlFileName]),
+    authorRecords.flatMap((record) =>
+      record.aliases.map((alias) => [alias, record.htmlFileName] as const),
+    ),
   );
 
   await Promise.all([
@@ -136,7 +161,11 @@ async function main(): Promise<void> {
 
 async function loadEventRecords(): Promise<EventRecord[]> {
   const fileNames = (await readdir(resultsDirectory))
-    .filter((fileName) => fileName.toLowerCase().endsWith(".json"))
+    .filter(
+      (fileName) =>
+        fileName.toLowerCase().endsWith(".json") &&
+        /^\d+-.*\.json$/i.test(fileName),
+    )
     .sort((left, right) =>
       left.localeCompare(right, undefined, { numeric: true }),
     );
@@ -161,56 +190,279 @@ async function loadEventRecords(): Promise<EventRecord[]> {
   return records.sort((left, right) => left.nr - right.nr);
 }
 
-function buildDriverRecords(eventRecords: EventRecord[]): DriverRecord[] {
-  const driverNames = new Set<string>();
+async function loadAliasResolver(): Promise<AliasResolver> {
+  const [manualAliases, generatedAliases] = await Promise.all([
+    loadAliasList(manualAliasListPath, false),
+    loadAliasList(generatedAliasListPath, true),
+  ]);
+
+  const aliasGraph = new Map<string, Set<string>>();
+  const manualCanonicalOrder = new Map<string, number>();
+  const generatedCanonicalOrder = new Map<string, number>();
+
+  registerAliasList(manualAliases, aliasGraph, manualCanonicalOrder);
+  registerAliasList(generatedAliases, aliasGraph, generatedCanonicalOrder);
+
+  const canonicalByName = new Map<string, string>();
+  const aliasesByCanonical = new Map<string, string[]>();
+  const visited = new Set<string>();
+
+  for (const name of Array.from(aliasGraph.keys()).sort((left, right) =>
+    left.localeCompare(right),
+  )) {
+    if (visited.has(name)) {
+      continue;
+    }
+
+    const stack = [name];
+    const component: string[] = [];
+    visited.add(name);
+
+    while (stack.length > 0) {
+      const current = stack.pop();
+
+      if (!current) {
+        continue;
+      }
+
+      component.push(current);
+
+      for (const neighbor of aliasGraph.get(current) ?? []) {
+        if (visited.has(neighbor)) {
+          continue;
+        }
+
+        visited.add(neighbor);
+        stack.push(neighbor);
+      }
+    }
+
+    const sortedComponent = component.sort((left, right) =>
+      left.localeCompare(right),
+    );
+    const canonicalName = pickCanonicalName(
+      sortedComponent,
+      manualCanonicalOrder,
+      generatedCanonicalOrder,
+    );
+
+    aliasesByCanonical.set(canonicalName, sortedComponent);
+
+    for (const alias of sortedComponent) {
+      canonicalByName.set(alias, canonicalName);
+    }
+  }
+
+  return {
+    canonicalByName,
+    aliasesByCanonical,
+  };
+}
+
+async function loadAliasList(
+  filePath: string,
+  optional: boolean,
+): Promise<AliasList> {
+  try {
+    const content = await readFile(filePath, "utf8");
+    return JSON.parse(content) as AliasList;
+  } catch (error: unknown) {
+    if (
+      optional &&
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "ENOENT"
+    ) {
+      return {};
+    }
+
+    throw error;
+  }
+}
+
+function registerAliasList(
+  aliasList: AliasList,
+  aliasGraph: Map<string, Set<string>>,
+  canonicalOrder: Map<string, number>,
+): void {
+  for (const [index, [rawCanonicalName, rawAliases]] of Object.entries(
+    aliasList,
+  ).entries()) {
+    const canonicalName = normalizeWhitespace(rawCanonicalName);
+    canonicalOrder.set(canonicalName, index);
+
+    const aliases = [canonicalName, ...rawAliases]
+      .map(normalizeWhitespace)
+      .filter((name) => name.length > 0);
+
+    for (const alias of aliases) {
+      if (!aliasGraph.has(alias)) {
+        aliasGraph.set(alias, new Set());
+      }
+
+      if (!aliasGraph.has(canonicalName)) {
+        aliasGraph.set(canonicalName, new Set());
+      }
+
+      aliasGraph.get(canonicalName)?.add(alias);
+      aliasGraph.get(alias)?.add(canonicalName);
+    }
+  }
+}
+
+function pickCanonicalName(
+  names: string[],
+  manualCanonicalOrder: Map<string, number>,
+  generatedCanonicalOrder: Map<string, number>,
+): string {
+  const manualCandidates = names
+    .filter((name) => manualCanonicalOrder.has(name))
+    .sort(
+      (left, right) =>
+        (manualCanonicalOrder.get(left) ?? Number.MAX_SAFE_INTEGER) -
+        (manualCanonicalOrder.get(right) ?? Number.MAX_SAFE_INTEGER),
+    );
+
+  if (manualCandidates.length > 0) {
+    return manualCandidates[0];
+  }
+
+  const generatedCandidates = names
+    .filter((name) => generatedCanonicalOrder.has(name))
+    .sort(
+      (left, right) =>
+        (generatedCanonicalOrder.get(left) ?? Number.MAX_SAFE_INTEGER) -
+        (generatedCanonicalOrder.get(right) ?? Number.MAX_SAFE_INTEGER),
+    );
+
+  if (generatedCandidates.length > 0) {
+    return generatedCandidates[0];
+  }
+
+  return names[0] ?? "Unknown";
+}
+
+function normalizeWhitespace(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+function resolveAlias(name: string, aliasResolver: AliasResolver): string {
+  const normalizedName = normalizeWhitespace(name);
+  return aliasResolver.canonicalByName.get(normalizedName) ?? normalizedName;
+}
+
+function buildDriverRecords(
+  eventRecords: EventRecord[],
+  aliasResolver: AliasResolver,
+): DriverRecord[] {
+  const driverRecords = new Map<string, DriverRecord>();
 
   for (const eventRecord of eventRecords) {
     for (const result of eventRecord.results) {
-      driverNames.add(result.name);
+      const canonicalName = resolveAlias(result.name, aliasResolver);
+
+      if (!driverRecords.has(canonicalName)) {
+        driverRecords.set(canonicalName, {
+          canonicalName,
+          htmlFileName: `${slugify(canonicalName)}-${stableId(canonicalName)}.html`,
+          aliases: aliasResolver.aliasesByCanonical.get(canonicalName) ?? [
+            canonicalName,
+          ],
+          fastestTimes: 0,
+          results: [],
+        });
+      }
+
+      driverRecords.get(canonicalName)?.results.push({ eventRecord, result });
+    }
+
+    if (eventRecord.fastestTimeDriver) {
+      const canonicalName = resolveAlias(
+        eventRecord.fastestTimeDriver,
+        aliasResolver,
+      );
+
+      if (!driverRecords.has(canonicalName)) {
+        driverRecords.set(canonicalName, {
+          canonicalName,
+          htmlFileName: `${slugify(canonicalName)}-${stableId(canonicalName)}.html`,
+          aliases: aliasResolver.aliasesByCanonical.get(canonicalName) ?? [
+            canonicalName,
+          ],
+          fastestTimes: 0,
+          results: [],
+        });
+      }
+
+      const driverRecord = driverRecords.get(canonicalName);
+
+      if (driverRecord) {
+        driverRecord.fastestTimes += 1;
+      }
     }
   }
 
-  const driverFileNames = new Map(
-    Array.from(driverNames)
-      .sort((left, right) => left.localeCompare(right))
-      .map((name) => [name, `${slugify(name)}-${stableId(name)}.html`]),
-  );
-
-  return Array.from(driverNames)
-    .sort((left, right) => left.localeCompare(right))
-    .map((name) => ({
-      name,
-      htmlFileName: driverFileNames.get(name) ?? `${slugify(name)}.html`,
-      results: eventRecords.filter((eventRecord) =>
-        eventRecord.results.some((result) => result.name === name),
+  return Array.from(driverRecords.values())
+    .map((driverRecord) => ({
+      ...driverRecord,
+      aliases: Array.from(
+        new Set([driverRecord.canonicalName, ...driverRecord.aliases]),
+      ).sort((left, right) => left.localeCompare(right)),
+      results: [...driverRecord.results].sort(
+        (left, right) => left.eventRecord.nr - right.eventRecord.nr,
       ),
-    }));
+    }))
+    .sort((left, right) =>
+      left.canonicalName.localeCompare(right.canonicalName),
+    );
 }
 
-function buildAuthorRecords(eventRecords: EventRecord[]): AuthorRecord[] {
-  const authorNames = new Set<string>();
+function buildAuthorRecords(
+  eventRecords: EventRecord[],
+  aliasResolver: AliasResolver,
+): AuthorRecord[] {
+  const authorRecords = new Map<string, AuthorRecord>();
 
   for (const eventRecord of eventRecords) {
     for (const author of eventRecord.authors) {
-      authorNames.add(author);
+      const canonicalName = resolveAlias(author, aliasResolver);
+
+      if (!authorRecords.has(canonicalName)) {
+        authorRecords.set(canonicalName, {
+          canonicalName,
+          htmlFileName: `${slugify(canonicalName)}-${stableId(canonicalName)}.html`,
+          aliases: aliasResolver.aliasesByCanonical.get(canonicalName) ?? [
+            canonicalName,
+          ],
+          tracks: [],
+        });
+      }
+
+      const authorRecord = authorRecords.get(canonicalName);
+
+      if (
+        authorRecord &&
+        !authorRecord.tracks.some((track) => track.nr === eventRecord.nr)
+      ) {
+        authorRecord.tracks.push(eventRecord);
+      }
     }
   }
 
-  const authorFileNames = new Map(
-    Array.from(authorNames)
-      .sort((left, right) => left.localeCompare(right))
-      .map((name) => [name, `${slugify(name)}-${stableId(name)}.html`]),
-  );
-
-  return Array.from(authorNames)
-    .sort((left, right) => left.localeCompare(right))
-    .map((name) => ({
-      name,
-      htmlFileName: authorFileNames.get(name) ?? `${slugify(name)}.html`,
-      tracks: eventRecords.filter((eventRecord) =>
-        eventRecord.authors.includes(name),
+  return Array.from(authorRecords.values())
+    .map((authorRecord) => ({
+      ...authorRecord,
+      aliases: Array.from(
+        new Set([authorRecord.canonicalName, ...authorRecord.aliases]),
+      ).sort((left, right) => left.localeCompare(right)),
+      tracks: [...authorRecord.tracks].sort(
+        (left, right) => left.nr - right.nr,
       ),
-    }));
+    }))
+    .sort((left, right) =>
+      left.canonicalName.localeCompare(right.canonicalName),
+    );
 }
 
 function splitAuthors(authorValue: string): string[] {
@@ -365,13 +617,12 @@ async function writeDriverPage(
   authorFileNames: Map<string, string>,
 ): Promise<void> {
   const matchingAuthorRecord =
-    authorRecordsByName.get(driverRecord.name) ?? null;
-  const driverResults = getDriverResultRecords(driverRecord);
+    authorRecordsByName.get(driverRecord.canonicalName) ?? null;
 
   const content = renderLayout(
-    driverRecord.name,
+    driverRecord.canonicalName,
     `
-      <h1>${escapeHtml(driverRecord.name)}</h1>
+      ${renderProfileHeading(driverRecord.canonicalName, driverRecord.aliases)}
       ${renderProfileMetadata(
         driverRecord,
         matchingAuthorRecord,
@@ -390,7 +641,7 @@ async function writeDriverPage(
       )}
     `,
     {
-      pageTitle: driverRecord.name,
+      pageTitle: driverRecord.canonicalName,
       rootPrefix: "..",
     },
   );
@@ -410,12 +661,12 @@ async function writeAuthorPage(
   authorFileNames: Map<string, string>,
 ): Promise<void> {
   const matchingDriverRecord =
-    driverRecordsByName.get(authorRecord.name) ?? null;
+    driverRecordsByName.get(authorRecord.canonicalName) ?? null;
 
   const content = renderLayout(
-    authorRecord.name,
+    authorRecord.canonicalName,
     `
-      <h1>${escapeHtml(authorRecord.name)}</h1>
+      ${renderProfileHeading(authorRecord.canonicalName, authorRecord.aliases)}
       ${renderProfileMetadata(
         matchingDriverRecord,
         authorRecord,
@@ -434,7 +685,7 @@ async function writeAuthorPage(
       )}
     `,
     {
-      pageTitle: authorRecord.name,
+      pageTitle: authorRecord.canonicalName,
       rootPrefix: "..",
     },
   );
@@ -449,19 +700,13 @@ async function writeAuthorPage(
 function getDriverResultRecords(
   driverRecord: DriverRecord,
 ): DriverResultRecord[] {
-  return driverRecord.results
-    .flatMap((eventRecord) =>
-      eventRecord.results
-        .filter((result) => result.name === driverRecord.name)
-        .map((result) => ({ eventRecord, result })),
-    )
-    .sort((left, right) => left.eventRecord.nr - right.eventRecord.nr);
+  return [...driverRecord.results].sort(
+    (left, right) => left.eventRecord.nr - right.eventRecord.nr,
+  );
 }
 
-function buildDriverStats(
-  driverName: string,
-  driverResults: DriverResultRecord[],
-): DriverStats {
+function buildDriverStats(driverRecord: DriverRecord): DriverStats {
+  const driverResults = getDriverResultRecords(driverRecord);
   const wins = driverResults.filter(
     (entry) => entry.result.placing === 1,
   ).length;
@@ -479,16 +724,13 @@ function buildDriverStats(
 
     return best;
   }, null);
-  const fastestTimes = driverResults.filter(
-    (entry) => entry.eventRecord.fastestTimeDriver === driverName,
-  ).length;
 
   return {
     starts: driverResults.length,
     wins,
     podiums,
     bestFinish,
-    fastestTimes,
+    fastestTimes: driverRecord.fastestTimes,
   };
 }
 
@@ -517,11 +759,22 @@ function renderProfileMetadata(
   rootPrefix: string,
 ): string {
   return `
-    <h2>Metadata</h2>
     <div class="meta-grid">
       ${renderDriverMetadataTable(driverRecord, authorFileNames, rootPrefix)}
       ${renderAuthorMetadataTable(authorRecord, driverFileNames, rootPrefix)}
     </div>
+  `;
+}
+
+function renderProfileHeading(
+  canonicalName: string,
+  aliases: string[],
+): string {
+  const aliasSummary = renderAliasSummary(aliases, canonicalName);
+
+  return `
+    <h1 class="name">${escapeHtml(canonicalName)}</h1>
+    ${aliasSummary === "-" ? "" : `<div class="aliases"><span>AKA:</span> <em>${aliasSummary}</em></div>`}
   `;
 }
 
@@ -533,21 +786,24 @@ function renderDriverMetadataTable(
   if (driverRecord === null) {
     return `
       <section>
-        <h3>Driver Metadata</h3>
+        <h3>Driver</h3>
         <p>No race results found for this name.</p>
       </section>
     `;
   }
 
-  const driverResults = getDriverResultRecords(driverRecord);
-  const stats = buildDriverStats(driverRecord.name, driverResults);
-  const authorPage = authorFileNames.has(driverRecord.name)
-    ? renderAuthorLinks([driverRecord.name], authorFileNames, rootPrefix)
+  const stats = buildDriverStats(driverRecord);
+  const authorPage = authorFileNames.has(driverRecord.canonicalName)
+    ? renderAuthorLinks(
+        [driverRecord.canonicalName],
+        authorFileNames,
+        rootPrefix,
+      )
     : "-";
 
   return `
     <section>
-      <h3>Driver Metadata</h3>
+      <h3>Driver</h3>
       <table>
         <tbody>
           <tr><th>Starts</th><td>${stats.starts}</td></tr>
@@ -570,20 +826,20 @@ function renderAuthorMetadataTable(
   if (authorRecord === null) {
     return `
       <section>
-        <h3>Author Metadata</h3>
+        <h3>Author</h3>
         <p>No authored tracks found for this name.</p>
       </section>
     `;
   }
 
   const stats = buildAuthorStats(authorRecord);
-  const driverPage = driverFileNames.has(authorRecord.name)
-    ? renderDriverLink(authorRecord.name, driverFileNames, rootPrefix)
+  const driverPage = driverFileNames.has(authorRecord.canonicalName)
+    ? renderDriverLink(authorRecord.canonicalName, driverFileNames, rootPrefix)
     : "-";
 
   return `
     <section>
-      <h3>Author Metadata</h3>
+      <h3>Author</h3>
       <table>
         <tbody>
           <tr><th>Tracks</th><td>${stats.tracks}</td></tr>
@@ -669,12 +925,24 @@ function buildDriverTimeline(
   driverRecord: DriverRecord,
   eventRecords: EventRecord[],
 ): DriverTimelineRecord[] {
+  const resultsByEvent = new Map(
+    driverRecord.results.map((entry) => [entry.eventRecord.nr, entry.result]),
+  );
+
   return eventRecords.map((eventRecord) => ({
     eventRecord,
-    result:
-      eventRecord.results.find((result) => result.name === driverRecord.name) ??
-      null,
+    result: resultsByEvent.get(eventRecord.nr) ?? null,
   }));
+}
+
+function renderAliasSummary(aliases: string[], canonicalName: string): string {
+  const otherAliases = aliases.filter((alias) => alias !== canonicalName);
+
+  if (otherAliases.length === 0) {
+    return "-";
+  }
+
+  return otherAliases.map((alias) => escapeHtml(alias)).join(", ");
 }
 
 function renderTracksSection(

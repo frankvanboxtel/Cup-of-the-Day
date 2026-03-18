@@ -8,6 +8,15 @@ nav {
   margin-bottom: 16px;
 }
 
+.name {
+  margin-bottom: 0;
+}
+
+.aliases {
+  color: #555;
+  margin: 4px 0 20px;
+}
+
 .meta-grid {
   display: grid;
   gap: 16px;
