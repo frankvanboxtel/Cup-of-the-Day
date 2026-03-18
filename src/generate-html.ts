@@ -61,9 +61,13 @@ type DriverTimelineRecord = {
 type DriverStats = {
   starts: number;
   wins: number;
+  winRate: number;
   podiums: number;
+  podiumRate: number;
   bestFinish: number | null;
   fastestTimes: number;
+  currentElo: number;
+  peakElo: number;
 };
 
 type AuthorStats = {
@@ -76,6 +80,28 @@ type AuthorStats = {
 
 type SortDirection = "asc" | "desc";
 type SortType = "text" | "number";
+
+type DriverRatingSummary = {
+  currentElo: number;
+  peakElo: number;
+};
+
+type DriverEventRating = {
+  elo: number;
+};
+
+type CanonicalEventResult = {
+  canonicalName: string;
+  placing: number | null;
+  time: string;
+  eliminationRound: string | null;
+};
+
+type EventRatings = {
+  elo: Map<string, number>;
+  summary: Map<string, DriverRatingSummary>;
+  history: Map<string, Map<number, DriverEventRating>>;
+};
 
 const projectRoot = path.resolve(__dirname, "..");
 const resultsDirectory = path.join(projectRoot, "results");
@@ -95,10 +121,14 @@ const generatedAliasListPath = path.join(
   "data",
   "player-aliases.generated.json",
 );
+const initialElo = 1500;
+const eloKFactor = 32;
 
 async function main(): Promise<void> {
   const aliasResolver = await loadAliasResolver();
   const eventRecords = await loadEventRecords();
+  const eventRatings = buildEventRatings(eventRecords, aliasResolver);
+  const driverRatingHistory = eventRatings.history;
   const driverRecords = buildDriverRecords(eventRecords, aliasResolver);
   const authorRecords = buildAuthorRecords(eventRecords, aliasResolver);
   const driverRecordsByName = new Map(
@@ -135,7 +165,12 @@ async function main(): Promise<void> {
 
   await Promise.all([
     writeIndexPage(eventRecords, driverFileNames, authorFileNames),
-    writeDriverIndexPage(driverRecords, authorRecordsByName, authorFileNames),
+    writeDriverIndexPage(
+      driverRecords,
+      authorRecordsByName,
+      authorFileNames,
+      eventRatings.summary,
+    ),
     ...eventRecords.map((eventRecord) =>
       writeEventPage(eventRecord, driverFileNames, authorFileNames),
     ),
@@ -146,6 +181,8 @@ async function main(): Promise<void> {
         authorRecordsByName,
         driverFileNames,
         authorFileNames,
+        eventRatings.summary,
+        driverRatingHistory,
       ),
     ),
     ...authorRecords.map((authorRecord) =>
@@ -155,6 +192,8 @@ async function main(): Promise<void> {
         driverRecordsByName,
         driverFileNames,
         authorFileNames,
+        eventRatings.summary,
+        driverRatingHistory,
       ),
     ),
   ]);
@@ -448,6 +487,187 @@ function buildDriverRecords(
     );
 }
 
+function buildEventRatings(
+  eventRecords: EventRecord[],
+  aliasResolver: AliasResolver,
+): EventRatings {
+  const elo = new Map<string, number>();
+  const summary = new Map<string, DriverRatingSummary>();
+  const history = new Map<string, Map<number, DriverEventRating>>();
+
+  for (const eventRecord of eventRecords) {
+    const participants = buildCanonicalEventResults(eventRecord, aliasResolver);
+
+    if (participants.length === 0) {
+      continue;
+    }
+
+    for (const participant of participants) {
+      ensureRatingParticipant(participant.canonicalName, elo, summary);
+    }
+
+    applyEloEventResults(participants, elo, summary);
+
+    for (const participant of participants) {
+      const participantSummary = summary.get(participant.canonicalName);
+
+      if (!participantSummary) {
+        continue;
+      }
+
+      if (!history.has(participant.canonicalName)) {
+        history.set(participant.canonicalName, new Map());
+      }
+
+      history.get(participant.canonicalName)?.set(eventRecord.nr, {
+        elo: participantSummary.currentElo,
+      });
+    }
+  }
+
+  return {
+    elo,
+    summary,
+    history,
+  };
+}
+
+function buildCanonicalEventResults(
+  eventRecord: EventRecord,
+  aliasResolver: AliasResolver,
+): CanonicalEventResult[] {
+  const byDriver = new Map<string, CanonicalEventResult>();
+
+  for (const result of eventRecord.results) {
+    const canonicalName = resolveAlias(result.name, aliasResolver);
+    const existing = byDriver.get(canonicalName);
+
+    if (!existing) {
+      byDriver.set(canonicalName, {
+        canonicalName,
+        placing: result.placing,
+        time: result.time,
+        eliminationRound: result.eliminationRound,
+      });
+      continue;
+    }
+
+    const currentPlacing = result.placing ?? Number.MAX_SAFE_INTEGER;
+    const existingPlacing = existing.placing ?? Number.MAX_SAFE_INTEGER;
+
+    if (currentPlacing < existingPlacing) {
+      byDriver.set(canonicalName, {
+        canonicalName,
+        placing: result.placing,
+        time: result.time,
+        eliminationRound: result.eliminationRound,
+      });
+    }
+  }
+
+  return Array.from(byDriver.values()).sort((left, right) => {
+    const leftPlacing = left.placing ?? Number.MAX_SAFE_INTEGER;
+    const rightPlacing = right.placing ?? Number.MAX_SAFE_INTEGER;
+
+    if (leftPlacing !== rightPlacing) {
+      return leftPlacing - rightPlacing;
+    }
+
+    return left.canonicalName.localeCompare(right.canonicalName);
+  });
+}
+
+function ensureRatingParticipant(
+  canonicalName: string,
+  elo: Map<string, number>,
+  summary: Map<string, DriverRatingSummary>,
+): void {
+  if (!elo.has(canonicalName)) {
+    elo.set(canonicalName, initialElo);
+  }
+
+  if (!summary.has(canonicalName)) {
+    summary.set(canonicalName, {
+      currentElo: initialElo,
+      peakElo: initialElo,
+    });
+  }
+}
+
+function applyEloEventResults(
+  participants: CanonicalEventResult[],
+  eloRatings: Map<string, number>,
+  summary: Map<string, DriverRatingSummary>,
+): void {
+  if (participants.length === 0) {
+    return;
+  }
+
+  const adjustments = new Map<string, number>();
+  const pairScale = Math.max(1, participants.length - 1);
+
+  for (const participant of participants) {
+    adjustments.set(participant.canonicalName, 0);
+  }
+
+  for (let leftIndex = 0; leftIndex < participants.length; leftIndex += 1) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < participants.length;
+      rightIndex += 1
+    ) {
+      const left = participants[leftIndex];
+      const right = participants[rightIndex];
+      const leftRating = eloRatings.get(left.canonicalName) ?? initialElo;
+      const rightRating = eloRatings.get(right.canonicalName) ?? initialElo;
+      const expectedLeft = 1 / (1 + 10 ** ((rightRating - leftRating) / 400));
+      const actualLeft = comparePlacings(left.placing, right.placing);
+      const change = (eloKFactor / pairScale) * (actualLeft - expectedLeft);
+
+      adjustments.set(
+        left.canonicalName,
+        (adjustments.get(left.canonicalName) ?? 0) + change,
+      );
+      adjustments.set(
+        right.canonicalName,
+        (adjustments.get(right.canonicalName) ?? 0) - change,
+      );
+    }
+  }
+
+  for (const participant of participants) {
+    const current = eloRatings.get(participant.canonicalName) ?? initialElo;
+    const next = current + (adjustments.get(participant.canonicalName) ?? 0);
+    const participantSummary = summary.get(participant.canonicalName);
+
+    eloRatings.set(participant.canonicalName, next);
+
+    if (participantSummary) {
+      participantSummary.currentElo = next;
+      participantSummary.peakElo = Math.max(participantSummary.peakElo, next);
+    }
+  }
+}
+
+function comparePlacings(
+  leftPlacing: number | null,
+  rightPlacing: number | null,
+): number {
+  if (leftPlacing === rightPlacing) {
+    return 0.5;
+  }
+
+  if (leftPlacing === null) {
+    return 0;
+  }
+
+  if (rightPlacing === null) {
+    return 1;
+  }
+
+  return leftPlacing < rightPlacing ? 1 : 0;
+}
+
 function buildAuthorRecords(
   eventRecords: EventRecord[],
   aliasResolver: AliasResolver,
@@ -667,10 +887,11 @@ async function writeDriverIndexPage(
   driverRecords: DriverRecord[],
   authorRecordsByName: Map<string, AuthorRecord>,
   authorFileNames: Map<string, string>,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
 ): Promise<void> {
   const rows = driverRecords
     .map((driverRecord) => {
-      const stats = buildDriverStats(driverRecord);
+      const stats = buildDriverStats(driverRecord, driverRatingSummary);
       const aliasSummary = renderAliasSummary(
         driverRecord.aliases,
         driverRecord.canonicalName,
@@ -685,7 +906,11 @@ async function writeDriverIndexPage(
         driver: normalizeTextSortValue(driverRecord.canonicalName),
         starts: normalizeNumberSortValue(stats.starts),
         wins: normalizeNumberSortValue(stats.wins),
+        "win-rate": normalizeNumberSortValue(stats.winRate),
+        podiums: normalizeNumberSortValue(stats.podiums),
+        "podium-rate": normalizeNumberSortValue(stats.podiumRate),
         "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
+        elo: normalizeNumberSortValue(stats.currentElo),
       });
 
       return `
@@ -694,7 +919,11 @@ async function writeDriverIndexPage(
           <td>${aliasSummary}</td>
           <td>${stats.starts}</td>
           <td>${stats.wins}</td>
+          <td>${formatPercentage(stats.winRate)}</td>
+          <td>${stats.podiums}</td>
+          <td>${formatPercentage(stats.podiumRate)}</td>
           <td>${stats.fastestTimes}</td>
+          <td>${formatElo(stats.currentElo)}</td>
           <td>${authorPage}</td>
         </tr>`;
     })
@@ -724,7 +953,11 @@ async function writeDriverIndexPage(
             <th>Aliases</th>
             ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
             ${renderSortableHeader("Wins", "wins", "number", "desc")}
+            ${renderSortableHeader("Win %", "win-rate", "number", "desc")}
+            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
+            ${renderSortableHeader("Podium %", "podium-rate", "number", "desc")}
             ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
+            ${renderSortableHeader("Elo", "elo", "number", "desc")}
             <th>Author Page</th>
           </tr>
         </thead>
@@ -817,6 +1050,8 @@ async function writeDriverPage(
   authorRecordsByName: Map<string, AuthorRecord>,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverRatingHistory: Map<string, Map<number, DriverEventRating>>,
 ): Promise<void> {
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
@@ -831,9 +1066,15 @@ async function writeDriverPage(
         driverFileNames,
         authorFileNames,
         "..",
+        driverRatingSummary,
       )}
       ${renderProfileTabs(
-        renderRaceResultsSection(driverRecord, eventRecords, authorFileNames),
+        renderRaceResultsSection(
+          driverRecord,
+          eventRecords,
+          authorFileNames,
+          driverRatingHistory,
+        ),
         renderTracksSection(
           matchingAuthorRecord,
           driverFileNames,
@@ -861,6 +1102,8 @@ async function writeAuthorPage(
   driverRecordsByName: Map<string, DriverRecord>,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverRatingHistory: Map<string, Map<number, DriverEventRating>>,
 ): Promise<void> {
   const matchingDriverRecord =
     driverRecordsByName.get(authorRecord.canonicalName) ?? null;
@@ -875,12 +1118,14 @@ async function writeAuthorPage(
         driverFileNames,
         authorFileNames,
         "..",
+        driverRatingSummary,
       )}
       ${renderProfileTabs(
         renderRaceResultsSection(
           matchingDriverRecord,
           eventRecords,
           authorFileNames,
+          driverRatingHistory,
         ),
         renderTracksSection(authorRecord, driverFileNames, authorFileNames),
         "tracks",
@@ -907,14 +1152,23 @@ function getDriverResultRecords(
   );
 }
 
-function buildDriverStats(driverRecord: DriverRecord): DriverStats {
+function buildDriverStats(
+  driverRecord: DriverRecord,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
+): DriverStats {
   const driverResults = getDriverResultRecords(driverRecord);
+  const ratingSummary =
+    driverRatingSummary.get(driverRecord.canonicalName) ??
+    getDefaultDriverRatingSummary();
   const wins = driverResults.filter(
     (entry) => entry.result.placing === 1,
   ).length;
   const podiums = driverResults.filter(
     (entry) => entry.result.placing !== null && entry.result.placing <= 3,
   ).length;
+  const starts = driverResults.length;
+  const winRate = starts === 0 ? 0 : (wins / starts) * 100;
+  const podiumRate = starts === 0 ? 0 : (podiums / starts) * 100;
   const bestFinish = driverResults.reduce<number | null>((best, entry) => {
     if (entry.result.placing === null) {
       return best;
@@ -928,11 +1182,22 @@ function buildDriverStats(driverRecord: DriverRecord): DriverStats {
   }, null);
 
   return {
-    starts: driverResults.length,
+    starts,
     wins,
+    winRate,
     podiums,
+    podiumRate,
     bestFinish,
     fastestTimes: driverRecord.fastestTimes,
+    currentElo: ratingSummary.currentElo,
+    peakElo: ratingSummary.peakElo,
+  };
+}
+
+function getDefaultDriverRatingSummary(): DriverRatingSummary {
+  return {
+    currentElo: initialElo,
+    peakElo: initialElo,
   };
 }
 
@@ -959,10 +1224,16 @@ function renderProfileMetadata(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   rootPrefix: string,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
 ): string {
   return `
     <div class="meta-grid">
-      ${renderDriverMetadataTable(driverRecord, authorFileNames, rootPrefix)}
+      ${renderDriverMetadataTable(
+        driverRecord,
+        authorFileNames,
+        rootPrefix,
+        driverRatingSummary,
+      )}
       ${renderAuthorMetadataTable(authorRecord, driverFileNames, rootPrefix)}
     </div>
   `;
@@ -984,6 +1255,7 @@ function renderDriverMetadataTable(
   driverRecord: DriverRecord | null,
   authorFileNames: Map<string, string>,
   rootPrefix: string,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
 ): string {
   if (driverRecord === null) {
     return `
@@ -994,7 +1266,7 @@ function renderDriverMetadataTable(
     `;
   }
 
-  const stats = buildDriverStats(driverRecord);
+  const stats = buildDriverStats(driverRecord, driverRatingSummary);
   const authorPage = authorFileNames.has(driverRecord.canonicalName)
     ? renderAuthorLinks(
         [driverRecord.canonicalName],
@@ -1010,9 +1282,13 @@ function renderDriverMetadataTable(
         <tbody>
           <tr><th>Starts</th><td>${stats.starts}</td></tr>
           <tr><th>Wins</th><td>${stats.wins}</td></tr>
+          <tr><th>Win %</th><td>${formatPercentage(stats.winRate)}</td></tr>
           <tr><th>Podiums</th><td>${stats.podiums}</td></tr>
+          <tr><th>Podium %</th><td>${formatPercentage(stats.podiumRate)}</td></tr>
           <tr><th>Best Finish</th><td>${stats.bestFinish ?? "-"}</td></tr>
           <tr><th>Fastest Times</th><td>${stats.fastestTimes}</td></tr>
+          <tr><th>Elo Current</th><td>${formatElo(stats.currentElo)}</td></tr>
+          <tr><th>Elo Peak</th><td>${formatElo(stats.peakElo)}</td></tr>
           <tr><th>Author Page</th><td>${authorPage}</td></tr>
         </tbody>
       </table>
@@ -1079,6 +1355,7 @@ function renderRaceResultsSection(
   driverRecord: DriverRecord | null,
   eventRecords: EventRecord[],
   authorFileNames: Map<string, string>,
+  driverRatingHistory: Map<string, Map<number, DriverEventRating>>,
 ): string {
   if (driverRecord === null) {
     return `
@@ -1087,8 +1364,12 @@ function renderRaceResultsSection(
     `;
   }
 
+  const ratingHistory =
+    driverRatingHistory.get(driverRecord.canonicalName) ?? new Map();
+
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
+      const ratingAtEvent = ratingHistory.get(eventRecord.nr) ?? null;
       const sortAttributes = renderSortDataAttributes({
         event: normalizeNumberSortValue(eventRecord.nr),
         map: normalizeTextSortValue(eventRecord.map),
@@ -1096,6 +1377,7 @@ function renderRaceResultsSection(
         placing: normalizeNumberSortValue(result?.placing),
         time: normalizeTimeSortValue(result?.time),
         "elimination-round": normalizeTextSortValue(result?.eliminationRound),
+        elo: normalizeNumberSortValue(ratingAtEvent?.elo),
       });
 
       return `
@@ -1107,6 +1389,7 @@ function renderRaceResultsSection(
           <td>${result?.placing ?? "-"}</td>
           <td>${result === null ? "-" : escapeHtml(result.time)}</td>
           <td>${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
+          <td>${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
         </tr>`;
     })
     .join("\n");
@@ -1123,6 +1406,7 @@ function renderRaceResultsSection(
           ${renderSortableHeader("Placing", "placing", "number", "asc")}
           ${renderSortableHeader("Time", "time", "number", "asc")}
           ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
+          ${renderSortableHeader("Elo", "elo", "number", "desc")}
         </tr>
       </thead>
       <tbody>
@@ -1515,6 +1799,14 @@ function escapeHtml(value: string): string {
 
 function normalizeSearchText(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function formatPercentage(value: number): string {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatElo(value: number): string {
+  return Math.round(value).toString();
 }
 
 function slugify(value: string): string {
