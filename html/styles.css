@@ -1,0 +1,64 @@
+body {
+  font-family: sans-serif;
+  line-height: 1.4;
+  margin: 24px;
+}
+
+nav {
+  margin-bottom: 16px;
+}
+
+.meta-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.tab-list {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0 16px;
+}
+
+.tab-button {
+  border: 1px solid #999;
+  background: #f3f3f3;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.tab-button.is-active {
+  background: #dfe8f6;
+  font-weight: bold;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
+.did-not-race {
+  opacity: 0.25;
+  background: #ddd;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+th,
+td {
+  border: 1px solid #999;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #f3f3f3;
+}
+
+a {
+  color: #0047ab;
+}

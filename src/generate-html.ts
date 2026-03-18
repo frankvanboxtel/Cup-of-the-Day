@@ -43,6 +43,11 @@ type DriverResultRecord = {
   result: ResultEntry;
 };
 
+type DriverTimelineRecord = {
+  eventRecord: EventRecord;
+  result: ResultEntry | null;
+};
+
 type DriverStats = {
   starts: number;
   wins: number;
@@ -65,6 +70,7 @@ const outputDirectory = path.join(projectRoot, "html");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const authorsDirectory = path.join(outputDirectory, "authors");
+const indexFilePath = path.join(outputDirectory, "index.html");
 
 async function main(): Promise<void> {
   const eventRecords = await loadEventRecords();
@@ -77,9 +83,15 @@ async function main(): Promise<void> {
     authorRecords.map((record) => [record.name, record]),
   );
 
-  await rm(outputDirectory, { recursive: true, force: true });
+  await mkdir(outputDirectory, { recursive: true });
   await Promise.all([
-    mkdir(outputDirectory, { recursive: true }),
+    rm(indexFilePath, { force: true }),
+    rm(eventsDirectory, { recursive: true, force: true }),
+    rm(driversDirectory, { recursive: true, force: true }),
+    rm(authorsDirectory, { recursive: true, force: true }),
+  ]);
+
+  await Promise.all([
     mkdir(eventsDirectory, { recursive: true }),
     mkdir(driversDirectory, { recursive: true }),
     mkdir(authorsDirectory, { recursive: true }),
@@ -100,6 +112,7 @@ async function main(): Promise<void> {
     ...driverRecords.map((driverRecord) =>
       writeDriverPage(
         driverRecord,
+        eventRecords,
         authorRecordsByName,
         driverFileNames,
         authorFileNames,
@@ -108,6 +121,7 @@ async function main(): Promise<void> {
     ...authorRecords.map((authorRecord) =>
       writeAuthorPage(
         authorRecord,
+        eventRecords,
         driverRecordsByName,
         driverFileNames,
         authorFileNames,
@@ -278,7 +292,7 @@ async function writeIndexPage(
     },
   );
 
-  await writeFile(path.join(outputDirectory, "index.html"), content, "utf8");
+  await writeFile(indexFilePath, content, "utf8");
 }
 
 async function writeEventPage(
@@ -345,6 +359,7 @@ async function writeEventPage(
 
 async function writeDriverPage(
   driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
   authorRecordsByName: Map<string, AuthorRecord>,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
@@ -365,7 +380,7 @@ async function writeDriverPage(
         "..",
       )}
       ${renderProfileTabs(
-        renderRaceResultsSection(driverRecord, authorFileNames),
+        renderRaceResultsSection(driverRecord, eventRecords, authorFileNames),
         renderTracksSection(
           matchingAuthorRecord,
           driverFileNames,
@@ -389,6 +404,7 @@ async function writeDriverPage(
 
 async function writeAuthorPage(
   authorRecord: AuthorRecord,
+  eventRecords: EventRecord[],
   driverRecordsByName: Map<string, DriverRecord>,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
@@ -408,7 +424,11 @@ async function writeAuthorPage(
         "..",
       )}
       ${renderProfileTabs(
-        renderRaceResultsSection(matchingDriverRecord, authorFileNames),
+        renderRaceResultsSection(
+          matchingDriverRecord,
+          eventRecords,
+          authorFileNames,
+        ),
         renderTracksSection(authorRecord, driverFileNames, authorFileNames),
         "tracks",
       )}
@@ -599,6 +619,7 @@ function renderProfileTabs(
 
 function renderRaceResultsSection(
   driverRecord: DriverRecord | null,
+  eventRecords: EventRecord[],
   authorFileNames: Map<string, string>,
 ): string {
   if (driverRecord === null) {
@@ -608,16 +629,17 @@ function renderRaceResultsSection(
     `;
   }
 
-  const rows = getDriverResultRecords(driverRecord)
+  const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(
       ({ eventRecord, result }) => `
-        <tr>
+        <tr${result === null ? ' class="did-not-race"' : ""}>
           <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
           <td><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
-          <td>${result.placing ?? "-"}</td>
-          <td>${escapeHtml(result.time)}</td>
-          <td>${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
+          <td>${result === null ? "Did not race" : "Raced"}</td>
+          <td>${result?.placing ?? "-"}</td>
+          <td>${result === null ? "-" : escapeHtml(result.time)}</td>
+          <td>${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
         </tr>`,
     )
     .join("\n");
@@ -630,6 +652,7 @@ function renderRaceResultsSection(
           <th>Event</th>
           <th>Map</th>
           <th>Author</th>
+          <th>Status</th>
           <th>Placing</th>
           <th>Time</th>
           <th>Elimination Round</th>
@@ -640,6 +663,18 @@ function renderRaceResultsSection(
       </tbody>
     </table>
   `;
+}
+
+function buildDriverTimeline(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+): DriverTimelineRecord[] {
+  return eventRecords.map((eventRecord) => ({
+    eventRecord,
+    result:
+      eventRecord.results.find((result) => result.name === driverRecord.name) ??
+      null,
+  }));
 }
 
 function renderTracksSection(
@@ -767,67 +802,7 @@ function renderLayout(
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(options.pageTitle)}</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        line-height: 1.4;
-        margin: 24px;
-      }
-
-      nav {
-        margin-bottom: 16px;
-      }
-
-      .meta-grid {
-        display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      }
-
-      .tab-list {
-        display: flex;
-        gap: 8px;
-        margin: 20px 0 16px;
-      }
-
-      .tab-button {
-        border: 1px solid #999;
-        background: #f3f3f3;
-        cursor: pointer;
-        padding: 6px 10px;
-      }
-
-      .tab-button.is-active {
-        background: #dfe8f6;
-        font-weight: bold;
-      }
-
-      .tab-panel[hidden] {
-        display: none;
-      }
-
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-bottom: 24px;
-      }
-
-      th,
-      td {
-        border: 1px solid #999;
-        padding: 6px 8px;
-        text-align: left;
-        vertical-align: top;
-      }
-
-      th {
-        background: #f3f3f3;
-      }
-
-      a {
-        color: #0047ab;
-      }
-    </style>
+    <link rel="stylesheet" href="${options.rootPrefix}/styles.css">
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         for (const tabList of document.querySelectorAll("[data-tabs]")) {
