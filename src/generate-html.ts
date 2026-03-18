@@ -897,6 +897,8 @@ async function writeDriverIndexPage(
   const rows = driverRecords
     .map((driverRecord) => {
       const stats = buildDriverStats(driverRecord, driverRatingSummary);
+      const tracksCreated =
+        authorRecordsByName.get(driverRecord.canonicalName)?.tracks.length ?? 0;
       const aliasSummary = renderAliasSummary(
         driverRecord.aliases,
         driverRecord.canonicalName,
@@ -909,6 +911,7 @@ async function writeDriverIndexPage(
       );
       const sortAttributes = renderSortDataAttributes({
         driver: normalizeTextSortValue(driverRecord.canonicalName),
+        tracks: normalizeNumberSortValue(tracksCreated),
         starts: normalizeNumberSortValue(stats.starts),
         wins: normalizeNumberSortValue(stats.wins),
         "win-rate": normalizeNumberSortValue(stats.winRate),
@@ -922,12 +925,13 @@ async function writeDriverIndexPage(
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
           <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
           <td>${aliasSummary}</td>
-          <td>${stats.starts}</td>
-          <td>${stats.wins}</td>
-          <td>${formatPercentage(stats.winRate)}</td>
-          <td>${stats.podiums}</td>
-          <td>${formatPercentage(stats.podiumRate)}</td>
-          <td>${stats.fastestTimes}</td>
+          ${renderZeroValueCountCell(tracksCreated)}
+          ${renderZeroValueCountCell(stats.starts)}
+          ${renderZeroValueCountCell(stats.wins)}
+          ${renderZeroValuePercentageCell(stats.winRate)}
+          ${renderZeroValueCountCell(stats.podiums)}
+          ${renderZeroValuePercentageCell(stats.podiumRate)}
+          ${renderZeroValueCountCell(stats.fastestTimes)}
           <td>${formatElo(stats.currentElo)}</td>
           <td>${authorPage}</td>
         </tr>`;
@@ -956,6 +960,7 @@ async function writeDriverIndexPage(
           <tr>
             ${renderSortableHeader("Driver", "driver", "text", "asc")}
             <th>Aliases</th>
+            ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
             ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
             ${renderSortableHeader("Wins", "wins", "number", "desc")}
             ${renderSortableHeader("Win %", "win-rate", "number", "desc")}
@@ -1025,19 +1030,21 @@ async function writePlacingsIndexPage(
         ),
       });
       const placingCells = placingColumns
-        .map((placing) => `<td>${placingCounts[placing - 1] ?? 0}</td>`)
+        .map((placing) =>
+          renderZeroValueCountCell(placingCounts[placing - 1] ?? 0),
+        )
         .join("");
 
       return `
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
           <td><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
-          <td>${stats.starts}</td>
-          <td>${stats.wins}</td>
-          <td>${finals}</td>
-          <td>${podiums}</td>
-          <td>${top6}</td>
-          <td>${top10}</td>
-          <td>${top25}</td>
+          ${renderZeroValueCountCell(stats.starts)}
+          ${renderZeroValueCountCell(stats.wins)}
+          ${renderZeroValueCountCell(finals)}
+          ${renderZeroValueCountCell(podiums)}
+          ${renderZeroValueCountCell(top6)}
+          ${renderZeroValueCountCell(top10)}
+          ${renderZeroValueCountCell(top25)}
           ${placingCells}
         </tr>`;
     })
@@ -1576,7 +1583,7 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
       return `
         <tr>
           <th>${placing}</th>
-          <td>${count}</td>
+          ${renderZeroValueCountCell(count)}
         </tr>`;
     })
     .join("\n");
@@ -1609,6 +1616,22 @@ function buildPlacingCounts(driverRecord: DriverRecord): number[] {
   }
 
   return counts;
+}
+
+function renderZeroValueCountCell(count: number): string {
+  if (count === 0) {
+    return '<td class="is-zero"></td>';
+  }
+
+  return `<td>${count}</td>`;
+}
+
+function renderZeroValuePercentageCell(value: number): string {
+  if (value === 0) {
+    return '<td class="is-zero"></td>';
+  }
+
+  return `<td>${formatPercentage(value)}</td>`;
 }
 
 function renderAliasSummary(aliases: string[], canonicalName: string): string {

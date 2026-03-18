@@ -106,6 +106,14 @@ table {
   margin-bottom: 24px;
 }
 
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f3f3f3;
+  box-shadow: inset 0 -1px 0 #999;
+}
+
 .compact-table {
   width: auto;
 }
@@ -119,6 +127,11 @@ table {
 .placings-table td {
   min-width: 2.5rem;
   text-align: center;
+}
+
+.is-zero {
+  background: #f1f1f1;
+  color: #999;
 }
 
 th,
