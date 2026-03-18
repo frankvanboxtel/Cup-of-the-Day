@@ -140,6 +140,56 @@ thead th {
   margin: 0 0 16px;
 }
 
+.graph-select-list {
+  display: grid;
+  gap: 10px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 12px;
+}
+
+.graph-select-item {
+  --graph-select-gap: 8px;
+  --graph-select-swatch-width: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.graph-select-row {
+  align-items: center;
+  display: grid;
+  gap: var(--graph-select-gap);
+  grid-template-columns: var(--graph-select-swatch-width) minmax(0, 1fr);
+}
+
+.graph-select-label {
+  color: #555;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.graph-select-filter {
+  box-sizing: border-box;
+  font: inherit;
+  margin-left: calc(var(--graph-select-swatch-width) + var(--graph-select-gap));
+  padding: 6px 8px;
+  width: calc(
+    100% - var(--graph-select-swatch-width) - var(--graph-select-gap)
+  );
+}
+
+.graph-select-swatch {
+  flex: 0 0 auto;
+  height: 10px;
+  width: 10px;
+}
+
+.graph-select {
+  flex: 1 1 auto;
+  font: inherit;
+  padding: 6px 8px;
+  width: 100%;
+}
+
 .graph-control-list {
   display: grid;
   gap: 8px 12px;

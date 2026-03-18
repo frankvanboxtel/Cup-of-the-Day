@@ -149,7 +149,8 @@ const initialElo = 1500;
 const eloKFactor = 32;
 const graphMaxPlacing = 20;
 const graphOverflowBucket = graphMaxPlacing + 1;
-const combinedGraphMaxSelection = 3;
+const combinedGraphDefaultSelectionCount = 3;
+const combinedGraphQuickPickCount = 10;
 const graphPalette = [
   "#0047ab",
   "#d1495b",
@@ -244,7 +245,7 @@ async function main(): Promise<void> {
   ]);
 
   console.log(
-    `Generated HTML pages in ${path.relative(projectRoot, outputDirectory)} for ${eventRecords.length} events, ${driverRecords.length} drivers, and ${authorRecords.length} authors.`,
+    `Generated HTML pages in ${path.relative(projectRoot, outputDirectory)} for ${eventRecords.length} events, ${driverRecords.length} players, and ${authorRecords.length} authors.`,
   );
 }
 
@@ -909,10 +910,10 @@ async function writeIndexPage(
         <thead>
           <tr>
             ${renderSortableHeader("Event", "event", "number", "asc", true)}
-            ${renderSortableHeader("Map", "map", "text", "asc")}
+            ${renderSortableHeader("Track", "map", "text", "asc")}
             ${renderSortableHeader("Author", "author", "text", "asc")}
             ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
-            ${renderSortableHeader("Fastest Driver", "fastest-driver", "text", "asc")}
+            ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
             ${renderSortableHeader("Fastest Round", "fastest-round", "text", "asc")}
             <th>Podium</th>
           </tr>
@@ -982,26 +983,26 @@ async function writeDriverIndexPage(
     .join("\n");
 
   const content = renderLayout(
-    "Drivers",
+    "Players",
     `
-      <h1>Drivers</h1>
-      <p>${driverRecords.length} driver profiles. Search by canonical name or any alias.</p>
+      <h1>Players</h1>
+      <p>${driverRecords.length} player profiles. Search by canonical name or any alias.</p>
       <div class="search-panel">
-        <label class="search-label" for="driver-search">Search drivers</label>
+        <label class="search-label" for="driver-search">Search players</label>
         <input
           id="driver-search"
           class="search-input"
           type="search"
-          placeholder="Type a driver name or alias"
+          placeholder="Type a player name or alias"
           autocomplete="off"
           data-driver-search-input
         >
-        <p class="search-summary" data-driver-search-summary>${driverRecords.length} drivers shown</p>
+        <p class="search-summary" data-driver-search-summary>${driverRecords.length} players shown</p>
       </div>
       <table data-sort-table>
         <thead>
           <tr>
-            ${renderSortableHeader("Driver", "driver", "text", "asc")}
+            ${renderSortableHeader("Player", "driver", "text", "asc")}
             <th>Aliases</th>
             ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
             ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
@@ -1020,7 +1021,7 @@ async function writeDriverIndexPage(
       </table>
     `,
     {
-      pageTitle: "Drivers",
+      pageTitle: "Players",
       rootPrefix: "..",
     },
   );
@@ -1107,23 +1108,23 @@ async function writePlacingsIndexPage(
     "Placings",
     `
       <h1>Placings</h1>
-      <p>${driverRecords.length} driver placing summaries. Search by canonical name or any alias.</p>
+      <p>${driverRecords.length} player placing summaries. Search by canonical name or any alias.</p>
       <div class="search-panel">
-        <label class="search-label" for="driver-search">Search drivers</label>
+        <label class="search-label" for="driver-search">Search players</label>
         <input
           id="driver-search"
           class="search-input"
           type="search"
-          placeholder="Type a driver name or alias"
+          placeholder="Type a player name or alias"
           autocomplete="off"
           data-driver-search-input
         >
-        <p class="search-summary" data-driver-search-summary>${driverRecords.length} drivers shown</p>
+        <p class="search-summary" data-driver-search-summary>${driverRecords.length} players shown</p>
       </div>
       <table data-sort-table>
         <thead>
           <tr>
-            ${renderSortableHeader("Driver", "driver", "text", "asc")}
+            ${renderSortableHeader("Player", "driver", "text", "asc")}
             ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
             ${renderSortableHeader("Wins", "wins", "number", "desc")}
             ${renderSortableHeader("Finals", "finals", "number", "desc")}
@@ -1152,16 +1153,14 @@ async function writeRaceResultsGraphIndexPage(
   driverRecords: DriverRecord[],
   eventRecords: EventRecord[],
 ): Promise<void> {
-  const winnerRecords = [...driverRecords]
-    .filter((driverRecord) => getDriverWinCount(driverRecord) >= 5)
-    .sort(
-      (left, right) =>
-        getDriverWinCount(right) - getDriverWinCount(left) ||
-        getDriverResultRecords(right).length -
-          getDriverResultRecords(left).length ||
-        left.canonicalName.localeCompare(right.canonicalName),
-    );
-  const series = winnerRecords.map((driverRecord, index) =>
+  const sortedDriverRecords = [...driverRecords].sort(
+    (left, right) =>
+      getDriverWinCount(right) - getDriverWinCount(left) ||
+      getDriverResultRecords(right).length -
+        getDriverResultRecords(left).length ||
+      left.canonicalName.localeCompare(right.canonicalName),
+  );
+  const series = sortedDriverRecords.map((driverRecord, index) =>
     buildRaceResultsGraphSeries(
       driverRecord,
       eventRecords,
@@ -1170,19 +1169,29 @@ async function writeRaceResultsGraphIndexPage(
     ),
   );
   const defaultVisibleIds = series
-    .slice(0, combinedGraphMaxSelection)
+    .slice(0, combinedGraphDefaultSelectionCount)
     .map((entry) => entry.id);
+  const initialVisibleColors = new Map(
+    defaultVisibleIds.map((seriesId, index) => [
+      seriesId,
+      graphPalette[index % graphPalette.length] ?? "#0047ab",
+    ]),
+  );
+  const initialSeries = series.map((entry) => ({
+    ...entry,
+    color: initialVisibleColors.get(entry.id) ?? entry.color,
+  }));
 
   const content = renderLayout(
-    "Race Results Graph",
+    "Results Graph",
     `
-      <h1>Race Results Graph</h1>
-      <p>Combined placing graph for drivers with five wins or more. Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
+      <h1>Results Graph</h1>
+      <p>Combined placing graph for all players. The top ${combinedGraphDefaultSelectionCount} players are enabled by default. Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
       ${renderRaceResultsGraphSelector(series, defaultVisibleIds)}
-      ${renderRaceResultsGraphSvg(series, eventRecords, true, defaultVisibleIds, "combined-race-results")}
+      ${renderRaceResultsGraphSvg(initialSeries, eventRecords, false, true, defaultVisibleIds, "combined-race-results")}
     `,
     {
-      pageTitle: "Race Results Graph",
+      pageTitle: "Results Graph",
       rootPrefix: "..",
     },
   );
@@ -1221,10 +1230,10 @@ async function writeEventPage(
       <h2>${escapeHtml(eventRecord.map)}</h2>
       <table>
         <tbody>
-          <tr><th>Map</th><td>${escapeHtml(eventRecord.map)}</td></tr>
+          <tr><th>Track</th><td>${escapeHtml(eventRecord.map)}</td></tr>
           <tr><th>Author</th><td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td></tr>
           <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td></tr>
-          <tr><th>Fastest Driver</th><td>${eventRecord.fastestTimeDriver ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, "..") : "-"}</td></tr>
+          <tr><th>Fastest Player</th><td>${eventRecord.fastestTimeDriver ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, "..") : "-"}</td></tr>
           <tr><th>Fastest Round</th><td>${eventRecord.fastestTimeRound ? escapeHtml(eventRecord.fastestTimeRound) : "-"}</td></tr>
           <tr><th>Source JSON</th><td>${escapeHtml(eventRecord.jsonFileName)}</td></tr>
           <tr><th>Source CSV</th><td>${escapeHtml(eventRecord.sourceFile)}</td></tr>
@@ -1236,7 +1245,7 @@ async function writeEventPage(
         <thead>
           <tr>
             ${renderSortableHeader("Placing", "placing", "number", "asc", true)}
-            ${renderSortableHeader("Driver", "driver", "text", "asc")}
+            ${renderSortableHeader("Player", "driver", "text", "asc")}
             ${renderSortableHeader("Time", "time", "number", "asc")}
             ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
           </tr>
@@ -1479,7 +1488,7 @@ function renderDriverMetadataTable(
   if (driverRecord === null) {
     return `
       <section>
-        <h3>Driver</h3>
+        <h3>Player</h3>
         <p>No race results found for this name.</p>
       </section>
     `;
@@ -1496,7 +1505,7 @@ function renderDriverMetadataTable(
 
   return `
     <section>
-      <h3>Driver</h3>
+      <h3>Player</h3>
       <table>
         <tbody>
           <tr><th>Starts</th><td>${stats.starts}</td></tr>
@@ -1544,7 +1553,7 @@ function renderAuthorMetadataTable(
           <tr><th>Co-Authored Tracks</th><td>${stats.coAuthoredTracks}</td></tr>
           <tr><th>First Event</th><td>${stats.firstEvent ?? "-"}</td></tr>
           <tr><th>Latest Event</th><td>${stats.latestEvent ?? "-"}</td></tr>
-          <tr><th>Driver Page</th><td>${driverPage}</td></tr>
+          <tr><th>Player Page</th><td>${driverPage}</td></tr>
         </tbody>
       </table>
     </section>
@@ -1561,7 +1570,7 @@ function renderProfileTabs(
   return `
     <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
-      <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Race Results Graph</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Results Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks</button>
     </div>
@@ -1644,7 +1653,7 @@ function renderRaceResultsSection(
       <thead>
         <tr>
           ${renderSortableHeader("Event", "event", "number", "asc", true)}
-          ${renderSortableHeader("Map", "map", "text", "asc")}
+          ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("Author", "author", "text", "asc")}
           <th>Status</th>
           ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column")}
@@ -1680,7 +1689,7 @@ function renderRaceResultsGraphSection(
 ): string {
   if (driverRecord === null) {
     return `
-      <h2>Race Results Graph</h2>
+      <h2>Results Graph</h2>
       <p>No race results found for this name.</p>
     `;
   }
@@ -1695,11 +1704,12 @@ function renderRaceResultsGraphSection(
   ];
 
   return `
-    <h2>Race Results Graph</h2>
+    <h2>Results Graph</h2>
     <p class="graph-note">Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
     ${renderRaceResultsGraphSvg(
       series,
       eventRecords,
+      true,
       true,
       series.map((entry) => entry.id),
       null,
@@ -1792,6 +1802,7 @@ function buildRaceResultsGraphSeries(
 function renderRaceResultsGraphSvg(
   series: RaceResultsGraphSeries[],
   eventRecords: EventRecord[],
+  showLines: boolean,
   showPoints: boolean,
   visibleSeriesIds: string[],
   graphId: string | null,
@@ -1846,20 +1857,22 @@ function renderRaceResultsGraphSvg(
     .map((entry, seriesIndex) => {
       const isVisible = visibleSeriesIds.includes(entry.id);
       const segments = buildGraphSegments(entry.points);
-      const pathMarkup = segments
-        .map((segment) => {
-          const pathData = segment
-            .map((point, index) => {
-              const x = xForEvent(point.eventNumber);
-              const y = yForPlacing(point.placing);
+      const pathMarkup = showLines
+        ? segments
+            .map((segment) => {
+              const pathData = segment
+                .map((point, index) => {
+                  const x = xForEvent(point.eventNumber);
+                  const y = yForPlacing(point.placing);
 
-              return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+                  return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+                })
+                .join(" ");
+
+              return `<path class="graph-line graph-series-${seriesIndex}" d="${pathData}" stroke="${entry.color}"></path>`;
             })
-            .join(" ");
-
-          return `<path class="graph-line graph-series-${seriesIndex}" d="${pathData}" stroke="${entry.color}"></path>`;
-        })
-        .join("\n");
+            .join("\n")
+        : "";
       const pointMarkup = showPoints
         ? entry.points
             .filter(
@@ -1883,7 +1896,7 @@ function renderRaceResultsGraphSvg(
 
   return `
     <div class="graph-card">
-      <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Race results graph"${graphRootAttribute}>
+      <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Results graph"${graphRootAttribute}>
         ${yGrid}
         ${xGrid}
         <line class="graph-axis" x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${height - marginBottom}"></line>
@@ -1942,33 +1955,48 @@ function renderRaceResultsGraphSelector(
   defaultVisibleIds: string[],
 ): string {
   if (series.length === 0) {
-    return '<p class="graph-empty">No drivers matched the five-win filter.</p>';
+    return '<p class="graph-empty">No player graph data is available.</p>';
   }
 
-  const items = series
-    .map((entry) => {
-      const swatch = `<span class="graph-swatch" style="background:${entry.color}"></span>`;
-      const label = escapeHtml(entry.label);
-      const checked = defaultVisibleIds.includes(entry.id) ? " checked" : "";
-      const linkedLabel =
-        entry.href === null
-          ? `<span class="graph-control-name">${label}</span>`
-          : `<a href="${entry.href}" class="graph-control-link">${label}</a>`;
+  const quickPickOptions = series
+    .map(
+      (entry) =>
+        `<option value="${escapeHtml(entry.id)}">${escapeHtml(entry.label)}</option>`,
+    )
+    .join("\n");
+  const quickPicks = Array.from(
+    { length: combinedGraphQuickPickCount },
+    (_, index) => {
+      const selectedId = defaultVisibleIds[index] ?? "";
+      const slotColor = graphPalette[index % graphPalette.length] ?? "#0047ab";
+      const options =
+        selectedId.length === 0
+          ? quickPickOptions
+          : quickPickOptions.replace(
+              `value="${escapeHtml(selectedId)}"`,
+              `value="${escapeHtml(selectedId)}" selected`,
+            );
 
       return `
-        <label class="graph-control-item" data-graph-control>
-          <input type="checkbox" value="${escapeHtml(entry.id)}"${checked}>
-          ${swatch}
-          ${linkedLabel}
+        <label class="graph-select-item">
+          <span class="graph-select-label">Player ${index + 1}</span>
+          <input class="graph-select-filter" data-graph-select-filter type="search" placeholder="Filter players">
+          <span class="graph-select-row">
+            <span class="graph-swatch graph-select-swatch" data-graph-select-swatch style="background:${slotColor}"></span>
+            <select class="graph-select" data-graph-select data-graph-slot-color="${slotColor}">
+              <option value="">None</option>
+              ${options}
+            </select>
+          </span>
         </label>`;
-    })
-    .join("\n");
+    },
+  ).join("\n");
 
   return `
-    <div class="graph-controls" data-graph-picker data-graph-target="combined-race-results" data-graph-max-selected="${combinedGraphMaxSelection}">
-      <p class="graph-note">Select up to ${combinedGraphMaxSelection} racers. The top ${combinedGraphMaxSelection} are enabled by default.</p>
-      <div class="graph-control-list">
-        ${items}
+    <div class="graph-controls" data-graph-picker data-graph-target="combined-race-results">
+      <p class="graph-note">The top ${combinedGraphDefaultSelectionCount} players are enabled by default. Each dropdown includes every player.</p>
+      <div class="graph-select-list">
+        ${quickPicks}
       </div>
     </div>`;
 }
@@ -2077,11 +2105,11 @@ function renderTracksSection(
       <thead>
         <tr>
           ${renderSortableHeader("Event", "event", "number", "asc", true)}
-          ${renderSortableHeader("Map", "map", "text", "asc")}
+          ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("All Authors", "authors", "text", "asc")}
           ${renderSortableHeader("Winner", "winner", "text", "asc")}
           ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
-          ${renderSortableHeader("Fastest Driver", "fastest-driver", "text", "asc")}
+          ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
         </tr>
       </thead>
       <tbody>
@@ -2242,7 +2270,7 @@ function renderLayout(
               }
             }
 
-            driverSearchSummary.textContent = visibleCount + " driver" + (visibleCount === 1 ? "" : "s") + " shown";
+            driverSearchSummary.textContent = visibleCount + " player" + (visibleCount === 1 ? "" : "s") + " shown";
           };
 
           driverSearchInput.addEventListener("input", updateDriverFilter);
@@ -2251,12 +2279,20 @@ function renderLayout(
 
         for (const picker of document.querySelectorAll("[data-graph-picker]")) {
           const graphTarget = picker.getAttribute("data-graph-target") || "";
-          const maxSelected = Number(picker.getAttribute("data-graph-max-selected") || "0");
-          const checkboxes = Array.from(
-            picker.querySelectorAll('input[type="checkbox"]'),
+          const selects = Array.from(
+            picker.querySelectorAll("[data-graph-select]"),
+          );
+          const optionSets = new Map(
+            selects.map((select) => [
+              select,
+              Array.from(select.querySelectorAll("option")).map((option) => ({
+                value: option.value,
+                label: option.textContent || "",
+              })),
+            ]),
           );
 
-          if (!graphTarget || checkboxes.length === 0) {
+          if (!graphTarget || selects.length === 0) {
             continue;
           }
 
@@ -2264,26 +2300,59 @@ function renderLayout(
             '[data-graph-root="' + graphTarget + '"]',
           );
 
-          const updateGraphSelection = (changedCheckbox) => {
-            if (changedCheckbox) {
-              const checkedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
-
-              if (maxSelected > 0 && checkedCount > maxSelected) {
-                changedCheckbox.checked = false;
+          const updateSelectOptions = (select, query) => {
+            const optionSet = optionSets.get(select) || [];
+            const selectedValue = select.value;
+            const normalizedQuery = (query || "").trim().toLowerCase();
+            const matchingOptions = optionSet.filter((option) => {
+              if (option.value === "") {
+                return true;
               }
-            }
 
-            const selectedIds = new Set(
-              checkboxes
-                .filter((checkbox) => checkbox.checked)
-                .map((checkbox) => checkbox.value),
-            );
+              if (option.value === selectedValue) {
+                return true;
+              }
 
-            for (const checkbox of checkboxes) {
-              checkbox.disabled =
-                maxSelected > 0 &&
-                selectedIds.size >= maxSelected &&
-                !checkbox.checked;
+              return (
+                normalizedQuery.length === 0 ||
+                option.label.toLowerCase().includes(normalizedQuery)
+              );
+            });
+
+            select.innerHTML = matchingOptions
+              .map((option) => {
+                const selectedAttribute =
+                  option.value === selectedValue ? " selected" : "";
+
+                return '<option value="' + option.value + '"' + selectedAttribute + '>' + option.label + '</option>';
+              })
+              .join("");
+
+            select.value = selectedValue;
+          };
+
+          const updateGraphSelection = () => {
+            const selectedIds = new Set();
+            const selectedColors = new Map();
+
+            for (const select of selects) {
+              const swatch = select
+                .closest(".graph-select-item")
+                ?.querySelector("[data-graph-select-swatch]");
+              const slotColor =
+                select.getAttribute("data-graph-slot-color") || "#0047ab";
+
+              if (swatch) {
+                swatch.style.background = slotColor;
+              }
+
+              if (select.value) {
+                selectedIds.add(select.value);
+
+                if (!selectedColors.has(select.value)) {
+                  selectedColors.set(select.value, slotColor);
+                }
+              }
             }
 
             if (!graphRoot) {
@@ -2293,11 +2362,32 @@ function renderLayout(
             for (const seriesGroup of graphRoot.querySelectorAll("[data-graph-series]")) {
               const seriesId = seriesGroup.getAttribute("data-graph-series") || "";
               seriesGroup.classList.toggle("is-hidden", !selectedIds.has(seriesId));
+
+              const seriesColor = selectedColors.get(seriesId) || "#0047ab";
+
+              for (const path of seriesGroup.querySelectorAll(".graph-line")) {
+                path.setAttribute("stroke", seriesColor);
+              }
+
+              for (const point of seriesGroup.querySelectorAll(".graph-point")) {
+                point.setAttribute("fill", seriesColor);
+              }
             }
           };
 
-          for (const checkbox of checkboxes) {
-            checkbox.addEventListener("change", () => updateGraphSelection(checkbox));
+          for (const select of selects) {
+            const filterInput = select
+              .closest(".graph-select-item")
+              ?.querySelector("[data-graph-select-filter]");
+
+            if (filterInput) {
+              filterInput.addEventListener("input", () => {
+                updateSelectOptions(select, filterInput.value);
+              });
+            }
+
+            select.addEventListener("change", updateGraphSelection);
+            updateSelectOptions(select, filterInput?.value || "");
           }
 
           updateGraphSelection();
@@ -2424,9 +2514,9 @@ function renderLayout(
   <body>
     <nav>
       <a href="${options.rootPrefix}/index.html">Overview</a>
-      <a href="${options.rootPrefix}/drivers/index.html">Drivers</a>
+      <a href="${options.rootPrefix}/drivers/index.html">Players</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>
-      <a href="${options.rootPrefix}/race-results-graph/index.html">Race Results Graph</a>
+      <a href="${options.rootPrefix}/race-results-graph/index.html">Results Graph</a>
     </nav>
     ${bodyContent}
   </body>
