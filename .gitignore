@@ -1,3 +1,6 @@
 node_modules/
 dist/
 results/
+html/
+
+.DS_Store

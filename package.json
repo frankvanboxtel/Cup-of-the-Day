@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
     "generate": "tsx src/generate-results.ts",
+    "generate:html": "tsx src/generate-html.ts",
     "start": "node dist/src/index.js"
   },
   "dependencies": {
