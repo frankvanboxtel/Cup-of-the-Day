@@ -106,6 +106,21 @@ table {
   margin-bottom: 24px;
 }
 
+.compact-table {
+  width: auto;
+}
+
+.compact-table th,
+.compact-table td {
+  padding: 4px 6px;
+}
+
+.placings-table th,
+.placings-table td {
+  min-width: 2.5rem;
+  text-align: center;
+}
+
 th,
 td {
   border: 1px solid #999;

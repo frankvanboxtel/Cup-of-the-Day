@@ -108,9 +108,11 @@ const resultsDirectory = path.join(projectRoot, "results");
 const outputDirectory = path.join(projectRoot, "html");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
+const placingsDirectory = path.join(outputDirectory, "placings");
 const authorsDirectory = path.join(outputDirectory, "authors");
 const indexFilePath = path.join(outputDirectory, "index.html");
 const driverIndexFilePath = path.join(driversDirectory, "index.html");
+const placingsIndexFilePath = path.join(placingsDirectory, "index.html");
 const manualAliasListPath = path.join(
   projectRoot,
   "data",
@@ -143,12 +145,14 @@ async function main(): Promise<void> {
     rm(indexFilePath, { force: true }),
     rm(eventsDirectory, { recursive: true, force: true }),
     rm(driversDirectory, { recursive: true, force: true }),
+    rm(placingsDirectory, { recursive: true, force: true }),
     rm(authorsDirectory, { recursive: true, force: true }),
   ]);
 
   await Promise.all([
     mkdir(eventsDirectory, { recursive: true }),
     mkdir(driversDirectory, { recursive: true }),
+    mkdir(placingsDirectory, { recursive: true }),
     mkdir(authorsDirectory, { recursive: true }),
   ]);
 
@@ -171,6 +175,7 @@ async function main(): Promise<void> {
       authorFileNames,
       eventRatings.summary,
     ),
+    writePlacingsIndexPage(driverRecords, eventRatings.summary),
     ...eventRecords.map((eventRecord) =>
       writeEventPage(eventRecord, driverFileNames, authorFileNames),
     ),
@@ -975,6 +980,124 @@ async function writeDriverIndexPage(
   await writeFile(driverIndexFilePath, content, "utf8");
 }
 
+async function writePlacingsIndexPage(
+  driverRecords: DriverRecord[],
+  driverRatingSummary: Map<string, DriverRatingSummary>,
+): Promise<void> {
+  const placingColumns = Array.from({ length: 25 }, (_, index) => index + 1);
+  const rows = driverRecords
+    .map((driverRecord) => {
+      const stats = buildDriverStats(driverRecord, driverRatingSummary);
+      const searchTerms = normalizeSearchText(
+        [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
+      );
+      const placingCounts = buildPlacingCounts(driverRecord);
+      const finals = (placingCounts[0] ?? 0) + (placingCounts[1] ?? 0);
+      const podiums = finals + (placingCounts[2] ?? 0);
+      const top6 =
+        podiums +
+        (placingCounts[3] ?? 0) +
+        (placingCounts[4] ?? 0) +
+        (placingCounts[5] ?? 0);
+      const top10 =
+        top6 +
+        (placingCounts[6] ?? 0) +
+        (placingCounts[7] ?? 0) +
+        (placingCounts[8] ?? 0) +
+        (placingCounts[9] ?? 0);
+      const top25 = placingCounts
+        .slice(0, 25)
+        .reduce((sum, count) => sum + count, 0);
+      const sortAttributes = renderSortDataAttributes({
+        driver: normalizeTextSortValue(driverRecord.canonicalName),
+        starts: normalizeNumberSortValue(stats.starts),
+        wins: normalizeNumberSortValue(stats.wins),
+        finals: normalizeNumberSortValue(finals),
+        podiums: normalizeNumberSortValue(podiums),
+        "top-6": normalizeNumberSortValue(top6),
+        "top-10": normalizeNumberSortValue(top10),
+        "top-25": normalizeNumberSortValue(top25),
+        ...Object.fromEntries(
+          placingColumns.map((placing) => [
+            `placing-${placing}`,
+            normalizeNumberSortValue(placingCounts[placing - 1] ?? 0),
+          ]),
+        ),
+      });
+      const placingCells = placingColumns
+        .map((placing) => `<td>${placingCounts[placing - 1] ?? 0}</td>`)
+        .join("");
+
+      return `
+        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
+          <td><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
+          <td>${stats.starts}</td>
+          <td>${stats.wins}</td>
+          <td>${finals}</td>
+          <td>${podiums}</td>
+          <td>${top6}</td>
+          <td>${top10}</td>
+          <td>${top25}</td>
+          ${placingCells}
+        </tr>`;
+    })
+    .join("\n");
+  const placingHeaders = placingColumns
+    .map((placing) =>
+      renderSortableHeader(
+        formatPlacingLabel(placing),
+        `placing-${placing}`,
+        "number",
+        "desc",
+      ),
+    )
+    .join("\n");
+
+  const content = renderLayout(
+    "Placings",
+    `
+      <h1>Placings</h1>
+      <p>${driverRecords.length} driver placing summaries. Search by canonical name or any alias.</p>
+      <div class="search-panel">
+        <label class="search-label" for="driver-search">Search drivers</label>
+        <input
+          id="driver-search"
+          class="search-input"
+          type="search"
+          placeholder="Type a driver name or alias"
+          autocomplete="off"
+          data-driver-search-input
+        >
+        <p class="search-summary" data-driver-search-summary>${driverRecords.length} drivers shown</p>
+      </div>
+      <table data-sort-table>
+        <thead>
+          <tr>
+            ${renderSortableHeader("Driver", "driver", "text", "asc")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
+            ${renderSortableHeader("Wins", "wins", "number", "desc")}
+            ${renderSortableHeader("Finals", "finals", "number", "desc")}
+            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
+            ${renderSortableHeader("Top 6s", "top-6", "number", "desc")}
+            ${renderSortableHeader("Top 10s", "top-10", "number", "desc")}
+            ${renderSortableHeader("Top 25s", "top-25", "number", "desc")}
+            ${placingHeaders}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `,
+    {
+      pageTitle: "Placings",
+      rootPrefix: "..",
+    },
+  );
+
+  await writeFile(placingsIndexFilePath, content, "utf8");
+}
+
 async function writeEventPage(
   eventRecord: EventRecord,
   driverFileNames: Map<string, string>,
@@ -1075,6 +1198,7 @@ async function writeDriverPage(
           authorFileNames,
           driverRatingHistory,
         ),
+        renderPlacingsSection(driverRecord),
         renderTracksSection(
           matchingAuthorRecord,
           driverFileNames,
@@ -1127,6 +1251,7 @@ async function writeAuthorPage(
           authorFileNames,
           driverRatingHistory,
         ),
+        renderPlacingsSection(matchingDriverRecord),
         renderTracksSection(authorRecord, driverFileNames, authorFileNames),
         "tracks",
       )}
@@ -1334,16 +1459,21 @@ function renderAuthorMetadataTable(
 
 function renderProfileTabs(
   raceResultsContent: string,
+  placingsContent: string,
   tracksContent: string,
-  defaultTab: "race-results" | "tracks",
+  defaultTab: "race-results" | "placings" | "tracks",
 ): string {
   return `
     <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks</button>
     </div>
     <section id="race-results" class="tab-panel" role="tabpanel">
       ${raceResultsContent}
+    </section>
+    <section id="placings" class="tab-panel" role="tabpanel" hidden>
+      ${placingsContent}
     </section>
     <section id="tracks" class="tab-panel" role="tabpanel" hidden>
       ${tracksContent}
@@ -1428,6 +1558,57 @@ function buildDriverTimeline(
     eventRecord,
     result: resultsByEvent.get(eventRecord.nr) ?? null,
   }));
+}
+
+function renderPlacingsSection(driverRecord: DriverRecord | null): string {
+  if (driverRecord === null) {
+    return `
+      <h2>Placings</h2>
+      <p>No race results found for this name.</p>
+    `;
+  }
+
+  const placingCounts = buildPlacingCounts(driverRecord);
+  const rows = placingCounts
+    .map((count, index) => {
+      const placing = index + 1;
+
+      return `
+        <tr>
+          <th>${placing}</th>
+          <td>${count}</td>
+        </tr>`;
+    })
+    .join("\n");
+
+  return `
+    <h2>Placings</h2>
+    <table class="compact-table placings-table">
+      <thead>
+        <tr>
+          <th>Pos</th>
+          <th>#</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+function buildPlacingCounts(driverRecord: DriverRecord): number[] {
+  const counts = Array.from({ length: 50 }, () => 0);
+
+  for (const { result } of getDriverResultRecords(driverRecord)) {
+    if (result.placing === null || result.placing < 1 || result.placing > 50) {
+      continue;
+    }
+
+    counts[result.placing - 1] += 1;
+  }
+
+  return counts;
 }
 
 function renderAliasSummary(aliases: string[], canonicalName: string): string {
@@ -1781,6 +1962,7 @@ function renderLayout(
     <nav>
       <a href="${options.rootPrefix}/index.html">Overview</a>
       <a href="${options.rootPrefix}/drivers/index.html">Drivers</a>
+      <a href="${options.rootPrefix}/placings/index.html">Placings</a>
     </nav>
     ${bodyContent}
   </body>
@@ -1803,6 +1985,25 @@ function normalizeSearchText(value: string): string {
 
 function formatPercentage(value: number): string {
   return `${value.toFixed(1)}%`;
+}
+
+function formatPlacingLabel(value: number): string {
+  const mod100 = value % 100;
+
+  if (mod100 >= 11 && mod100 <= 13) {
+    return `${value}th`;
+  }
+
+  switch (value % 10) {
+    case 1:
+      return `${value}st`;
+    case 2:
+      return `${value}nd`;
+    case 3:
+      return `${value}rd`;
+    default:
+      return `${value}th`;
+  }
 }
 
 function formatElo(value: number): string {
