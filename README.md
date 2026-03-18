@@ -17,6 +17,7 @@ npm install
 
 - `npm run dev` runs the TypeScript entry point directly with `tsx`
 - `npm run build` compiles the project to `dist/`
+- `npm run generate` reads all COTD CSV files and writes per-cup JSON files to `results/`
 - `npm start` runs the compiled JavaScript output
 
 ## Project Structure
@@ -45,6 +46,7 @@ The current entry point in `src/index.ts` imports the cup index mapping from `da
 
 ```bash
 npm install
+npm run generate
 npm run dev
 npm run build
 npm start
