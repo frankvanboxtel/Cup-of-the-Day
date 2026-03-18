@@ -81,6 +81,7 @@ const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const authorsDirectory = path.join(outputDirectory, "authors");
 const indexFilePath = path.join(outputDirectory, "index.html");
+const driverIndexFilePath = path.join(driversDirectory, "index.html");
 const manualAliasListPath = path.join(
   projectRoot,
   "data",
@@ -131,6 +132,7 @@ async function main(): Promise<void> {
 
   await Promise.all([
     writeIndexPage(eventRecords, driverFileNames, authorFileNames),
+    writeDriverIndexPage(driverRecords, authorRecordsByName, authorFileNames),
     ...eventRecords.map((eventRecord) =>
       writeEventPage(eventRecord, driverFileNames, authorFileNames),
     ),
@@ -545,6 +547,79 @@ async function writeIndexPage(
   );
 
   await writeFile(indexFilePath, content, "utf8");
+}
+
+async function writeDriverIndexPage(
+  driverRecords: DriverRecord[],
+  authorRecordsByName: Map<string, AuthorRecord>,
+  authorFileNames: Map<string, string>,
+): Promise<void> {
+  const rows = driverRecords
+    .map((driverRecord) => {
+      const stats = buildDriverStats(driverRecord);
+      const aliasSummary = renderAliasSummary(
+        driverRecord.aliases,
+        driverRecord.canonicalName,
+      );
+      const authorPage = authorRecordsByName.has(driverRecord.canonicalName)
+        ? renderAuthorLinks([driverRecord.canonicalName], authorFileNames, "..")
+        : "-";
+      const searchTerms = normalizeSearchText(
+        [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
+      );
+
+      return `
+        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}">
+          <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
+          <td>${aliasSummary}</td>
+          <td>${stats.starts}</td>
+          <td>${stats.wins}</td>
+          <td>${stats.fastestTimes}</td>
+          <td>${authorPage}</td>
+        </tr>`;
+    })
+    .join("\n");
+
+  const content = renderLayout(
+    "Drivers",
+    `
+      <h1>Drivers</h1>
+      <p>${driverRecords.length} driver profiles. Search by canonical name or any alias.</p>
+      <div class="search-panel">
+        <label class="search-label" for="driver-search">Search drivers</label>
+        <input
+          id="driver-search"
+          class="search-input"
+          type="search"
+          placeholder="Type a driver name or alias"
+          autocomplete="off"
+          data-driver-search-input
+        >
+        <p class="search-summary" data-driver-search-summary>${driverRecords.length} drivers shown</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Aliases</th>
+            <th>Starts</th>
+            <th>Wins</th>
+            <th>Fastest Times</th>
+            <th>Author Page</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `,
+    {
+      pageTitle: "Drivers",
+      rootPrefix: "..",
+    },
+  );
+
+  await writeFile(driverIndexFilePath, content, "utf8");
 }
 
 async function writeEventPage(
@@ -1127,12 +1202,39 @@ function renderLayout(
             });
           }
         }
+
+        const driverSearchInput = document.querySelector("[data-driver-search-input]");
+        const driverSearchSummary = document.querySelector("[data-driver-search-summary]");
+        const driverRows = Array.from(document.querySelectorAll("[data-driver-row]"));
+
+        if (driverSearchInput && driverSearchSummary && driverRows.length > 0) {
+          const updateDriverFilter = () => {
+            const query = (driverSearchInput.value || "").trim().toLowerCase();
+            let visibleCount = 0;
+
+            for (const row of driverRows) {
+              const haystack = (row.getAttribute("data-driver-search") || "").toLowerCase();
+              const isVisible = query.length === 0 || haystack.includes(query);
+              row.hidden = !isVisible;
+
+              if (isVisible) {
+                visibleCount += 1;
+              }
+            }
+
+            driverSearchSummary.textContent = visibleCount + " driver" + (visibleCount === 1 ? "" : "s") + " shown";
+          };
+
+          driverSearchInput.addEventListener("input", updateDriverFilter);
+          updateDriverFilter();
+        }
       });
     </script>
   </head>
   <body>
     <nav>
       <a href="${options.rootPrefix}/index.html">Overview</a>
+      <a href="${options.rootPrefix}/drivers/index.html">Drivers</a>
     </nav>
     ${bodyContent}
   </body>
@@ -1147,6 +1249,10 @@ function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function normalizeSearchText(value: string): string {
+  return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function slugify(value: string): string {
