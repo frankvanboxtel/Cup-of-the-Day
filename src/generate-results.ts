@@ -123,6 +123,7 @@ function extractResults(
   indexes: (typeof csvIndexes)[CupSlot],
 ): ResultEntry[] {
   const results: ResultEntry[] = [];
+  let currentPlacing: number | null = null;
 
   for (
     let rowIndex = resultsStartRowIndex;
@@ -143,11 +144,21 @@ function extractResults(
       continue;
     }
 
+    const parsedPlacing = parseOptionalNumber(placingValue);
+
+    if (parsedPlacing !== null) {
+      currentPlacing = parsedPlacing;
+    }
+
+    const normalizedPlacing = parsedPlacing ?? currentPlacing;
+    const normalizedEliminationRound =
+      normalizedPlacing === 1 ? null : eliminationRound || null;
+
     results.push({
-      placing: parseOptionalNumber(placingValue),
+      placing: normalizedPlacing,
       name,
       time,
-      eliminationRound: eliminationRound || null,
+      eliminationRound: normalizedEliminationRound,
     });
   }
 
