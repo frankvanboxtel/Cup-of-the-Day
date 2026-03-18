@@ -693,6 +693,10 @@ function isLikelyPlayerName(name: string): boolean {
     return false;
   }
 
+  if (normalized.startsWith("*")) {
+    return false;
+  }
+
   const lowered = normalized.toLowerCase();
   const blockedPhrases = [
     "time of leaving",

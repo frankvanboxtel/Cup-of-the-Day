@@ -4,7 +4,7 @@
     "[KURK] Quickracer10",
     "[AJSE] Quickracer10"
   ],
-  "SadD0ge": ["SadD0ge", "JakeAdjacent"],
+  "SadD0ge": ["SadD0ge", "JakeAdjacent", "[SWMG]JakeAdjacent"],
   "Hydro": ["Hydro", "k2blue"],
   "Sterben": ["Sterben", "del gaming (Sterben)"],
   "ZOMAN": [
@@ -14,5 +14,6 @@
     "[DNF] Did Not DNF ZOMAN",
     "DNF artist (ZOMAN)",
     "[kob] ZOMAN"
-  ]
+  ],
+  "Joking": ["Joking", ":Z_::E_::E_::P_: Joking", ":Z_::E_::E_:P_: Joking"]
 }

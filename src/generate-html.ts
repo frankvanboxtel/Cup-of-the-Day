@@ -177,13 +177,17 @@ async function loadEventRecords(): Promise<EventRecord[]> {
       const filePath = path.join(resultsDirectory, fileName);
       const fileContent = await readFile(filePath, "utf8");
       const parsed = JSON.parse(fileContent) as CupResultFile;
+      const filteredResults = parsed.results.filter(
+        (result) => !isCommentResultName(result.name),
+      );
       const authors = splitAuthors(parsed.author);
 
       return {
         ...parsed,
+        results: filteredResults,
         jsonFileName: fileName,
         htmlFileName: `${path.basename(fileName, ".json")}.html`,
-        podium: buildPodium(parsed.results),
+        podium: buildPodium(filteredResults),
         authors,
       } satisfies EventRecord;
     }),
@@ -347,6 +351,10 @@ function pickCanonicalName(
 
 function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, " ");
+}
+
+function isCommentResultName(value: string): boolean {
+  return value.trim().startsWith("*");
 }
 
 function resolveAlias(name: string, aliasResolver: AliasResolver): string {

@@ -144,6 +144,10 @@ function extractResults(
       continue;
     }
 
+    if (isCommentResultName(name)) {
+      continue;
+    }
+
     const parsedPlacing = parseOptionalNumber(placingValue);
 
     if (parsedPlacing !== null) {
@@ -163,6 +167,10 @@ function extractResults(
   }
 
   return results;
+}
+
+function isCommentResultName(value: string): boolean {
+  return value.trim().startsWith("*");
 }
 
 function parseCupNumber(value: string): number {
