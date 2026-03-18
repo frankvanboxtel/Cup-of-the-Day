@@ -1,4 +1,4 @@
-export const csvIndexes = {
+const csvIndexes = {
   1: {
     placing: 0,
     name: 1,

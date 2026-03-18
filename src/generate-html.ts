@@ -747,10 +747,13 @@ function renderSortableHeader(
   type: SortType,
   defaultDirection: SortDirection,
   isActive = false,
+  headerClass = "",
 ): string {
   const indicator = isActive ? (defaultDirection === "asc" ? "▲" : "▼") : "↕";
+  const classAttribute =
+    headerClass.length > 0 ? ` class="${escapeHtml(headerClass)}"` : "";
 
-  return `<th><a href="#" class="sorter${isActive ? " active" : ""}" data-sort-key="${escapeHtml(key)}" data-sort-type="${type}" data-sort-default-direction="${defaultDirection}" data-sort-direction="${isActive ? defaultDirection : ""}">${escapeHtml(label)} <span class="sort-indicator" aria-hidden="true">${indicator}</span></a></th>`;
+  return `<th${classAttribute}><a href="#" class="sorter${isActive ? " active" : ""}" data-sort-key="${escapeHtml(key)}" data-sort-type="${type}" data-sort-default-direction="${defaultDirection}" data-sort-direction="${isActive ? defaultDirection : ""}">${escapeHtml(label)} <span class="sort-indicator" aria-hidden="true">${indicator}</span></a></th>`;
 }
 
 function renderSortDataAttributes(
@@ -1031,7 +1034,7 @@ async function writePlacingsIndexPage(
       });
       const placingCells = placingColumns
         .map((placing) =>
-          renderZeroValueCountCell(placingCounts[placing - 1] ?? 0),
+          renderPlacingCountCell(placingCounts[placing - 1] ?? 0, placing),
         )
         .join("");
 
@@ -1503,10 +1506,25 @@ function renderRaceResultsSection(
 
   const ratingHistory =
     driverRatingHistory.get(driverRecord.canonicalName) ?? new Map();
+  const driverAuthorFileName =
+    authorFileNames.get(driverRecord.canonicalName) ?? null;
 
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
       const ratingAtEvent = ratingHistory.get(eventRecord.nr) ?? null;
+      const isTrackAuthor =
+        result === null &&
+        driverAuthorFileName !== null &&
+        eventRecord.authors.some(
+          (author) => authorFileNames.get(author) === driverAuthorFileName,
+        );
+      const rowClasses = [
+        result !== null ? buildResultRowClassName(result.placing) : null,
+        result === null && isTrackAuthor ? "track-author" : null,
+        result === null && !isTrackAuthor ? "did-not-race" : null,
+      ]
+        .filter((value): value is string => value !== null)
+        .join(" ");
       const sortAttributes = renderSortDataAttributes({
         event: normalizeNumberSortValue(eventRecord.nr),
         map: normalizeTextSortValue(eventRecord.map),
@@ -1518,12 +1536,12 @@ function renderRaceResultsSection(
       });
 
       return `
-        <tr${result === null ? ' class="did-not-race"' : ""}${sortAttributes}>
+        <tr${rowClasses.length > 0 ? ` class="${rowClasses}"` : ""}${sortAttributes}>
           <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
           <td><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
-          <td>${result === null ? "Did not race" : "Raced"}</td>
-          <td>${result?.placing ?? "-"}</td>
+          <td>${result === null ? (isTrackAuthor ? "Track author" : "Did not race") : "Raced"}</td>
+          <td class="placings-column">${result?.placing ?? "-"}</td>
           <td>${result === null ? "-" : escapeHtml(result.time)}</td>
           <td>${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
           <td>${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
@@ -1540,7 +1558,7 @@ function renderRaceResultsSection(
           ${renderSortableHeader("Map", "map", "text", "asc")}
           ${renderSortableHeader("Author", "author", "text", "asc")}
           <th>Status</th>
-          ${renderSortableHeader("Placing", "placing", "number", "asc")}
+          ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column")}
           ${renderSortableHeader("Time", "time", "number", "asc")}
           ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
           ${renderSortableHeader("Elo", "elo", "number", "desc")}
@@ -1583,7 +1601,7 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
       return `
         <tr>
           <th>${placing}</th>
-          ${renderZeroValueCountCell(count)}
+          ${renderPlacingCountCell(count, placing)}
         </tr>`;
     })
     .join("\n");
@@ -1618,12 +1636,37 @@ function buildPlacingCounts(driverRecord: DriverRecord): number[] {
   return counts;
 }
 
+function buildResultRowClassName(placing: number | null): string {
+  const classes = ["result"];
+
+  if (placing !== null && placing >= 1 && placing <= 25) {
+    classes.push(`result-${placing}`);
+  }
+
+  return classes.join(" ");
+}
+
 function renderZeroValueCountCell(count: number): string {
   if (count === 0) {
     return '<td class="is-zero"></td>';
   }
 
   return `<td>${count}</td>`;
+}
+
+function renderPlacingCountCell(count: number, placing: number): string {
+  const classes = ["placingNo"];
+
+  if (placing >= 1 && placing <= 25) {
+    classes.push(`placing-${placing}`);
+  }
+
+  if (count === 0) {
+    classes.push("is-zero");
+    return `<td class="${classes.join(" ")}"></td>`;
+  }
+
+  return `<td class="${classes.join(" ")}">${count}</td>`;
 }
 
 function renderZeroValuePercentageCell(value: number): string {
