@@ -9,11 +9,6 @@
     "[popo]void",
     "[ZET]void"
   ],
-  "[CHR]Warsnac": [
-    "[CHR]Warsnac",
-    "[BAP]Warsnac",
-    "[old]Warsnac"
-  ],
   "[CRT]NathWalt": [
     "[CRT]NathWalt",
     "[CTR] NathWalt",
@@ -144,14 +139,11 @@
     "[Err] An Actual g00se",
     "[Quac] An Actual g00se"
   ],
-  "AndMe16": [
-    "AndMe16",
-    "[ORIG]AndMe16"
-  ],
   "AndMe17": [
     "AndMe17",
     "[COMY]AndMe17",
-    "[CSC]AndMe17"
+    "[CSC]AndMe17",
+    "[ORIG]AndMe16"
   ],
   "Axo": [
     "Axo",
@@ -630,10 +622,6 @@
   "vortex": [
     "vortex",
     "[mib]vortex"
-  ],
-  "Warcans": [
-    "Warcans",
-    "[CHR]Warcans"
   ],
   "Weak_Knees": [
     "Weak_Knees",

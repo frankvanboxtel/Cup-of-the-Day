@@ -15,5 +15,48 @@
     "DNF artist (ZOMAN)",
     "[kob] ZOMAN"
   ],
-  "Joking": ["Joking", ":Z_::E_::E_::P_: Joking", ":Z_::E_::E_:P_: Joking"]
+  "Joking": ["Joking", ":Z_::E_::E_::P_: Joking", ":Z_::E_::E_:P_: Joking"],
+  "AndMe17": ["AndMe17", "AndMe14", "AndMe15", "AndMe16"],
+  "[CHR]Warsnac": [
+    "[CHR]Warsnac",
+    "[BAP]Warsnac",
+    "[old]Warsnac",
+    "Warcans",
+    "[CHR]Warcans"
+  ],
+  "[CSC]Tommygaming": [
+    "[CSC]Tommygaming",
+    "[jofk]Tommygaming",
+    "[OOPS]Tommygaming",
+    "[CSC]Tommygaming6132"
+  ],
+  "An Actual g00se": [
+    "An Actual g00se",
+    "[CSC] An Actual g00se",
+    "[Err] An Actual g00se",
+    "[Quac] An Actual g00se",
+    "[CSC] BaBa is g00se",
+    "[CSC] CantFindTheg00se"
+  ],
+  "I_stay_sideway": [
+    "I_stay_sideway",
+    "[RTR] I_stay_sideway",
+    "Istaysideway",
+    "[RTR]Istaysideway",
+    "IStaySideway",
+    "[RTR] I stay sideway"
+  ],
+  "Orthros": ["Orthros", "Orthtros"],
+  "Mortishade": [
+    "Mortishade",
+    "[bam]Mortishade",
+    "[CTR]Mortishade",
+    "Morishade"
+  ],
+  "Lazy_Echidna": [
+    "Lazy_Echidna",
+    "[NIL]Lazy_Echidna",
+    "[TOG]Lazy_Echidna",
+    "Lazy_Ecidna"
+  ]
 }

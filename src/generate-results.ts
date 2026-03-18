@@ -170,7 +170,24 @@ function extractResults(
 }
 
 function isCommentResultName(value: string): boolean {
-  return value.trim().startsWith("*");
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized.startsWith("*")) {
+    return true;
+  }
+
+  const blockedPhrases = [
+    "at the time of leaving",
+    "at time of leaving",
+    "had to leave",
+    "awarded joint",
+    "due to disconnection",
+    "would not have",
+    "despite not being knocked out",
+    "prevented",
+  ];
+
+  return blockedPhrases.some((phrase) => normalized.includes(phrase));
 }
 
 function parseCupNumber(value: string): number {
