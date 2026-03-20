@@ -92,6 +92,12 @@ type DriverStats = {
   winRate: number;
   podiums: number;
   podiumRate: number;
+  top6: number;
+  top6Rate: number;
+  top10: number;
+  top10Rate: number;
+  top25: number;
+  top25Rate: number;
   bestFinish: number | null;
   fastestTimes: number;
   currentElo: number;
@@ -1887,18 +1893,25 @@ function buildDriverStats(
   const driverResults = getDriverResultRecords(driverRecord).filter((entry) =>
     selectedCompetitionTypes.has(entry.eventRecord.competitionType),
   );
+  const placingCounts = buildPlacingCountsForCompetitions(
+    driverRecord,
+    competitionTypes,
+  );
+  const placingSummary = summarizePlacingCounts(placingCounts);
   const ratingSummary =
     driverRatingSummary.get(driverRecord.canonicalName) ??
     getDefaultDriverRatingSummary();
-  const wins = driverResults.filter(
-    (entry) => entry.result.placing === 1,
-  ).length;
-  const podiums = driverResults.filter(
-    (entry) => entry.result.placing !== null && entry.result.placing <= 3,
-  ).length;
   const starts = driverResults.length;
-  const winRate = starts === 0 ? 0 : (wins / starts) * 100;
-  const podiumRate = starts === 0 ? 0 : (podiums / starts) * 100;
+  const wins = placingCounts[0] ?? 0;
+  const podiums = placingSummary.podiums;
+  const top6 = placingSummary.top6;
+  const top10 = placingSummary.top10;
+  const top25 = placingSummary.top25;
+  const winRate = calculateRate(wins, starts);
+  const podiumRate = calculateRate(podiums, starts);
+  const top6Rate = calculateRate(top6, starts);
+  const top10Rate = calculateRate(top10, starts);
+  const top25Rate = calculateRate(top25, starts);
   const bestFinish = driverResults.reduce<number | null>((best, entry) => {
     if (entry.result.placing === null) {
       return best;
@@ -1917,11 +1930,21 @@ function buildDriverStats(
     winRate,
     podiums,
     podiumRate,
+    top6,
+    top6Rate,
+    top10,
+    top10Rate,
+    top25,
+    top25Rate,
     bestFinish,
     fastestTimes: countDriverFastestTimes(driverRecord, competitionTypes),
     currentElo: ratingSummary.currentElo,
     peakElo: ratingSummary.peakElo,
   };
+}
+
+function calculateRate(count: number, total: number): number {
+  return total === 0 ? 0 : (count / total) * 100;
 }
 
 function countDriverFastestTimes(
@@ -2034,15 +2057,16 @@ function renderDriverMetadataTable(
       <h3>Player</h3>
       <table>
         <tbody>
-          <tr><th>Starts</th><td class="align-right">${stats.starts}</td></tr>
-          <tr><th>Wins</th><td class="align-right">${stats.wins}</td></tr>
-          <tr><th>Win %</th><td class="align-right">${formatPercentage(stats.winRate)}</td></tr>
-          <tr><th>Podiums</th><td class="align-right">${stats.podiums}</td></tr>
-          <tr><th>Podium %</th><td class="align-right">${formatPercentage(stats.podiumRate)}</td></tr>
-          <tr><th>Best Finish</th><td class="align-right">${stats.bestFinish ?? "-"}</td></tr>
-          <tr><th>Fastest Times</th><td class="align-right">${stats.fastestTimes}</td></tr>
-          <tr><th>Elo Current</th><td class="align-right">${formatElo(stats.currentElo)}</td></tr>
-          <tr><th>Elo Peak</th><td class="align-right">${formatElo(stats.peakElo)}</td></tr>
+          <tr><th>Starts</th>${renderColspanValueCell(stats.starts)}</tr>
+          <tr><th>Wins</th>${renderCountWithPercentageCells(stats.wins, stats.winRate)}</tr>
+          <tr><th>Podiums</th>${renderCountWithPercentageCells(stats.podiums, stats.podiumRate)}</tr>
+          <tr><th>Top 6s</th>${renderCountWithPercentageCells(stats.top6, stats.top6Rate)}</tr>
+          <tr><th>Top 10s</th>${renderCountWithPercentageCells(stats.top10, stats.top10Rate)}</tr>
+          <tr><th>Top 25s</th>${renderCountWithPercentageCells(stats.top25, stats.top25Rate)}</tr>
+          <tr><th>Best Finish</th>${renderColspanValueCell(stats.bestFinish ?? "-")}</tr>
+          <tr><th>Fastest Times</th>${renderColspanValueCell(stats.fastestTimes)}</tr>
+          <tr><th>Elo Current</th>${renderColspanValueCell(formatElo(stats.currentElo))}</tr>
+          <tr><th>Elo Peak</th>${renderColspanValueCell(formatElo(stats.peakElo))}</tr>
         </tbody>
       </table>
     </section>
@@ -2073,11 +2097,11 @@ function renderAuthorMetadataTable(
       <h3>Author</h3>
       <table>
         <tbody>
-          <tr><th>Tracks</th><td class="align-right">${stats.tracks}</td></tr>
-          <tr><th>Solo Tracks</th><td class="align-right">${stats.soloTracks}</td></tr>
-          <tr><th>Co-Authored Tracks</th><td class="align-right">${stats.coAuthoredTracks}</td></tr>
-          <tr><th>First Event</th><td class="align-right">${stats.firstEvent ?? "-"}</td></tr>
-          <tr><th>Latest Event</th><td class="align-right">${stats.latestEvent ?? "-"}</td></tr>
+          <tr><th>Tracks</th><td class="align-right" style="width: 50%">${stats.tracks}</td></tr>
+          <tr><th>Solo Tracks</th><td class="align-right" style="width: 50%">${stats.soloTracks}</td></tr>
+          <tr><th>Co-Authored Tracks</th><td class="align-right" style="width: 50%">${stats.coAuthoredTracks}</td></tr>
+          <tr><th>First Event</th><td class="align-right" style="width: 50%">${stats.firstEvent ?? "-"}</td></tr>
+          <tr><th>Latest Event</th><td class="align-right" style="width: 50%">${stats.latestEvent ?? "-"}</td></tr>
         </tbody>
       </table>
     </section>
@@ -3518,6 +3542,17 @@ function normalizeSearchText(value: string): string {
 
 function formatPercentage(value: number): string {
   return `${formatDecimalHtml(value.toFixed(1))}<small>%</small>`;
+}
+
+function renderCountWithPercentageCells(
+  count: number,
+  percentage: number,
+): string {
+  return `<td class="align-right" style="width: 33%">${count}</td><td class="align-right" style="width: 33%">${formatPercentage(percentage)}</td>`;
+}
+
+function renderColspanValueCell(value: number | string): string {
+  return `<td class="align-right" colspan="2">${value}</td>`;
 }
 
 function formatPlacingLabel(value: number): string {
