@@ -218,8 +218,14 @@ async function main(): Promise<void> {
     ),
     writePlacingsIndexPage(driverRecords, eventRatings.summary),
     writeRaceResultsGraphIndexPage(driverRecords, eventRecords),
-    ...eventRecords.map((eventRecord) =>
-      writeEventPage(eventRecord, driverFileNames, authorFileNames),
+    ...eventRecords.map((eventRecord, index) =>
+      writeEventPage(
+        eventRecord,
+        driverFileNames,
+        authorFileNames,
+        eventRecords[index - 1] ?? null,
+        eventRecords[index + 1] ?? null,
+      ),
     ),
     ...driverRecords.map((driverRecord) =>
       writeDriverPage(
@@ -1201,6 +1207,8 @@ async function writeEventPage(
   eventRecord: EventRecord,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
+  previousEventRecord: EventRecord | null,
+  nextEventRecord: EventRecord | null,
 ): Promise<void> {
   const resultRows = eventRecord.results
     .map((result) => {
@@ -1224,7 +1232,15 @@ async function writeEventPage(
   const content = renderLayout(
     `COTD ${eventRecord.nr} - ${eventRecord.map}`,
     `
-      <h1>COTD ${eventRecord.nr}</h1>
+      <div class="event-heading">
+        <div class="event-heading-nav" aria-label="Event navigation">
+          ${previousEventRecord ? `<a class="event-nav-link" href="${escapeHtml(previousEventRecord.htmlFileName)}" aria-label="Previous event: COTD ${previousEventRecord.nr}">&larr;</a>` : ""}
+        </div>
+        <h1>COTD ${eventRecord.nr}</h1>
+        <div class="event-heading-nav" aria-label="Event navigation">
+          ${nextEventRecord ? `<a class="event-nav-link" href="${escapeHtml(nextEventRecord.htmlFileName)}" aria-label="Next event: COTD ${nextEventRecord.nr}">&rarr;</a>` : ""}
+        </div>
+      </div>
       <h2>${escapeHtml(eventRecord.map)}</h2>
       <table>
         <tbody>

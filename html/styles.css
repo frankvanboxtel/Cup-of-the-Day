@@ -52,6 +52,29 @@ nav {
   margin: 4px 0 20px;
 }
 
+.event-heading {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.event-heading h1 {
+  margin: 0;
+}
+
+.event-heading-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.event-nav-link {
+  display: inline-flex;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
 .meta-grid {
   display: grid;
   gap: 16px;
