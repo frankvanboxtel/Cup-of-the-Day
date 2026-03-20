@@ -901,7 +901,7 @@ async function writeIndexPage(
           <td class="number-cell"><a href="events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
           <td class="bold"><a href="events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${authors}</td>
-          <td class="align-right number-cell">${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
+          <td class="align-right number-cell">${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"}</td>
           <td>${fastestDriver}</td>
           <td>${podium}</td>
         </tr>`;
@@ -1111,7 +1111,6 @@ async function writePlacingsIndexPage(
     "Placings",
     `
       <h1>Placings</h1>
-      <p>${driverRecords.length} player placing summaries. Search by canonical name or any alias.</p>
       <div class="search-panel">
         <label class="search-label" for="driver-search">Search players</label>
         <input
@@ -1222,7 +1221,7 @@ async function writeEventPage(
         <tr${sortAttributes}>
           <td class="align-right number-cell">${result.placing ?? "-"}</td>
           <td>${renderDriverLink(result.name, driverFileNames, "..")}</td>
-          <td class="align-right number-cell">${escapeHtml(result.time)}</td>
+          <td class="align-right number-cell">${formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
         </tr>`;
     })
@@ -1244,7 +1243,7 @@ async function writeEventPage(
       <table>
         <tbody>
           <tr><th>Author</th><td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td></tr>
-          <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"} by ${renderFastestPlayer(eventRecord, driverFileNames, "..")}</td></tr>
+          <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"} by ${renderFastestPlayer(eventRecord, driverFileNames, "..")}</td></tr>
           <tr><th>Podium</th><td>${renderPodium(eventRecord, driverFileNames, "..")}</td></tr>
         </tbody>
       </table>
@@ -1646,7 +1645,7 @@ function renderRaceResultsSection(
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${result === null ? (isTrackAuthor ? "Track author" : "Did not race") : "Raced"}</td>
           <td class="placings-column align-right number-cell">${result?.placing ?? "-"}</td>
-          <td class="align-right number-cell">${result === null ? "-" : escapeHtml(result.time)}</td>
+          <td class="align-right number-cell">${result === null ? "-" : formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
           <td class="align-right number-cell">${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
         </tr>`;
@@ -2061,6 +2060,25 @@ function renderZeroValuePercentageCell(value: number): string {
   return `<td class="align-right">${formatPercentage(value)}</td>`;
 }
 
+function formatRaceTimeHtml(value: string): string {
+  if (/^dnf$/i.test(value.trim())) {
+    return "<small>DNF</small>";
+  }
+
+  return formatDecimalHtml(value);
+}
+
+function formatDecimalHtml(value: string): string {
+  const match = value.match(/^(.*?)([.,])(\d+)$/);
+
+  if (!match) {
+    return escapeHtml(value);
+  }
+
+  const [, wholePart, separator, fractionalPart] = match;
+  return `${escapeHtml(wholePart)}${separator}<small>${escapeHtml(fractionalPart)}</small>`;
+}
+
 function renderFastestPlayer(
   eventRecord: EventRecord,
   driverFileNames: Map<string, string>,
@@ -2176,7 +2194,7 @@ function renderTracksSection(
           <td class="bold"><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${renderDriverList(winners, driverFileNames, "..")}</td>
-          <td class="align-right">${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
+          <td class="align-right">${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"}</td>
           <td>${renderFastestPlayer(eventRecord, driverFileNames, "..")}</td>
         </tr>`;
     })
@@ -2621,7 +2639,7 @@ function normalizeSearchText(value: string): string {
 }
 
 function formatPercentage(value: number): string {
-  return `${value.toFixed(1)}%`;
+  return `${formatDecimalHtml(value.toFixed(1))}<small>%</small>`;
 }
 
 function formatPlacingLabel(value: number): string {

@@ -26,6 +26,10 @@ body {
   margin: 24px;
 }
 
+small {
+  opacity: 0.75;
+}
+
 a {
   text-decoration-style: dashed;
 
@@ -181,6 +185,8 @@ thead th {
 
 .alias {
   width: 300px;
+  font-size: 13.3px;
+  opacity: 0.75;
 }
 
 .placings-table th,
