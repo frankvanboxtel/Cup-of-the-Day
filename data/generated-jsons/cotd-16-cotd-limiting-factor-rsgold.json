@@ -13,19 +13,19 @@
   "sourceFile": "COTDs 1-25 - COTD 16-20.csv",
   "results": [
     {
-      "placing": 1,
+      "placing": 2,
       "name": "[CTR] jandje",
       "time": "DNF",
-      "eliminationRound": null,
+      "eliminationRound": "15",
       "rouletteMap": null,
       "rouletteMapper": null,
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 1,
+      "placing": 2,
       "name": "justMaki",
       "time": "DNF",
-      "eliminationRound": null,
+      "eliminationRound": "15",
       "rouletteMap": null,
       "rouletteMapper": null,
       "rouletteSourceEventNumber": null
@@ -283,7 +283,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 31,
+      "placing": 34,
       "name": "timeless void",
       "time": "DNF",
       "eliminationRound": "2",
@@ -292,7 +292,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 31,
+      "placing": 34,
       "name": "GavvyBoi",
       "time": "DNF",
       "eliminationRound": "2",
@@ -301,7 +301,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 31,
+      "placing": 34,
       "name": "NatePW",
       "time": "DNF",
       "eliminationRound": "2",
@@ -310,7 +310,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 31,
+      "placing": 34,
       "name": "gatenby_neil",
       "time": "DNF",
       "eliminationRound": "2",
@@ -319,7 +319,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 35,
+      "placing": 40,
       "name": "fer1099",
       "time": "DNF",
       "eliminationRound": "1",
@@ -328,7 +328,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 35,
+      "placing": 40,
       "name": "Galactichero623",
       "time": "DNF",
       "eliminationRound": "1",
@@ -337,7 +337,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 35,
+      "placing": 40,
       "name": "GuAlexItar",
       "time": "DNF",
       "eliminationRound": "1",
@@ -346,7 +346,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 35,
+      "placing": 40,
       "name": "[OR] TNTArrow",
       "time": "DNF",
       "eliminationRound": "1",
@@ -355,7 +355,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 35,
+      "placing": 40,
       "name": "cookie",
       "time": "DNF",
       "eliminationRound": "1",
@@ -364,7 +364,7 @@
       "rouletteSourceEventNumber": null
     },
     {
-      "placing": 35,
+      "placing": 40,
       "name": "OwlsAreVeryCool",
       "time": "DNF",
       "eliminationRound": "1",

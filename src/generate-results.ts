@@ -307,8 +307,7 @@ function extractResults(
     }
 
     const normalizedPlacing = parsedPlacing ?? currentPlacing;
-    const normalizedEliminationRound =
-      normalizedPlacing === 1 ? null : eliminationRound || null;
+    const normalizedEliminationRound = eliminationRound || null;
 
     results.push({
       placing: normalizedPlacing,
@@ -327,7 +326,101 @@ function extractResults(
     });
   }
 
-  return results;
+  return normalizeAllDnfRoundPlacings(results);
+}
+
+function normalizeAllDnfRoundPlacings(results: ResultEntry[]): ResultEntry[] {
+  const normalizedResults = results.map((result) => ({ ...result }));
+
+  propagateMissingRoundWithinTiedDnfGroups(normalizedResults);
+
+  for (let startIndex = 0; startIndex < normalizedResults.length; ) {
+    const eliminationRound = normalizedResults[startIndex]?.eliminationRound;
+
+    if (!eliminationRound) {
+      startIndex += 1;
+      continue;
+    }
+
+    let endIndex = startIndex + 1;
+
+    while (
+      endIndex < normalizedResults.length &&
+      normalizedResults[endIndex]?.eliminationRound === eliminationRound
+    ) {
+      endIndex += 1;
+    }
+
+    const group = normalizedResults.slice(startIndex, endIndex);
+
+    if (!group.every((result) => isDnfTime(result.time))) {
+      startIndex = endIndex;
+      continue;
+    }
+
+    const placings = group
+      .map((result) => result.placing)
+      .filter((placing): placing is number => placing !== null);
+
+    if (placings.length === 0) {
+      startIndex = endIndex;
+      continue;
+    }
+
+    const highestPlacingInRound = Math.max(
+      Math.min(...placings) + group.length - 1,
+      ...placings,
+    );
+
+    for (let index = startIndex; index < endIndex; index += 1) {
+      normalizedResults[index] = {
+        ...normalizedResults[index],
+        placing: highestPlacingInRound,
+      };
+    }
+
+    startIndex = endIndex;
+  }
+
+  return normalizedResults;
+}
+
+function propagateMissingRoundWithinTiedDnfGroups(
+  results: ResultEntry[],
+): void {
+  for (let startIndex = 0; startIndex < results.length; ) {
+    const placing = results[startIndex]?.placing;
+
+    let endIndex = startIndex + 1;
+
+    while (
+      endIndex < results.length &&
+      results[endIndex]?.placing === placing
+    ) {
+      endIndex += 1;
+    }
+
+    const group = results.slice(startIndex, endIndex);
+    const sharedRound =
+      group.find((result) => result.eliminationRound)?.eliminationRound ?? null;
+
+    if (sharedRound && group.every((result) => isDnfTime(result.time))) {
+      for (let index = startIndex; index < endIndex; index += 1) {
+        if (!results[index]?.eliminationRound) {
+          results[index] = {
+            ...results[index],
+            eliminationRound: sharedRound,
+          };
+        }
+      }
+    }
+
+    startIndex = endIndex;
+  }
+}
+
+function isDnfTime(value: string): boolean {
+  return /^dnf\*?$/i.test(value.trim());
 }
 
 function findMapCell(
