@@ -883,16 +883,17 @@ async function writeIndexPage(
         authorFileNames,
         ".",
       );
-      const fastestDriver = eventRecord.fastestTimeDriver
-        ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, ".")
-        : "-";
+      const fastestDriver = renderFastestPlayer(
+        eventRecord,
+        driverFileNames,
+        ".",
+      );
       const sortAttributes = renderSortDataAttributes({
         event: eventRecord.nr,
         map: normalizeTextSortValue(eventRecord.map),
         author: normalizeTextSortValue(eventRecord.authors.join(", ")),
         "fastest-time": normalizeTimeSortValue(eventRecord.fastestTime),
         "fastest-driver": normalizeTextSortValue(eventRecord.fastestTimeDriver),
-        "fastest-round": normalizeTextSortValue(eventRecord.fastestTimeRound),
       });
 
       return `
@@ -902,7 +903,6 @@ async function writeIndexPage(
           <td>${authors}</td>
           <td class="align-right number-cell">${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
           <td>${fastestDriver}</td>
-          <td class="number-cell">${eventRecord.fastestTimeRound ? escapeHtml(eventRecord.fastestTimeRound) : "-"}</td>
           <td>${podium}</td>
         </tr>`;
     })
@@ -919,9 +919,8 @@ async function writeIndexPage(
             ${renderSortableHeader("Event", "event", "number", "asc", true, "number-cell")}
             ${renderSortableHeader("Track", "map", "text", "asc")}
             ${renderSortableHeader("Author", "author", "text", "asc")}
-            ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "number-cell align-right")}
+            ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "number-cell")}
             ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
-            ${renderSortableHeader("Fastest Round", "fastest-round", "text", "asc", false, "number-cell")}
             <th>Podium</th>
           </tr>
         </thead>
@@ -1007,14 +1006,14 @@ async function writeDriverIndexPage(
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
             <th>Aliases</th>
-            ${renderSortableHeader("Tracks", "tracks", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc")}
             ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Win %", "win-rate", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Podiums", "podiums", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Podium %", "podium-rate", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Elo", "elo", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Win %", "win-rate", "number", "desc")}
+            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
+            ${renderSortableHeader("Podium %", "podium-rate", "number", "desc")}
+            ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
+            ${renderSortableHeader("Elo", "elo", "number", "desc")}
           </tr>
         </thead>
         <tbody>
@@ -1129,13 +1128,13 @@ async function writePlacingsIndexPage(
         <thead>
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc")}
             ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Finals", "finals", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Podiums", "podiums", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Top 6s", "top-6", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Top 10s", "top-10", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Top 25s", "top-25", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Finals", "finals", "number", "desc")}
+            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
+            ${renderSortableHeader("Top 6s", "top-6", "number", "desc")}
+            ${renderSortableHeader("Top 10s", "top-10", "number", "desc")}
+            ${renderSortableHeader("Top 25s", "top-25", "number", "desc")}
             ${placingHeaders}
           </tr>
         </thead>
@@ -1245,9 +1244,7 @@ async function writeEventPage(
       <table>
         <tbody>
           <tr><th>Author</th><td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td></tr>
-          <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td></tr>
-          <tr><th>Fastest Player</th><td>${eventRecord.fastestTimeDriver ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, "..") : "-"}</td></tr>
-          <tr><th>Fastest Round</th><td>${eventRecord.fastestTimeRound ? escapeHtml(eventRecord.fastestTimeRound) : "-"}</td></tr>
+          <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"} by ${renderFastestPlayer(eventRecord, driverFileNames, "..")}</td></tr>
           <tr><th>Podium</th><td>${renderPodium(eventRecord, driverFileNames, "..")}</td></tr>
         </tbody>
       </table>
@@ -1255,10 +1252,10 @@ async function writeEventPage(
       <table data-sort-table>
         <thead>
           <tr>
-            ${renderSortableHeader("Placing", "placing", "number", "asc", true, "align-right number-cell")}
+            ${renderSortableHeader("Placing", "placing", "number", "asc", true, "number-cell")}
             ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Time", "time", "number", "asc", false, "align-right number-cell")}
-            ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "align-right number-cell")}
+            ${renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
+            ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
           </tr>
         </thead>
         <tbody>
@@ -1665,10 +1662,10 @@ function renderRaceResultsSection(
           ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("Author", "author", "text", "asc")}
           <th>Status</th>
-          ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column align-right number-cell")}
-          ${renderSortableHeader("Time", "time", "number", "asc", false, "align-right number-cell")}
-          ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "align-right number-cell")}
-          ${renderSortableHeader("Elo", "elo", "number", "desc", false, "align-right number-cell")}
+          ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column number-cell")}
+          ${renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
+          ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
+          ${renderSortableHeader("Elo", "elo", "number", "desc", false, "number-cell")}
         </tr>
       </thead>
       <tbody>
@@ -2064,6 +2061,76 @@ function renderZeroValuePercentageCell(value: number): string {
   return `<td class="align-right">${formatPercentage(value)}</td>`;
 }
 
+function renderFastestPlayer(
+  eventRecord: EventRecord,
+  driverFileNames: Map<string, string>,
+  rootPrefix: string,
+): string {
+  if (!eventRecord.fastestTimeDriver) {
+    return "-";
+  }
+
+  const playerMarkup = renderDriverLink(
+    eventRecord.fastestTimeDriver,
+    driverFileNames,
+    rootPrefix,
+  );
+  const fastestRound = getFastestRound(eventRecord);
+  const totalRounds = getEventTotalRounds(eventRecord);
+
+  if (fastestRound !== null && totalRounds !== null) {
+    return `${playerMarkup} <small>(round ${fastestRound}/${totalRounds})</small>`;
+  }
+
+  if (fastestRound !== null) {
+    return `${playerMarkup} <small>(round ${fastestRound})</small>`;
+  }
+
+  return playerMarkup;
+}
+
+function getFastestRound(eventRecord: EventRecord): number | null {
+  const explicitRound = parseRoundNumber(eventRecord.fastestTimeRound);
+
+  if (explicitRound !== null) {
+    return explicitRound;
+  }
+
+  const runnerUp = eventRecord.results.find((result) => result.placing === 2);
+  return parseRoundNumber(runnerUp?.eliminationRound);
+}
+
+function getEventTotalRounds(eventRecord: EventRecord): number | null {
+  const roundNumbers = [
+    getFastestRound(eventRecord),
+    ...eventRecord.results.map((result) =>
+      parseRoundNumber(result.eliminationRound),
+    ),
+  ].filter((value): value is number => value !== null);
+
+  if (roundNumbers.length === 0) {
+    return null;
+  }
+
+  return Math.max(...roundNumbers);
+}
+
+function parseRoundNumber(value: string | null | undefined): number | null {
+  const normalized = value?.trim() ?? "";
+
+  if (!normalized) {
+    return null;
+  }
+
+  const match = normalized.match(/\d+/);
+
+  if (!match) {
+    return null;
+  }
+
+  return Number(match[0]);
+}
+
 function renderAliasSummary(aliases: string[], canonicalName: string): string {
   const otherAliases = aliases.filter((alias) => alias !== canonicalName);
 
@@ -2110,7 +2177,7 @@ function renderTracksSection(
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${renderDriverList(winners, driverFileNames, "..")}</td>
           <td class="align-right">${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
-          <td>${eventRecord.fastestTimeDriver ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, "..") : "-"}</td>
+          <td>${renderFastestPlayer(eventRecord, driverFileNames, "..")}</td>
         </tr>`;
     })
     .join("\n");
@@ -2124,7 +2191,7 @@ function renderTracksSection(
           ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("All Authors", "authors", "text", "asc")}
           ${renderSortableHeader("Winner", "winner", "text", "asc")}
-          ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "align-right")}
+          ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
           ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
         </tr>
       </thead>
