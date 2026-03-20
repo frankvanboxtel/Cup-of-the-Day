@@ -14,17 +14,21 @@
     "[CTR] NathWalt",
     "[CTR]NathWalt"
   ],
+  "[CTR]Moody": [
+    "[CTR]Moody",
+    "[MIB]Moody"
+  ],
   "[CTR]OwlPlague": [
     "[CTR]OwlPlague",
     "[CTR] OwlPlague"
   ],
-  "[CTR]Sandals": [
-    "[CTR]Sandals",
-    "[CTR] Sandals"
-  ],
   "[CTR]TheBamboozler": [
     "[CTR]TheBamboozler",
     "[CTR] TheBamboozler"
+  ],
+  "[DHLU]MarcSubstitute": [
+    "[DHLU]MarcSubstitute",
+    "[SLOW]MarcSubstitute"
   ],
   "[F1] magostinho20": [
     "[F1] magostinho20",
@@ -70,10 +74,6 @@
     "[OREO] Pigbuy",
     "[OREO]Pigbuy"
   ],
-  "[SLOW]MarcSubstitute": [
-    "[SLOW]MarcSubstitute",
-    "[DHLU]MarcSubstitute"
-  ],
   "[Tame]stindt": [
     "[Tame]stindt",
     "[KAAS]stindt",
@@ -84,6 +84,10 @@
     "[TBR]TheBestMaidens",
     "[WAM] TheBestMaidens",
     "[WAM]TheBestMaidens"
+  ],
+  "[TILT]Redstony": [
+    "[TILT]Redstony",
+    "[Stc3]Redstony"
   ],
   "[TOG]ioi8": [
     "[TOG]ioi8",
@@ -97,18 +101,18 @@
     "[XTR] [VK] Ulv_RaVn",
     "[XTR] [VK] Ulv_Ravn"
   ],
-  "[ZET]Ploddip": [
-    "[ZET]Ploddip",
-    "[ZET] Ploddip"
-  ],
-  "[ZET]Wheelie": [
-    "[ZET]Wheelie",
-    "[ZET] Wheelie"
-  ],
   "//////void": [
     "//////void",
     "[gorp]//////void",
     "[SWDN]//////void"
+  ],
+  "=XDC=Wolf": [
+    "=XDC=Wolf",
+    "=XDC=WOLF"
+  ],
+  "3rdseyeview": [
+    "3rdseyeview",
+    "[vibe]3rdseyeview"
   ],
   "A Broken Forklift": [
     "A Broken Forklift",
@@ -151,6 +155,14 @@
     "[BOGO]BOB THE GAMER",
     "[MEAT]BOB THE GAMER"
   ],
+  "BootyMcShooty88": [
+    "BootyMcShooty88",
+    "[SBOI] BootyMcShooty88"
+  ],
+  "Butter": [
+    "Butter",
+    "[ZST] Butter"
+  ],
   "Codewalt": [
     "Codewalt",
     "CodeWalt"
@@ -168,13 +180,18 @@
     "[CSC] DeeDeeNaNaNa",
     "[CSC]DeeDeeNaNaNa"
   ],
+  "DocRee": [
+    "DocRee",
+    "[CLWN]DocRee"
+  ],
   "DragonBoi": [
     "DragonBoi",
     "[Top3]DragonBoi"
   ],
   "Exterminate": [
     "Exterminate",
-    "[XTR] Exterminate"
+    "[XTR] Exterminate",
+    "[XTR]Exterminate"
   ],
   "ferinine": [
     "ferinine",
@@ -222,6 +239,7 @@
   ],
   "Hi Im Yolo": [
     "Hi Im Yolo",
+    "[HRR]Hi Im Yolo",
     "[RIP]Hi Im Yolo",
     "[Tik] Hi Im Yolo"
   ],
@@ -230,6 +248,7 @@
     "[BFP] Hydro",
     "[CTR]Hydro",
     "[RTR] Hydro",
+    "[SLOW] Hydro",
     "[WOW]Hydro",
     "[ZOMN] Hydro"
   ],
@@ -262,7 +281,8 @@
   "jandje": [
     "jandje",
     "[BFP] jandje",
-    "[CTR] jandje"
+    "[CTR] jandje",
+    "[CTR]jandje"
   ],
   "Jeffrey": [
     "Jeffrey",
@@ -307,6 +327,10 @@
     "[CTR]Lamp",
     "[The]Lamp"
   ],
+  "Last": [
+    "Last",
+    "[dumb] Last"
+  ],
   "Lexer": [
     "Lexer",
     "[BRIT] Lexer"
@@ -341,6 +365,10 @@
   "MeOne2Three4": [
     "MeOne2Three4",
     "meone2three4"
+  ],
+  "Meowbee": [
+    "Meowbee",
+    "[HRT!]Meowbee"
   ],
   "MetalCJ": [
     "MetalCJ",
@@ -388,6 +416,10 @@
     "[GANS] Not That Guy",
     "[RTR] Not That Guy"
   ],
+  "Odist": [
+    "Odist",
+    "[WAM]Odist"
+  ],
   "OLR94": [
     "OLR94",
     "[CSC]OLR94"
@@ -427,6 +459,13 @@
     "[ping] ping",
     "[pong]ping"
   ],
+  "Ploddip": [
+    "Ploddip",
+    "[IXB] Ploddip",
+    "[IZB] Ploddip",
+    "[ZET] Ploddip",
+    "[ZET]Ploddip"
+  ],
   "PoopSheriff": [
     "PoopSheriff",
     "[CTR] PoopSheriff",
@@ -455,6 +494,10 @@
     "[CTR]R0nanC",
     "[GECK]R0nanC",
     "R0nanc"
+  ],
+  "RadAbsRad": [
+    "RadAbsRad",
+    "[Meow]RadAbsRad"
   ],
   "readfreak7": [
     "readfreak7",
@@ -489,6 +532,7 @@
     "rtube",
     "[BAP]rtube",
     "[dumb]rtube",
+    "[sad]rtube",
     "[SUCK] rtube",
     "[TBD] rtube",
     "[TBD]rtube",
@@ -497,6 +541,7 @@
   "rtyyyyb": [
     "rtyyyyb",
     "[TBD] rtyyyyb",
+    "[TOB] rtyyyyb",
     "[ZET] rtyyyyb",
     "[ZET]rtyyyyb"
   ],
@@ -505,14 +550,22 @@
     "[CD]SadD0ge",
     "[SWMG]SadD0ge"
   ],
+  "Sandals": [
+    "Sandals",
+    "[CTR] Sandals",
+    "[CTR]Sandals"
+  ],
   "schmxrg": [
     "schmxrg",
     "[6dog] schmxrg",
-    "[dogg] schmxrg"
+    "[dogg] schmxrg",
+    "[goat] schmxrg"
   ],
   "shadeely": [
     "shadeely",
-    "[KBR] shadeely"
+    "[KBR] shadeely",
+    "[RonC] shadeely",
+    "Shadeely"
   ],
   "Shadynook": [
     "Shadynook",
@@ -539,6 +592,7 @@
   "St Nicholas": [
     "St Nicholas",
     "[8]St Nicholas",
+    "[cozy]St Nicholas",
     "[OR]St Nicholas",
     "St NIcholas"
   ],
@@ -598,6 +652,11 @@
     "[Burp]Weak_Knees",
     "[COMY]Weak_Knees"
   ],
+  "Wheelie": [
+    "Wheelie",
+    "[ZET] Wheelie",
+    "[ZET]Wheelie"
+  ],
   "WotterBytes": [
     "WotterBytes",
     "Wotterbytes"
@@ -630,6 +689,8 @@
     "ZOMAN",
     "[Alex] ZOMAN",
     "[ARMS] ZOMAN",
+    "[Bath] ZOMAN",
+    "[Blub] ZOMAN",
     "[BLUE] ZOMAN",
     "[Choo] ZOMAN",
     "[HDRO] ZOMAN",

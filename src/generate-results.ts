@@ -1,11 +1,7 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { parse } from "csv-parse/sync";
-
-import { csvIndexes } from "../data/indexes";
-
-type CupSlot = keyof typeof csvIndexes;
 
 type ResultEntry = {
   placing: number | null;
@@ -25,13 +21,15 @@ type CupResultFile = {
   results: ResultEntry[];
 };
 
+type CupBlock = {
+  nr: number;
+  headerRowIndex: number;
+  placingColumnIndex: number;
+};
+
 const projectRoot = path.resolve(__dirname, "..");
 const dataDirectory = path.join(projectRoot, "data");
 const outputDirectory = path.join(projectRoot, "results");
-const headerRowIndex = 1;
-const mapRowIndex = 2;
-const fastestRowIndex = 3;
-const resultsStartRowIndex = 5;
 
 async function main(): Promise<void> {
   const dataFiles = await readdir(dataDirectory);
@@ -42,6 +40,19 @@ async function main(): Promise<void> {
     );
 
   await mkdir(outputDirectory, { recursive: true });
+  const existingOutputFiles = await readdir(outputDirectory);
+
+  await Promise.all(
+    existingOutputFiles
+      .filter(
+        (fileName) =>
+          fileName.toLowerCase().endsWith(".json") &&
+          /^\d+-.*\.json$/i.test(fileName),
+      )
+      .map((fileName) =>
+        rm(path.join(outputDirectory, fileName), { force: true }),
+      ),
+  );
 
   let generatedFileCount = 0;
 
@@ -55,12 +66,8 @@ async function main(): Promise<void> {
       trim: false,
     }) as string[][];
 
-    for (const slot of getCupSlots()) {
-      const cupData = extractCup(rows, slot, csvFileName);
-
-      if (cupData === null) {
-        continue;
-      }
+    for (const cupBlock of detectCupBlocks(rows)) {
+      const cupData = extractCup(rows, cupBlock, csvFileName);
 
       const fileName = `${cupData.nr}-${slugify(cupData.map)}-${slugify(cupData.author)}.json`;
       const outputPath = path.join(outputDirectory, fileName);
@@ -79,35 +86,61 @@ async function main(): Promise<void> {
   );
 }
 
-function getCupSlots(): CupSlot[] {
-  return Object.keys(csvIndexes)
-    .map((value) => Number(value) as CupSlot)
-    .sort((left, right) => Number(left) - Number(right));
+function detectCupBlocks(rows: string[][]): CupBlock[] {
+  const cupBlocks: CupBlock[] = [];
+  const seenCupNumbers = new Set<number>();
+
+  for (const [rowIndex, row] of rows.entries()) {
+    for (const [columnIndex, value] of row.entries()) {
+      const normalizedValue = value.trim();
+
+      if (!/^COT[DW]\s+\d+\b/i.test(normalizedValue)) {
+        continue;
+      }
+
+      const nr = parseCupNumber(normalizedValue);
+
+      if (seenCupNumbers.has(nr)) {
+        continue;
+      }
+
+      seenCupNumbers.add(nr);
+      cupBlocks.push({
+        nr,
+        headerRowIndex: rowIndex,
+        placingColumnIndex: columnIndex,
+      });
+    }
+  }
+
+  return cupBlocks.sort((left, right) => left.nr - right.nr);
 }
 
 function extractCup(
   rows: string[][],
-  slot: CupSlot,
+  cupBlock: CupBlock,
   sourceFileName: string,
-): CupResultFile | null {
-  const indexes = csvIndexes[slot];
-  const cupHeader = getCell(rows, headerRowIndex, indexes.placing)?.trim();
-
-  if (!cupHeader) {
-    return null;
-  }
-
-  const nr = parseCupNumber(cupHeader);
+): CupResultFile {
+  const indexes = {
+    placing: cupBlock.placingColumnIndex,
+    name: cupBlock.placingColumnIndex + 1,
+    time: cupBlock.placingColumnIndex + 2,
+    eliminationRound: cupBlock.placingColumnIndex + 3,
+  };
   const mapMetadata = parseMapMetadata(
-    getCell(rows, mapRowIndex, indexes.placing),
+    findMapCell(rows, cupBlock.headerRowIndex, indexes.placing),
   );
   const fastestMetadata = parseFastestMetadata(
-    getCell(rows, fastestRowIndex, indexes.time),
+    findFastestCell(rows, cupBlock.headerRowIndex, indexes.time),
   );
-  const results = extractResults(rows, indexes);
+  const results = extractResults(
+    rows,
+    indexes,
+    findResultsStartRowIndex(rows, cupBlock.headerRowIndex, indexes.placing),
+  );
 
   return {
-    nr,
+    nr: cupBlock.nr,
     map: mapMetadata.map,
     author: mapMetadata.author,
     fastestTime: fastestMetadata.time,
@@ -120,16 +153,18 @@ function extractCup(
 
 function extractResults(
   rows: string[][],
-  indexes: (typeof csvIndexes)[CupSlot],
+  indexes: {
+    placing: number;
+    name: number;
+    time: number;
+    eliminationRound: number;
+  },
+  startRowIndex: number,
 ): ResultEntry[] {
   const results: ResultEntry[] = [];
   let currentPlacing: number | null = null;
 
-  for (
-    let rowIndex = resultsStartRowIndex;
-    rowIndex < rows.length;
-    rowIndex += 1
-  ) {
+  for (let rowIndex = startRowIndex; rowIndex < rows.length; rowIndex += 1) {
     const name = getCell(rows, rowIndex, indexes.name)?.trim() ?? "";
     const placingValue = getCell(rows, rowIndex, indexes.placing)?.trim() ?? "";
     const time = getCell(rows, rowIndex, indexes.time)?.trim() ?? "";
@@ -167,6 +202,70 @@ function extractResults(
   }
 
   return results;
+}
+
+function findMapCell(
+  rows: string[][],
+  headerRowIndex: number,
+  placingColumnIndex: number,
+): string | undefined {
+  for (
+    let rowIndex = headerRowIndex + 1;
+    rowIndex <= Math.min(rows.length - 1, headerRowIndex + 3);
+    rowIndex += 1
+  ) {
+    const value = getCell(rows, rowIndex, placingColumnIndex);
+
+    if (value?.trim()) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function findFastestCell(
+  rows: string[][],
+  headerRowIndex: number,
+  timeColumnIndex: number,
+): string | undefined {
+  for (
+    let rowIndex = headerRowIndex + 1;
+    rowIndex <= Math.min(rows.length - 1, headerRowIndex + 4);
+    rowIndex += 1
+  ) {
+    const value = getCell(rows, rowIndex, timeColumnIndex);
+
+    if (value?.trim()) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function findResultsStartRowIndex(
+  rows: string[][],
+  headerRowIndex: number,
+  placingColumnIndex: number,
+): number {
+  for (
+    let rowIndex = headerRowIndex + 1;
+    rowIndex <= Math.min(rows.length - 1, headerRowIndex + 5);
+    rowIndex += 1
+  ) {
+    const placingHeader = getCell(rows, rowIndex, placingColumnIndex)?.trim();
+    const nameHeader = getCell(rows, rowIndex, placingColumnIndex + 1)?.trim();
+
+    if (
+      placingHeader?.toLowerCase() === "position" &&
+      nameHeader?.toLowerCase() === "name"
+    ) {
+      return rowIndex + 1;
+    }
+  }
+
+  return headerRowIndex + 4;
 }
 
 function isCommentResultName(value: string): boolean {
