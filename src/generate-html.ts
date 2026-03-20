@@ -890,31 +890,31 @@ async function writeIndexPage(
 
       return `
         <tr${sortAttributes}>
-          <td><a href="events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
-          <td><a href="events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
+          <td class="number-cell"><a href="events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
+          <td class="bold"><a href="events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${authors}</td>
-          <td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
+          <td class="align-right number-cell">${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
           <td>${fastestDriver}</td>
-          <td>${eventRecord.fastestTimeRound ? escapeHtml(eventRecord.fastestTimeRound) : "-"}</td>
+          <td class="number-cell">${eventRecord.fastestTimeRound ? escapeHtml(eventRecord.fastestTimeRound) : "-"}</td>
           <td>${podium}</td>
         </tr>`;
     })
     .join("\n");
 
   const content = renderLayout(
-    "Cup of the Day Overview",
+    "Cup of the Day",
     `
-      <h1>Cup of the Day Overview</h1>
-      <p>${eventRecords.length} events indexed from generated JSON files.</p>
+      <h1>Cup of the Day</h1>
+      <p>${eventRecords.length} events</p>
       <table data-sort-table>
         <thead>
           <tr>
-            ${renderSortableHeader("Event", "event", "number", "asc", true)}
+            ${renderSortableHeader("Event", "event", "number", "asc", true, "number-cell")}
             ${renderSortableHeader("Track", "map", "text", "asc")}
             ${renderSortableHeader("Author", "author", "text", "asc")}
-            ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
+            ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "number-cell align-right")}
             ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
-            ${renderSortableHeader("Fastest Round", "fastest-round", "text", "asc")}
+            ${renderSortableHeader("Fastest Round", "fastest-round", "text", "asc", false, "number-cell")}
             <th>Podium</th>
           </tr>
         </thead>
@@ -947,9 +947,6 @@ async function writeDriverIndexPage(
         driverRecord.aliases,
         driverRecord.canonicalName,
       );
-      const authorPage = authorRecordsByName.has(driverRecord.canonicalName)
-        ? renderAuthorLinks([driverRecord.canonicalName], authorFileNames, "..")
-        : "-";
       const searchTerms = normalizeSearchText(
         [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
       );
@@ -968,7 +965,7 @@ async function writeDriverIndexPage(
       return `
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
           <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
-          <td>${aliasSummary}</td>
+          <td title="${driverRecord.aliases.join(", ")}"><div class="single-line alias">${aliasSummary}</div></td>
           ${renderZeroValueCountCell(tracksCreated)}
           ${renderZeroValueCountCell(stats.starts)}
           ${renderZeroValueCountCell(stats.wins)}
@@ -976,8 +973,7 @@ async function writeDriverIndexPage(
           ${renderZeroValueCountCell(stats.podiums)}
           ${renderZeroValuePercentageCell(stats.podiumRate)}
           ${renderZeroValueCountCell(stats.fastestTimes)}
-          <td>${formatElo(stats.currentElo)}</td>
-          <td>${authorPage}</td>
+          <td class="align-right">${formatElo(stats.currentElo)}</td>
         </tr>`;
     })
     .join("\n");
@@ -1004,15 +1000,14 @@ async function writeDriverIndexPage(
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
             <th>Aliases</th>
-            ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
-            ${renderSortableHeader("Wins", "wins", "number", "desc")}
-            ${renderSortableHeader("Win %", "win-rate", "number", "desc")}
-            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
-            ${renderSortableHeader("Podium %", "podium-rate", "number", "desc")}
-            ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
-            ${renderSortableHeader("Elo", "elo", "number", "desc")}
-            <th>Author Page</th>
+            ${renderSortableHeader("Tracks", "tracks", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc", true, "align-right")}
+            ${renderSortableHeader("Wins", "wins", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Win %", "win-rate", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Podiums", "podiums", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Podium %", "podium-rate", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Elo", "elo", "number", "desc", false, "align-right")}
           </tr>
         </thead>
         <tbody>
@@ -1100,6 +1095,8 @@ async function writePlacingsIndexPage(
         `placing-${placing}`,
         "number",
         "desc",
+        false,
+        "align-right",
       ),
     )
     .join("\n");
@@ -1125,13 +1122,13 @@ async function writePlacingsIndexPage(
         <thead>
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc", true)}
-            ${renderSortableHeader("Wins", "wins", "number", "desc")}
-            ${renderSortableHeader("Finals", "finals", "number", "desc")}
-            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
-            ${renderSortableHeader("Top 6s", "top-6", "number", "desc")}
-            ${renderSortableHeader("Top 10s", "top-10", "number", "desc")}
-            ${renderSortableHeader("Top 25s", "top-25", "number", "desc")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc", true, "align-right")}
+            ${renderSortableHeader("Wins", "wins", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Finals", "finals", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Podiums", "podiums", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Top 6s", "top-6", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Top 10s", "top-10", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Top 25s", "top-25", "number", "desc", false, "align-right")}
             ${placingHeaders}
           </tr>
         </thead>
@@ -1215,10 +1212,10 @@ async function writeEventPage(
 
       return `
         <tr${sortAttributes}>
-          <td>${result.placing ?? "-"}</td>
+          <td class="align-right number-cell">${result.placing ?? "-"}</td>
           <td>${renderDriverLink(result.name, driverFileNames, "..")}</td>
-          <td>${escapeHtml(result.time)}</td>
-          <td>${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
+          <td class="align-right number-cell">${escapeHtml(result.time)}</td>
+          <td class="align-right number-cell">${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
         </tr>`;
     })
     .join("\n");
@@ -1230,13 +1227,10 @@ async function writeEventPage(
       <h2>${escapeHtml(eventRecord.map)}</h2>
       <table>
         <tbody>
-          <tr><th>Track</th><td>${escapeHtml(eventRecord.map)}</td></tr>
           <tr><th>Author</th><td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td></tr>
           <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td></tr>
           <tr><th>Fastest Player</th><td>${eventRecord.fastestTimeDriver ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, "..") : "-"}</td></tr>
           <tr><th>Fastest Round</th><td>${eventRecord.fastestTimeRound ? escapeHtml(eventRecord.fastestTimeRound) : "-"}</td></tr>
-          <tr><th>Source JSON</th><td>${escapeHtml(eventRecord.jsonFileName)}</td></tr>
-          <tr><th>Source CSV</th><td>${escapeHtml(eventRecord.sourceFile)}</td></tr>
           <tr><th>Podium</th><td>${renderPodium(eventRecord, driverFileNames, "..")}</td></tr>
         </tbody>
       </table>
@@ -1244,10 +1238,10 @@ async function writeEventPage(
       <table data-sort-table>
         <thead>
           <tr>
-            ${renderSortableHeader("Placing", "placing", "number", "asc", true)}
+            ${renderSortableHeader("Placing", "placing", "number", "asc", true, "align-right number-cell")}
             ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Time", "time", "number", "asc")}
-            ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
+            ${renderSortableHeader("Time", "time", "number", "asc", false, "align-right number-cell")}
+            ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "align-right number-cell")}
           </tr>
         </thead>
         <tbody>
@@ -1475,7 +1469,7 @@ function renderProfileHeading(
 
   return `
     <h1 class="name">${escapeHtml(canonicalName)}</h1>
-    ${aliasSummary === "-" ? "" : `<div class="aliases"><span>AKA:</span> <em>${aliasSummary}</em></div>`}
+    ${aliasSummary === "-" ? "" : `<div class="aliases"><div>AKA${aliases.length > 10 ? "... where to start?" : ":"}</div><em>${aliasSummary}</em></div>`}
   `;
 }
 
@@ -1508,16 +1502,15 @@ function renderDriverMetadataTable(
       <h3>Player</h3>
       <table>
         <tbody>
-          <tr><th>Starts</th><td>${stats.starts}</td></tr>
-          <tr><th>Wins</th><td>${stats.wins}</td></tr>
-          <tr><th>Win %</th><td>${formatPercentage(stats.winRate)}</td></tr>
-          <tr><th>Podiums</th><td>${stats.podiums}</td></tr>
-          <tr><th>Podium %</th><td>${formatPercentage(stats.podiumRate)}</td></tr>
-          <tr><th>Best Finish</th><td>${stats.bestFinish ?? "-"}</td></tr>
-          <tr><th>Fastest Times</th><td>${stats.fastestTimes}</td></tr>
-          <tr><th>Elo Current</th><td>${formatElo(stats.currentElo)}</td></tr>
-          <tr><th>Elo Peak</th><td>${formatElo(stats.peakElo)}</td></tr>
-          <tr><th>Author Page</th><td>${authorPage}</td></tr>
+          <tr><th>Starts</th><td class="align-right">${stats.starts}</td></tr>
+          <tr><th>Wins</th><td class="align-right">${stats.wins}</td></tr>
+          <tr><th>Win %</th><td class="align-right">${formatPercentage(stats.winRate)}</td></tr>
+          <tr><th>Podiums</th><td class="align-right">${stats.podiums}</td></tr>
+          <tr><th>Podium %</th><td class="align-right">${formatPercentage(stats.podiumRate)}</td></tr>
+          <tr><th>Best Finish</th><td class="align-right">${stats.bestFinish ?? "-"}</td></tr>
+          <tr><th>Fastest Times</th><td class="align-right">${stats.fastestTimes}</td></tr>
+          <tr><th>Elo Current</th><td class="align-right">${formatElo(stats.currentElo)}</td></tr>
+          <tr><th>Elo Peak</th><td class="align-right">${formatElo(stats.peakElo)}</td></tr>
         </tbody>
       </table>
     </section>
@@ -1548,12 +1541,11 @@ function renderAuthorMetadataTable(
       <h3>Author</h3>
       <table>
         <tbody>
-          <tr><th>Tracks</th><td>${stats.tracks}</td></tr>
-          <tr><th>Solo Tracks</th><td>${stats.soloTracks}</td></tr>
-          <tr><th>Co-Authored Tracks</th><td>${stats.coAuthoredTracks}</td></tr>
-          <tr><th>First Event</th><td>${stats.firstEvent ?? "-"}</td></tr>
-          <tr><th>Latest Event</th><td>${stats.latestEvent ?? "-"}</td></tr>
-          <tr><th>Player Page</th><td>${driverPage}</td></tr>
+          <tr><th>Tracks</th><td class="align-right">${stats.tracks}</td></tr>
+          <tr><th>Solo Tracks</th><td class="align-right">${stats.soloTracks}</td></tr>
+          <tr><th>Co-Authored Tracks</th><td class="align-right">${stats.coAuthoredTracks}</td></tr>
+          <tr><th>First Event</th><td class="align-right">${stats.firstEvent ?? "-"}</td></tr>
+          <tr><th>Latest Event</th><td class="align-right">${stats.latestEvent ?? "-"}</td></tr>
         </tbody>
       </table>
     </section>
@@ -1636,13 +1628,13 @@ function renderRaceResultsSection(
       return `
         <tr${rowClasses.length > 0 ? ` class="${rowClasses}"` : ""}${sortAttributes}>
           <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
-          <td><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
+          <td class="bold"><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${result === null ? (isTrackAuthor ? "Track author" : "Did not race") : "Raced"}</td>
-          <td class="placings-column">${result?.placing ?? "-"}</td>
-          <td>${result === null ? "-" : escapeHtml(result.time)}</td>
-          <td>${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
-          <td>${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
+          <td class="placings-column align-right number-cell">${result?.placing ?? "-"}</td>
+          <td class="align-right number-cell">${result === null ? "-" : escapeHtml(result.time)}</td>
+          <td class="align-right number-cell">${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
+          <td class="align-right number-cell">${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
         </tr>`;
     })
     .join("\n");
@@ -1656,10 +1648,10 @@ function renderRaceResultsSection(
           ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("Author", "author", "text", "asc")}
           <th>Status</th>
-          ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column")}
-          ${renderSortableHeader("Time", "time", "number", "asc")}
-          ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc")}
-          ${renderSortableHeader("Elo", "elo", "number", "desc")}
+          ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column align-right number-cell")}
+          ${renderSortableHeader("Time", "time", "number", "asc", false, "align-right number-cell")}
+          ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "align-right number-cell")}
+          ${renderSortableHeader("Elo", "elo", "number", "desc", false, "align-right number-cell")}
         </tr>
       </thead>
       <tbody>
@@ -1732,7 +1724,7 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
 
       return `
         <tr>
-          <th>${placing}</th>
+          <th class="align-right">${placing}</th>
           ${renderPlacingCountCell(count, placing)}
         </tr>`;
     })
@@ -1743,8 +1735,8 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
     <table class="compact-table placings-table">
       <thead>
         <tr>
-          <th>Pos</th>
-          <th>#</th>
+          <th class="align-right">Pos</th>
+          <th class="align-right">#</th>
         </tr>
       </thead>
       <tbody>
@@ -2019,14 +2011,14 @@ function buildResultRowClassName(placing: number | null): string {
 
 function renderZeroValueCountCell(count: number): string {
   if (count === 0) {
-    return '<td class="is-zero"></td>';
+    return '<td class="align-right is-zero"></td>';
   }
 
-  return `<td>${count}</td>`;
+  return `<td class="align-right">${count}</td>`;
 }
 
 function renderPlacingCountCell(count: number, placing: number): string {
-  const classes = ["placingNo"];
+  const classes = ["placingNo", "align-right", "bold"];
 
   if (placing >= 1 && placing <= 25) {
     classes.push(`placing-${placing}`);
@@ -2042,10 +2034,10 @@ function renderPlacingCountCell(count: number, placing: number): string {
 
 function renderZeroValuePercentageCell(value: number): string {
   if (value === 0) {
-    return '<td class="is-zero"></td>';
+    return '<td class="align-right is-zero"></td>';
   }
 
-  return `<td>${formatPercentage(value)}</td>`;
+  return `<td class="align-right">${formatPercentage(value)}</td>`;
 }
 
 function renderAliasSummary(aliases: string[], canonicalName: string): string {
@@ -2090,10 +2082,10 @@ function renderTracksSection(
       return `
         <tr${sortAttributes}>
           <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
-          <td><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
+          <td class="bold"><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${renderDriverList(winners, driverFileNames, "..")}</td>
-          <td>${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
+          <td class="align-right">${eventRecord.fastestTime ? escapeHtml(eventRecord.fastestTime) : "-"}</td>
           <td>${eventRecord.fastestTimeDriver ? renderDriverLink(eventRecord.fastestTimeDriver, driverFileNames, "..") : "-"}</td>
         </tr>`;
     })
@@ -2108,7 +2100,7 @@ function renderTracksSection(
           ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("All Authors", "authors", "text", "asc")}
           ${renderSortableHeader("Winner", "winner", "text", "asc")}
-          ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc")}
+          ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "align-right")}
           ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
         </tr>
       </thead>
@@ -2131,7 +2123,7 @@ function renderPodium(
   return eventRecord.podium
     .map(
       (group) =>
-        `${group.placing}: ${renderDriverList(group.entries, driverFileNames, rootPrefix)}`,
+        `${group.placing}. ${renderDriverList(group.entries, driverFileNames, rootPrefix)}`,
     )
     .join("<br>");
 }
