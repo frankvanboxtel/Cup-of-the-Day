@@ -194,7 +194,13 @@ async function collectNameObservations(
     const event = JSON.parse(content) as CupResultFile;
 
     for (const result of event.results) {
-      registerName(observations, result.name, event.nr, false, displayOnlyNames);
+      registerName(
+        observations,
+        result.name,
+        event.nr,
+        false,
+        displayOnlyNames,
+      );
     }
 
     if (event.fastestTimeDriver) {
