@@ -206,6 +206,10 @@ thead th {
   margin: 0 0 16px;
 }
 
+.graph-actions {
+  text-align: right;
+}
+
 .graph-select-list {
   display: grid;
   gap: 10px 12px;

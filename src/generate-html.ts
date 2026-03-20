@@ -1707,6 +1707,7 @@ function renderRaceResultsGraphSection(
       null,
     ),
   ];
+  const compareHref = `../race-results-graph/index.html?compare=${encodeURIComponent(series[0]?.id ?? stableId(driverRecord.canonicalName))}`;
 
   return `
     <h2>Results Graph</h2>
@@ -1714,11 +1715,12 @@ function renderRaceResultsGraphSection(
     ${renderRaceResultsGraphSvg(
       series,
       eventRecords,
-      true,
+      false,
       true,
       series.map((entry) => entry.id),
       null,
     )}
+    <p class="graph-actions"><a class="graph-compare-link" href="${compareHref}">Compare Results</a></p>
   `;
 }
 
@@ -2380,6 +2382,7 @@ function renderLayout(
 
         for (const picker of document.querySelectorAll("[data-graph-picker]")) {
           const graphTarget = picker.getAttribute("data-graph-target") || "";
+          const compareSeriesId = new URLSearchParams(window.location.search).get("compare") || "";
           const selects = Array.from(
             picker.querySelectorAll("[data-graph-select]"),
           );
@@ -2397,14 +2400,29 @@ function renderLayout(
             continue;
           }
 
+          const hasCompareSeriesId =
+            compareSeriesId.length > 0 &&
+            Array.from(optionSets.values()).some((optionSet) =>
+              optionSet.some((option) => option.value === compareSeriesId),
+            );
+
           const graphRoot = document.querySelector(
             '[data-graph-root="' + graphTarget + '"]',
           );
+
+          const getUnavailableSeriesIds = (currentSelect) =>
+            new Set(
+              selects
+                .filter((select) => select !== currentSelect)
+                .map((select) => select.value)
+                .filter((value) => value.length > 0),
+            );
 
           const updateSelectOptions = (select, query) => {
             const optionSet = optionSets.get(select) || [];
             const selectedValue = select.value;
             const normalizedQuery = (query || "").trim().toLowerCase();
+            const unavailableSeriesIds = getUnavailableSeriesIds(select);
             const matchingOptions = optionSet.filter((option) => {
               if (option.value === "") {
                 return true;
@@ -2412,6 +2430,10 @@ function renderLayout(
 
               if (option.value === selectedValue) {
                 return true;
+              }
+
+              if (unavailableSeriesIds.has(option.value)) {
+                return false;
               }
 
               return (
@@ -2430,6 +2452,15 @@ function renderLayout(
               .join("");
 
             select.value = selectedValue;
+          };
+
+          const refreshSelectOptions = () => {
+            for (const select of selects) {
+              const filterInput = select
+                .closest(".graph-select-item")
+                ?.querySelector("[data-graph-select-filter]");
+              updateSelectOptions(select, filterInput?.value || "");
+            }
           };
 
           const updateGraphSelection = () => {
@@ -2481,16 +2512,27 @@ function renderLayout(
               .closest(".graph-select-item")
               ?.querySelector("[data-graph-select-filter]");
 
+            if (hasCompareSeriesId) {
+              select.value = select === selects[0] ? compareSeriesId : "";
+
+              if (filterInput) {
+                filterInput.value = "";
+              }
+            }
+
             if (filterInput) {
               filterInput.addEventListener("input", () => {
                 updateSelectOptions(select, filterInput.value);
               });
             }
 
-            select.addEventListener("change", updateGraphSelection);
-            updateSelectOptions(select, filterInput?.value || "");
+            select.addEventListener("change", () => {
+              refreshSelectOptions();
+              updateGraphSelection();
+            });
           }
 
+          refreshSelectOptions();
           updateGraphSelection();
         }
 
