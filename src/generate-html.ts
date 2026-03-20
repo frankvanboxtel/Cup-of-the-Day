@@ -2946,11 +2946,12 @@ function renderPodium(
   if (eventRecord.podium.length === 0) {
     return "-";
   }
+  const medals = ["🥇", "🥈", "🥉"];
 
   return eventRecord.podium
     .map(
       (group) =>
-        `${group.placing}. ${renderDriverList(group.entries, driverFileNames, rootPrefix)}`,
+        `${medals[group.placing - 1] || ""} ${renderDriverList(group.entries, driverFileNames, rootPrefix)}`,
     )
     .join("<br>");
 }
