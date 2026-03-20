@@ -62,6 +62,7 @@ type RaceResultsGraphPoint = {
   eventNumber: number;
   placing: number | null;
   title: string;
+  href: string | null;
 };
 
 type RaceResultsGraphSeries = {
@@ -1779,6 +1780,7 @@ function buildRaceResultsGraphSeries(
         result?.placing === null || result?.placing === undefined
           ? `COTD ${eventRecord.nr}: no placing`
           : `${formatPlacingLabel(result.placing)} - COTD ${eventRecord.nr} ${eventRecord.map}`,
+      href: `../events/${eventRecord.htmlFileName}`,
     }),
   );
 
@@ -1874,8 +1876,14 @@ function renderRaceResultsGraphSvg(
             .map((point) => {
               const x = xForEvent(point.eventNumber);
               const y = yForPlacing(point.placing);
+              const title = escapeHtml(`${entry.label} - ${point.title}`);
+              const circleMarkup = `<circle class="graph-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3" fill="${entry.color}"><title>${title}</title></circle>`;
 
-              return `<circle class="graph-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3" fill="${entry.color}"><title>${escapeHtml(`${entry.label} - ${point.title}`)}</title></circle>`;
+              if (!point.href) {
+                return circleMarkup;
+              }
+
+              return `<a href="${escapeHtml(point.href)}" aria-label="${title}">${circleMarkup}</a>`;
             })
             .join("\n")
         : "";
