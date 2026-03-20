@@ -30,6 +30,7 @@ type CupResultFile = {
 };
 
 type AliasList = Record<string, string[]>;
+type DisplayOnlyNameList = string[];
 
 type AliasResolver = {
   canonicalByName: Map<string, string>;
@@ -137,7 +138,7 @@ type CompetitionDefinition = {
 };
 
 const projectRoot = path.resolve(__dirname, "..");
-const resultsDirectory = path.join(projectRoot, "results");
+const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 const outputDirectory = path.join(projectRoot, "html");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
@@ -154,15 +155,18 @@ const raceResultsGraphIndexFilePath = path.join(
   raceResultsGraphDirectory,
   "index.html",
 );
+const playerDataDirectory = path.join(projectRoot, "data", "player-settings");
 const manualAliasListPath = path.join(
-  projectRoot,
-  "data",
+  playerDataDirectory,
   "player-aliases.json",
 );
 const generatedAliasListPath = path.join(
-  projectRoot,
-  "data",
+  playerDataDirectory,
   "player-aliases.generated.json",
+);
+const displayOnlyNameListPath = path.join(
+  playerDataDirectory,
+  "display-only-names.json",
 );
 const initialElo = 1500;
 const eloKFactor = 32;
@@ -202,6 +206,7 @@ const graphPalette = [
 
 async function main(): Promise<void> {
   const aliasResolver = await loadAliasResolver();
+  const displayOnlyNames = await loadDisplayOnlyNames();
   const eventRecords = await loadEventRecords();
   const cotdEventRecordsByNumber = new Map(
     getCompetitionEventRecords(eventRecords, "cotd").map((eventRecord) => [
@@ -212,9 +217,17 @@ async function main(): Promise<void> {
   const ratedEventRecords = eventRecords.filter(
     (eventRecord) => eventRecord.competitionType === "cotd",
   );
-  const eventRatings = buildEventRatings(ratedEventRecords, aliasResolver);
+  const eventRatings = buildEventRatings(
+    ratedEventRecords,
+    aliasResolver,
+    displayOnlyNames,
+  );
   const driverRatingHistory = eventRatings.history;
-  const driverRecords = buildDriverRecords(eventRecords, aliasResolver);
+  const driverRecords = buildDriverRecords(
+    eventRecords,
+    aliasResolver,
+    displayOnlyNames,
+  );
   const authorRecords = buildAuthorRecords(eventRecords, aliasResolver);
   const driverRecordsByName = new Map(
     driverRecords.map((record) => [record.canonicalName, record]),
@@ -564,6 +577,13 @@ async function loadAliasResolver(): Promise<AliasResolver> {
   };
 }
 
+async function loadDisplayOnlyNames(): Promise<Set<string>> {
+  const content = await readFile(displayOnlyNameListPath, "utf8");
+  const names = JSON.parse(content) as DisplayOnlyNameList;
+
+  return new Set(names.map(normalizeDisplayOnlyName).filter(Boolean));
+}
+
 async function loadAliasList(
   filePath: string,
   optional: boolean,
@@ -652,6 +672,10 @@ function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
+function normalizeDisplayOnlyName(value: string): string {
+  return normalizeWhitespace(value).toLowerCase();
+}
+
 function isCommentResultName(value: string): boolean {
   const normalized = value.trim().toLowerCase();
 
@@ -678,14 +702,33 @@ function resolveAlias(name: string, aliasResolver: AliasResolver): string {
   return aliasResolver.canonicalByName.get(normalizedName) ?? normalizedName;
 }
 
+function isDisplayOnlyName(
+  name: string,
+  aliasResolver: AliasResolver,
+  displayOnlyNames: Set<string>,
+): boolean {
+  const normalizedName = normalizeWhitespace(name);
+  const canonicalName = resolveAlias(normalizedName, aliasResolver);
+
+  return (
+    displayOnlyNames.has(normalizeDisplayOnlyName(normalizedName)) ||
+    displayOnlyNames.has(normalizeDisplayOnlyName(canonicalName))
+  );
+}
+
 function buildDriverRecords(
   eventRecords: EventRecord[],
   aliasResolver: AliasResolver,
+  displayOnlyNames: Set<string>,
 ): DriverRecord[] {
   const driverRecords = new Map<string, DriverRecord>();
 
   for (const eventRecord of eventRecords) {
     for (const result of eventRecord.results) {
+      if (isDisplayOnlyName(result.name, aliasResolver, displayOnlyNames)) {
+        continue;
+      }
+
       const canonicalName = resolveAlias(result.name, aliasResolver);
 
       if (!driverRecords.has(canonicalName)) {
@@ -704,6 +747,16 @@ function buildDriverRecords(
     }
 
     if (eventRecord.fastestTimeDriver) {
+      if (
+        isDisplayOnlyName(
+          eventRecord.fastestTimeDriver,
+          aliasResolver,
+          displayOnlyNames,
+        )
+      ) {
+        continue;
+      }
+
       const canonicalName = resolveAlias(
         eventRecord.fastestTimeDriver,
         aliasResolver,
@@ -747,13 +800,18 @@ function buildDriverRecords(
 function buildEventRatings(
   eventRecords: EventRecord[],
   aliasResolver: AliasResolver,
+  displayOnlyNames: Set<string>,
 ): EventRatings {
   const elo = new Map<string, number>();
   const summary = new Map<string, DriverRatingSummary>();
   const history = new Map<string, Map<string, DriverEventRating>>();
 
   for (const eventRecord of eventRecords) {
-    const participants = buildCanonicalEventResults(eventRecord, aliasResolver);
+    const participants = buildCanonicalEventResults(
+      eventRecord,
+      aliasResolver,
+      displayOnlyNames,
+    );
 
     if (participants.length === 0) {
       continue;
@@ -792,10 +850,15 @@ function buildEventRatings(
 function buildCanonicalEventResults(
   eventRecord: EventRecord,
   aliasResolver: AliasResolver,
+  displayOnlyNames: Set<string>,
 ): CanonicalEventResult[] {
   const byDriver = new Map<string, CanonicalEventResult>();
 
   for (const result of eventRecord.results) {
+    if (isDisplayOnlyName(result.name, aliasResolver, displayOnlyNames)) {
+      continue;
+    }
+
     const canonicalName = resolveAlias(result.name, aliasResolver);
     const existing = byDriver.get(canonicalName);
 
@@ -1599,7 +1662,8 @@ async function writeEventPage(
   const resultRows = eventRecord.results
     .map((result) => {
       const sourceEventRecord = result.rouletteSourceEventNumber
-        ? cotdEventRecordsByNumber.get(result.rouletteSourceEventNumber) ?? null
+        ? (cotdEventRecordsByNumber.get(result.rouletteSourceEventNumber) ??
+          null)
         : null;
       const sortAttributes = renderSortDataAttributes({
         placing: normalizeNumberSortValue(result.placing),

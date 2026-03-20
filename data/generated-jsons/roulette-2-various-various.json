@@ -1,0 +1,304 @@
+{
+  "competitionType": "roulette",
+  "competitionLabel": "Cup of the Day Roulette",
+  "eventLabel": "COTD Roulette 2",
+  "nr": 2,
+  "map": "Various",
+  "author": "Various",
+  "description": "All previous cup maps on shuffle (Cups #1-65)",
+  "fastestTime": null,
+  "fastestTimeDriver": null,
+  "fastestTimeRound": null,
+  "rouletteSourceLabel": "From Cup #...",
+  "sourceFile": "COTD Results - COTD Roulette.csv",
+  "results": [
+    {
+      "placing": 1,
+      "name": "justMaki",
+      "time": "45.096",
+      "eliminationRound": null,
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 2,
+      "name": "Lexer",
+      "time": "45.638",
+      "eliminationRound": "11",
+      "rouletteMap": "COTD #36 - Down Tools",
+      "rouletteMapper": "DeeDeeNaNaNa",
+      "rouletteSourceEventNumber": 36
+    },
+    {
+      "placing": 3,
+      "name": "[CTR]GuAlexItar",
+      "time": "42.723",
+      "eliminationRound": "10",
+      "rouletteMap": "Calamity of the Day",
+      "rouletteMapper": "TwoFace",
+      "rouletteSourceEventNumber": 5
+    },
+    {
+      "placing": 4,
+      "name": "[KURK] Quickracer10",
+      "time": "DNF",
+      "eliminationRound": "9",
+      "rouletteMap": "Gridly Bears",
+      "rouletteMapper": "TheCardq",
+      "rouletteSourceEventNumber": 25
+    },
+    {
+      "placing": 5,
+      "name": "masterofpi31415926535...",
+      "time": "49.513",
+      "eliminationRound": "8",
+      "rouletteMap": "COTD - 1-2-Blast-Through",
+      "rouletteMapper": "Striking Vyper",
+      "rouletteSourceEventNumber": 37
+    },
+    {
+      "placing": 6,
+      "name": "RoundNzt",
+      "time": "50.173",
+      "eliminationRound": "7",
+      "rouletteMap": "Maple Caveway",
+      "rouletteMapper": "Bottomless",
+      "rouletteSourceEventNumber": 9
+    },
+    {
+      "placing": 7,
+      "name": "[TBD] Renergy",
+      "time": "DNF",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 8,
+      "name": "JobW",
+      "time": "DNF",
+      "eliminationRound": "6",
+      "rouletteMap": "Red Run COTD",
+      "rouletteMapper": "GrahamPlayz8",
+      "rouletteSourceEventNumber": 21
+    },
+    {
+      "placing": 8,
+      "name": "[CTR] PoopSheriff",
+      "time": "DNF",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 10,
+      "name": "Northwind",
+      "time": "44.935",
+      "eliminationRound": "5",
+      "rouletteMap": "COTD LP SMM_GravityFP",
+      "rouletteMapper": "[CTR] LupensCruor",
+      "rouletteSourceEventNumber": 11
+    },
+    {
+      "placing": 11,
+      "name": "[CTR]OwlPlague",
+      "time": "45.384",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 12,
+      "name": "sobeisgood",
+      "time": "43.677",
+      "eliminationRound": "4",
+      "rouletteMap": "Embodiment of the Walt",
+      "rouletteMapper": "Codewalt",
+      "rouletteSourceEventNumber": 20
+    },
+    {
+      "placing": 13,
+      "name": "Shadynook",
+      "time": "DNF",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 14,
+      "name": "DeiRex",
+      "time": "46.006",
+      "eliminationRound": "3",
+      "rouletteMap": "Starlight Strand - COTD #49",
+      "rouletteMapper": "Linzi",
+      "rouletteSourceEventNumber": 49
+    },
+    {
+      "placing": 15,
+      "name": "ferinine",
+      "time": "46.058",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 16,
+      "name": "icRS",
+      "time": "46.346",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 17,
+      "name": "TimPanZee",
+      "time": "46.581",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "St Nicholas",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": "CotD-King's Day",
+      "rouletteMapper": "[Poop]Sheriff",
+      "rouletteSourceEventNumber": 48
+    },
+    {
+      "placing": 18,
+      "name": "[RB] Chinpokomon",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "agix",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "[ZET] Wheelie",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "Redstonecraft99",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "[ZET]LILWOOLEY",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "Neb",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "[ZET] Ploddip",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "slainsco",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "Ozone",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "Kiprosa",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 29,
+      "name": "[KURK[ lil_zwimpie",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": "COTD - Insrugence",
+      "rouletteMapper": "Linzi",
+      "rouletteSourceEventNumber": 24
+    },
+    {
+      "placing": 29,
+      "name": "Waterlemon147",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 29,
+      "name": "Chowder219",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 29,
+      "name": "Stick",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    }
+  ]
+}

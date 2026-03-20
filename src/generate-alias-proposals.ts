@@ -20,6 +20,7 @@ type CupResultFile = {
 };
 
 type AliasList = Record<string, string[]>;
+type DisplayOnlyNameList = string[];
 
 type NameObservation = {
   name: string;
@@ -67,19 +68,24 @@ type AliasProposalFile = {
 };
 
 const projectRoot = path.resolve(__dirname, "..");
-const resultsDirectory = path.join(projectRoot, "results");
+const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 const outputDirectory = resultsDirectory;
-const aliasListPath = path.join(projectRoot, "data", "player-aliases.json");
+const playerDataDirectory = path.join(projectRoot, "data", "player-settings");
+const aliasListPath = path.join(playerDataDirectory, "player-aliases.json");
 const generatedAliasListPath = path.join(
-  projectRoot,
-  "data",
+  playerDataDirectory,
   "player-aliases.generated.json",
+);
+const displayOnlyNameListPath = path.join(
+  playerDataDirectory,
+  "display-only-names.json",
 );
 const outputPath = path.join(outputDirectory, "player-alias-proposals.json");
 
 async function main(): Promise<void> {
   const knownAliases = await loadKnownAliases();
-  const observations = await collectNameObservations();
+  const displayOnlyNames = await loadDisplayOnlyNames();
+  const observations = await collectNameObservations(displayOnlyNames);
   const graph = buildAliasGraph(observations);
   const knownAliasAdditions = buildKnownAliasAdditions(
     knownAliases,
@@ -161,9 +167,16 @@ async function loadKnownAliases(): Promise<AliasList> {
   return JSON.parse(content) as AliasList;
 }
 
-async function collectNameObservations(): Promise<
-  Map<string, NameObservation>
-> {
+async function loadDisplayOnlyNames(): Promise<Set<string>> {
+  const content = await readFile(displayOnlyNameListPath, "utf8");
+  const names = JSON.parse(content) as DisplayOnlyNameList;
+
+  return new Set(names.map(normalizeDisplayOnlyName).filter(Boolean));
+}
+
+async function collectNameObservations(
+  displayOnlyNames: Set<string>,
+): Promise<Map<string, NameObservation>> {
   const fileNames = (await readdir(resultsDirectory))
     .filter((fileName) => fileName.toLowerCase().endsWith(".json"))
     .filter((fileName) => fileName !== path.basename(outputPath))
@@ -181,11 +194,17 @@ async function collectNameObservations(): Promise<
     const event = JSON.parse(content) as CupResultFile;
 
     for (const result of event.results) {
-      registerName(observations, result.name, event.nr, false);
+      registerName(observations, result.name, event.nr, false, displayOnlyNames);
     }
 
     if (event.fastestTimeDriver) {
-      registerName(observations, event.fastestTimeDriver, event.nr, true);
+      registerName(
+        observations,
+        event.fastestTimeDriver,
+        event.nr,
+        true,
+        displayOnlyNames,
+      );
     }
   }
 
@@ -197,8 +216,13 @@ function registerName(
   rawName: string,
   eventNumber: number,
   isFastestTime: boolean,
+  displayOnlyNames: Set<string>,
 ): void {
   const name = normalizeWhitespace(rawName);
+
+  if (displayOnlyNames.has(normalizeDisplayOnlyName(name))) {
+    return;
+  }
 
   if (!isLikelyPlayerName(name)) {
     return;
@@ -729,6 +753,10 @@ function isLikelyPlayerName(name: string): boolean {
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeDisplayOnlyName(value: string): string {
+  return normalizeWhitespace(value).toLowerCase();
 }
 
 main().catch((error: unknown) => {

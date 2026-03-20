@@ -50,11 +50,11 @@ type CompetitionHeader = {
 };
 
 const projectRoot = path.resolve(__dirname, "..");
-const dataDirectory = path.join(projectRoot, "data");
-const outputDirectory = path.join(projectRoot, "results");
+const sourceCsvDirectory = path.join(projectRoot, "data", "source-csvs");
+const outputDirectory = path.join(projectRoot, "data", "generated-jsons");
 
 async function main(): Promise<void> {
-  const dataFiles = await readdir(dataDirectory);
+  const dataFiles = await readdir(sourceCsvDirectory);
   const csvFiles = dataFiles
     .filter((fileName) => fileName.toLowerCase().endsWith(".csv"))
     .sort((left, right) =>
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
   let generatedFileCount = 0;
 
   for (const csvFileName of csvFiles) {
-    const sourcePath = path.join(dataDirectory, csvFileName);
+    const sourcePath = path.join(sourceCsvDirectory, csvFileName);
     const csvContent = await readFile(sourcePath, "utf8");
     const rows = parse(csvContent, {
       bom: true,

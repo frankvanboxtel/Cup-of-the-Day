@@ -1,0 +1,385 @@
+{
+  "competitionType": "roulette",
+  "competitionLabel": "Cup of the Day Roulette",
+  "eventLabel": "COTD Roulette 1",
+  "nr": 1,
+  "map": "Various",
+  "author": "Various",
+  "description": "All previous cup maps on shuffle (Cups #1-24)",
+  "fastestTime": null,
+  "fastestTimeDriver": null,
+  "fastestTimeRound": null,
+  "rouletteSourceLabel": "From COTD...",
+  "sourceFile": "COTD Results - COTD Roulette.csv",
+  "results": [
+    {
+      "placing": 1,
+      "name": "justMaki",
+      "time": "45.332",
+      "eliminationRound": null,
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 2,
+      "name": "Kernkob",
+      "time": "46.006",
+      "eliminationRound": "13",
+      "rouletteMap": "COTD1_Final",
+      "rouletteMapper": "[CTR] Sandals",
+      "rouletteSourceEventNumber": 1
+    },
+    {
+      "placing": 3,
+      "name": "RoundNzt",
+      "time": "48.613",
+      "eliminationRound": "12",
+      "rouletteMap": "Scopophobia",
+      "rouletteMapper": "[CTR]zedShep",
+      "rouletteSourceEventNumber": 23
+    },
+    {
+      "placing": 4,
+      "name": "[CTR]R0nanC",
+      "time": "40.573",
+      "eliminationRound": "11",
+      "rouletteMap": "Embodiment of the Walt",
+      "rouletteMapper": "Codewalt",
+      "rouletteSourceEventNumber": 20
+    },
+    {
+      "placing": 5,
+      "name": "Hydro",
+      "time": "DNF",
+      "eliminationRound": "10",
+      "rouletteMap": "Abondance",
+      "rouletteMapper": "JobW",
+      "rouletteSourceEventNumber": 13
+    },
+    {
+      "placing": 6,
+      "name": "Lexer",
+      "time": "45.453",
+      "eliminationRound": "9",
+      "rouletteMap": "Enjoy your stay Bob!",
+      "rouletteMapper": "jandje",
+      "rouletteSourceEventNumber": 3
+    },
+    {
+      "placing": 7,
+      "name": "Erko",
+      "time": "DNF",
+      "eliminationRound": "9",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 8,
+      "name": "JobW",
+      "time": "49.745",
+      "eliminationRound": "8",
+      "rouletteMap": "Insurgence",
+      "rouletteMapper": "Linzi",
+      "rouletteSourceEventNumber": 24
+    },
+    {
+      "placing": 9,
+      "name": "[CTR]L3it3R",
+      "time": "51.480",
+      "eliminationRound": "8",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 10,
+      "name": "St Nicholas",
+      "time": "46.259",
+      "eliminationRound": "7",
+      "rouletteMap": "Green Gleam",
+      "rouletteMapper": "Lexer",
+      "rouletteSourceEventNumber": 10
+    },
+    {
+      "placing": 11,
+      "name": "AndMe15",
+      "time": "46.500",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 12,
+      "name": "[KURK] Quickracer10",
+      "time": "DNF",
+      "eliminationRound": "6",
+      "rouletteMap": "Codewalt of the Day",
+      "rouletteMapper": "Codewalt",
+      "rouletteSourceEventNumber": 7
+    },
+    {
+      "placing": 12,
+      "name": "GrahamPlayz8",
+      "time": "DNF",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 14,
+      "name": "dirtyboy8",
+      "time": "53.661",
+      "eliminationRound": "5",
+      "rouletteMap": "Lucid Dreams",
+      "rouletteMapper": "ZOMAN",
+      "rouletteSourceEventNumber": 14
+    },
+    {
+      "placing": 15,
+      "name": "A2 Zecklord",
+      "time": "DNF",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 15,
+      "name": "[CTR] Sandals",
+      "time": "DNF",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 15,
+      "name": "DeiRex",
+      "time": "DNF",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "Hidef09",
+      "time": "51.213",
+      "eliminationRound": "4",
+      "rouletteMap": "Maple Caveway",
+      "rouletteMapper": "Bottomless",
+      "rouletteSourceEventNumber": 9
+    },
+    {
+      "placing": 19,
+      "name": "agix",
+      "time": "53.634",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 20,
+      "name": "jjryt",
+      "time": "55.679",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 21,
+      "name": "[              ]",
+      "time": "56.091",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 22,
+      "name": "Phoenjx",
+      "time": "50.843",
+      "eliminationRound": "3",
+      "rouletteMap": "Bobcup",
+      "rouletteMapper": "readfreak7",
+      "rouletteSourceEventNumber": 22
+    },
+    {
+      "placing": 23,
+      "name": "Cactushead",
+      "time": "50.845",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 24,
+      "name": "a_random_tumbleweed",
+      "time": "51.289",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 25,
+      "name": "A Broken Forklift",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 26,
+      "name": "I Have No Fork",
+      "time": "47.287",
+      "eliminationRound": "2",
+      "rouletteMap": "Cheep Cheep Beach",
+      "rouletteMapper": "TraNin",
+      "rouletteSourceEventNumber": 18
+    },
+    {
+      "placing": 27,
+      "name": "[OR] Roader",
+      "time": "49.355",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 28,
+      "name": "[CTR]TwoFace",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 28,
+      "name": "ttv/FloshaHD",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "bernhard",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": "Spiky Synset",
+      "rouletteMapper": "RoundNzt",
+      "rouletteSourceEventNumber": 15
+    },
+    {
+      "placing": 30,
+      "name": "Zylcel",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "matt",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "Zodiak",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "SadD0ge",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "DMILKS",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "Cubmid",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "MaxVerstappen9768",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "gordeiegorov",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "Lightning_Jude",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "Im_Coled",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "Kid_Falcon",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    }
+  ]
+}

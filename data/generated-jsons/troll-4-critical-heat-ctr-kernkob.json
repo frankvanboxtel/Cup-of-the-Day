@@ -1,0 +1,43 @@
+{
+  "competitionType": "troll",
+  "competitionLabel": "Troll Cup of the Day",
+  "eventLabel": "Troll COTD 4",
+  "nr": 4,
+  "map": "Critical Heat",
+  "author": "[CTR]Kernkob",
+  "description": null,
+  "fastestTime": "37.182",
+  "fastestTimeDriver": "Mark",
+  "fastestTimeRound": "Round 1",
+  "rouletteSourceLabel": null,
+  "sourceFile": "COTD Results - Troll COTDs.csv",
+  "results": [
+    {
+      "placing": 1,
+      "name": "justMaki",
+      "time": "37.234",
+      "eliminationRound": null,
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 2,
+      "name": "Mark",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 3,
+      "name": "25 Other Players",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    }
+  ]
+}

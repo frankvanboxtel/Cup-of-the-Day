@@ -9,7 +9,7 @@ type CupResultFile = {
 };
 
 const projectRoot = path.resolve(__dirname, "..");
-const resultsDirectory = path.join(projectRoot, "results");
+const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 
 async function main(): Promise<void> {
   const fileNames = await readdir(resultsDirectory);
@@ -33,7 +33,9 @@ async function main(): Promise<void> {
     .sort((left, right) => left - right);
 
   if (eventNumbers.length === 0) {
-    throw new Error("No generated event result files were found in results/.");
+    throw new Error(
+      "No generated event result files were found in data/generated-jsons/.",
+    );
   }
 
   const duplicates = eventNumbers.filter(
