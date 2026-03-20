@@ -1008,8 +1008,8 @@ async function writeDriverIndexPage(
             ${renderSortableHeader("Player", "driver", "text", "asc")}
             <th>Aliases</th>
             ${renderSortableHeader("Tracks", "tracks", "number", "desc", false, "align-right")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Wins", "wins", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
             ${renderSortableHeader("Win %", "win-rate", "number", "desc", false, "align-right")}
             ${renderSortableHeader("Podiums", "podiums", "number", "desc", false, "align-right")}
             ${renderSortableHeader("Podium %", "podium-rate", "number", "desc", false, "align-right")}
@@ -1129,8 +1129,8 @@ async function writePlacingsIndexPage(
         <thead>
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Wins", "wins", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Starts", "starts", "number", "desc", false, "align-right")}
+            ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
             ${renderSortableHeader("Finals", "finals", "number", "desc", false, "align-right")}
             ${renderSortableHeader("Podiums", "podiums", "number", "desc", false, "align-right")}
             ${renderSortableHeader("Top 6s", "top-6", "number", "desc", false, "align-right")}
