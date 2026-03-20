@@ -1,20 +1,30 @@
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+type CompetitionType = "cotd" | "roulette" | "troll";
+
 type ResultEntry = {
   placing: number | null;
   name: string;
   time: string;
   eliminationRound: string | null;
+  rouletteMap: string | null;
+  rouletteMapper: string | null;
+  rouletteSourceEventNumber: number | null;
 };
 
 type CupResultFile = {
+  competitionType: CompetitionType;
+  competitionLabel: string;
+  eventLabel: string;
   nr: number;
   map: string;
   author: string;
+  description: string | null;
   fastestTime: string | null;
   fastestTimeDriver: string | null;
   fastestTimeRound: string | null;
+  rouletteSourceLabel: string | null;
   sourceFile: string;
   results: ResultEntry[];
 };
@@ -27,6 +37,8 @@ type AliasResolver = {
 };
 
 type EventRecord = CupResultFile & {
+  eventKey: string;
+  sortOrder: number;
   jsonFileName: string;
   htmlFileName: string;
   podium: Array<{ placing: number; entries: ResultEntry[] }>;
@@ -115,7 +127,13 @@ type CanonicalEventResult = {
 type EventRatings = {
   elo: Map<string, number>;
   summary: Map<string, DriverRatingSummary>;
-  history: Map<string, Map<number, DriverEventRating>>;
+  history: Map<string, Map<string, DriverEventRating>>;
+};
+
+type CompetitionDefinition = {
+  type: CompetitionType;
+  label: string;
+  shortLabel: string;
 };
 
 const projectRoot = path.resolve(__dirname, "..");
@@ -152,6 +170,23 @@ const graphMaxPlacing = 20;
 const graphOverflowBucket = graphMaxPlacing + 1;
 const combinedGraphDefaultSelectionCount = 3;
 const combinedGraphQuickPickCount = 10;
+const competitionDefinitions: CompetitionDefinition[] = [
+  {
+    type: "cotd",
+    label: "Cup of the Day",
+    shortLabel: "COTD",
+  },
+  {
+    type: "roulette",
+    label: "Cup of the Day Roulette",
+    shortLabel: "Roulette",
+  },
+  {
+    type: "troll",
+    label: "Troll Cup of the Day",
+    shortLabel: "Troll COTD",
+  },
+];
 const graphPalette = [
   "#0047ab",
   "#d1495b",
@@ -168,7 +203,16 @@ const graphPalette = [
 async function main(): Promise<void> {
   const aliasResolver = await loadAliasResolver();
   const eventRecords = await loadEventRecords();
-  const eventRatings = buildEventRatings(eventRecords, aliasResolver);
+  const cotdEventRecordsByNumber = new Map(
+    getCompetitionEventRecords(eventRecords, "cotd").map((eventRecord) => [
+      eventRecord.nr,
+      eventRecord,
+    ]),
+  );
+  const ratedEventRecords = eventRecords.filter(
+    (eventRecord) => eventRecord.competitionType === "cotd",
+  );
+  const eventRatings = buildEventRatings(ratedEventRecords, aliasResolver);
   const driverRatingHistory = eventRatings.history;
   const driverRecords = buildDriverRecords(eventRecords, aliasResolver);
   const authorRecords = buildAuthorRecords(eventRecords, aliasResolver);
@@ -218,14 +262,16 @@ async function main(): Promise<void> {
     ),
     writePlacingsIndexPage(driverRecords, eventRatings.summary),
     writeRaceResultsGraphIndexPage(driverRecords, eventRecords),
-    ...eventRecords.map((eventRecord, index) =>
-      writeEventPage(
-        eventRecord,
-        driverFileNames,
-        authorFileNames,
-        eventRecords[index - 1] ?? null,
-        eventRecords[index + 1] ?? null,
-      ),
+    ...buildEventNavigationPairs(eventRecords).map(
+      ({ eventRecord, previousEventRecord, nextEventRecord }) =>
+        writeEventPage(
+          eventRecord,
+          driverFileNames,
+          authorFileNames,
+          cotdEventRecordsByNumber,
+          previousEventRecord,
+          nextEventRecord,
+        ),
     ),
     ...driverRecords.map((driverRecord) =>
       writeDriverPage(
@@ -261,7 +307,7 @@ async function loadEventRecords(): Promise<EventRecord[]> {
     .filter(
       (fileName) =>
         fileName.toLowerCase().endsWith(".json") &&
-        /^\d+-.*\.json$/i.test(fileName),
+        fileName !== "player-alias-proposals.json",
     )
     .sort((left, right) =>
       left.localeCompare(right, undefined, { numeric: true }),
@@ -275,10 +321,15 @@ async function loadEventRecords(): Promise<EventRecord[]> {
       const filteredResults = parsed.results.filter(
         (result) => !isCommentResultName(result.name),
       );
-      const authors = splitAuthors(parsed.author);
+      const authors =
+        parsed.competitionType === "roulette"
+          ? getRouletteAuthors(filteredResults)
+          : splitAuthors(parsed.author);
 
       return {
         ...parsed,
+        eventKey: buildEventKey(parsed.competitionType, parsed.nr),
+        sortOrder: 0,
         results: filteredResults,
         jsonFileName: fileName,
         htmlFileName: `${path.basename(fileName, ".json")}.html`,
@@ -288,7 +339,160 @@ async function loadEventRecords(): Promise<EventRecord[]> {
     }),
   );
 
-  return records.sort((left, right) => left.nr - right.nr);
+  return records.sort(compareEventRecords).map((record, index) => ({
+    ...record,
+    sortOrder: index + 1,
+  }));
+}
+
+function buildEventNavigationPairs(eventRecords: EventRecord[]): Array<{
+  eventRecord: EventRecord;
+  previousEventRecord: EventRecord | null;
+  nextEventRecord: EventRecord | null;
+}> {
+  return competitionDefinitions.flatMap(({ type }) => {
+    const competitionEvents = eventRecords.filter(
+      (eventRecord) => eventRecord.competitionType === type,
+    );
+
+    return competitionEvents.map((eventRecord, index) => ({
+      eventRecord,
+      previousEventRecord: competitionEvents[index - 1] ?? null,
+      nextEventRecord: competitionEvents[index + 1] ?? null,
+    }));
+  });
+}
+
+function getRouletteAuthors(results: ResultEntry[]): string[] {
+  return Array.from(
+    new Set(
+      results
+        .map((result) => normalizeWhitespace(result.rouletteMapper ?? ""))
+        .filter((mapper) => mapper.length > 0),
+    ),
+  ).sort((left, right) => left.localeCompare(right));
+}
+
+function buildEventKey(
+  competitionType: CompetitionType,
+  eventNumber: number,
+): string {
+  return `${competitionType}:${eventNumber}`;
+}
+
+function compareEventRecords(left: EventRecord, right: EventRecord): number {
+  return (
+    getCompetitionOrder(left.competitionType) -
+      getCompetitionOrder(right.competitionType) ||
+    left.nr - right.nr ||
+    left.eventLabel.localeCompare(right.eventLabel)
+  );
+}
+
+function getCompetitionDefinition(
+  competitionType: CompetitionType,
+): CompetitionDefinition {
+  return (
+    competitionDefinitions.find(
+      (definition) => definition.type === competitionType,
+    ) ?? {
+      type: competitionType,
+      label: competitionType,
+      shortLabel: competitionType,
+    }
+  );
+}
+
+function getCompetitionOrder(competitionType: CompetitionType): number {
+  return competitionDefinitions.findIndex(
+    (definition) => definition.type === competitionType,
+  );
+}
+
+function getCompetitionEventRecords(
+  eventRecords: EventRecord[],
+  competitionType: CompetitionType,
+): EventRecord[] {
+  return eventRecords.filter(
+    (eventRecord) => eventRecord.competitionType === competitionType,
+  );
+}
+
+function renderEventLink(
+  eventRecord: EventRecord,
+  rootPrefix: string,
+  label = eventRecord.eventLabel,
+): string {
+  return `<a href="${rootPrefix}/events/${eventRecord.htmlFileName}">${escapeHtml(label)}</a>`;
+}
+
+function renderEventMapLink(
+  eventRecord: EventRecord,
+  rootPrefix: string,
+  label = eventRecord.map,
+): string {
+  return `<a href="${rootPrefix}/events/${eventRecord.htmlFileName}">${escapeHtml(label)}</a>`;
+}
+
+function renderEventAuthors(
+  eventRecord: EventRecord,
+  authorFileNames: Map<string, string>,
+  rootPrefix: string,
+  compact = false,
+): string {
+  if (compact && eventRecord.competitionType === "roulette") {
+    return escapeHtml(eventRecord.author);
+  }
+
+  return renderAuthorLinks(eventRecord.authors, authorFileNames, rootPrefix);
+}
+
+function renderFastestTimeSummary(
+  eventRecord: EventRecord,
+  driverFileNames: Map<string, string>,
+  rootPrefix: string,
+): string {
+  if (!eventRecord.fastestTime) {
+    return "-";
+  }
+
+  const fastestPlayer = renderFastestPlayer(
+    eventRecord,
+    driverFileNames,
+    rootPrefix,
+  );
+
+  if (fastestPlayer === "-") {
+    return formatRaceTimeHtml(eventRecord.fastestTime);
+  }
+
+  return `${formatRaceTimeHtml(eventRecord.fastestTime)} by ${fastestPlayer}`;
+}
+
+function renderTabPanels(
+  tabPrefix: string,
+  tabs: Array<{ suffix: string; label: string; content: string }>,
+  defaultSuffix: string,
+  ariaLabel: string,
+): string {
+  return `
+    <div class="tab-list" role="tablist" aria-label="${escapeHtml(ariaLabel)}" data-tabs data-default-tab="${escapeHtml(`${tabPrefix}-${defaultSuffix}`)}">
+      ${tabs
+        .map(
+          (tab) =>
+            `<button type="button" class="tab-button" role="tab" data-tab-target="${escapeHtml(`${tabPrefix}-${tab.suffix}`)}">${escapeHtml(tab.label)}</button>`,
+        )
+        .join("\n")}
+    </div>
+    ${tabs
+      .map(
+        (tab, index) => `
+          <section id="${escapeHtml(`${tabPrefix}-${tab.suffix}`)}" class="tab-panel" role="tabpanel"${index === 0 ? "" : " hidden"}>
+            ${tab.content}
+          </section>`,
+      )
+      .join("\n")}
+  `;
 }
 
 async function loadAliasResolver(): Promise<AliasResolver> {
@@ -531,8 +735,8 @@ function buildDriverRecords(
       aliases: Array.from(
         new Set([driverRecord.canonicalName, ...driverRecord.aliases]),
       ).sort((left, right) => left.localeCompare(right)),
-      results: [...driverRecord.results].sort(
-        (left, right) => left.eventRecord.nr - right.eventRecord.nr,
+      results: [...driverRecord.results].sort((left, right) =>
+        compareEventRecords(left.eventRecord, right.eventRecord),
       ),
     }))
     .sort((left, right) =>
@@ -546,7 +750,7 @@ function buildEventRatings(
 ): EventRatings {
   const elo = new Map<string, number>();
   const summary = new Map<string, DriverRatingSummary>();
-  const history = new Map<string, Map<number, DriverEventRating>>();
+  const history = new Map<string, Map<string, DriverEventRating>>();
 
   for (const eventRecord of eventRecords) {
     const participants = buildCanonicalEventResults(eventRecord, aliasResolver);
@@ -572,7 +776,7 @@ function buildEventRatings(
         history.set(participant.canonicalName, new Map());
       }
 
-      history.get(participant.canonicalName)?.set(eventRecord.nr, {
+      history.get(participant.canonicalName)?.set(eventRecord.eventKey, {
         elo: participantSummary.currentElo,
       });
     }
@@ -746,7 +950,9 @@ function buildAuthorRecords(
 
       if (
         authorRecord &&
-        !authorRecord.tracks.some((track) => track.nr === eventRecord.nr)
+        !authorRecord.tracks.some(
+          (track) => track.eventKey === eventRecord.eventKey,
+        )
       ) {
         authorRecord.tracks.push(eventRecord);
       }
@@ -759,9 +965,7 @@ function buildAuthorRecords(
       aliases: Array.from(
         new Set([authorRecord.canonicalName, ...authorRecord.aliases]),
       ).sort((left, right) => left.localeCompare(right)),
-      tracks: [...authorRecord.tracks].sort(
-        (left, right) => left.nr - right.nr,
-      ),
+      tracks: [...authorRecord.tracks].sort(compareEventRecords),
     }))
     .sort((left, right) =>
       left.canonicalName.localeCompare(right.canonicalName),
@@ -875,59 +1079,23 @@ async function writeIndexPage(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
 ): Promise<void> {
-  const rows = eventRecords
-    .map((eventRecord) => {
-      const podium = renderPodium(eventRecord, driverFileNames, ".");
-      const authors = renderAuthorLinks(
-        eventRecord.authors,
-        authorFileNames,
-        ".",
-      );
-      const fastestDriver = renderFastestPlayer(
-        eventRecord,
-        driverFileNames,
-        ".",
-      );
-      const sortAttributes = renderSortDataAttributes({
-        event: eventRecord.nr,
-        map: normalizeTextSortValue(eventRecord.map),
-        author: normalizeTextSortValue(eventRecord.authors.join(", ")),
-        "fastest-time": normalizeTimeSortValue(eventRecord.fastestTime),
-        "fastest-driver": normalizeTextSortValue(eventRecord.fastestTimeDriver),
-      });
-
-      return `
-        <tr${sortAttributes}>
-          <td class="number-cell"><a href="events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
-          <td class="bold"><a href="events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
-          <td>${authors}</td>
-          <td class="align-right number-cell">${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"}</td>
-          <td>${fastestDriver}</td>
-          <td>${podium}</td>
-        </tr>`;
-    })
-    .join("\n");
+  const tabs = competitionDefinitions.map((definition) => ({
+    suffix: definition.type,
+    label: definition.label,
+    content: renderOverviewCompetitionSection(
+      getCompetitionEventRecords(eventRecords, definition.type),
+      driverFileNames,
+      authorFileNames,
+      ".",
+    ),
+  }));
 
   const content = renderLayout(
     "Cup of the Day",
     `
-      <h1>Cup of the Day</h1>
-      <p>${eventRecords.length} events</p>
-      <table data-sort-table>
-        <thead>
-          <tr>
-            ${renderSortableHeader("Event", "event", "number", "asc", true, "number-cell")}
-            ${renderSortableHeader("Track", "map", "text", "asc")}
-            ${renderSortableHeader("Author", "author", "text", "asc")}
-            ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "number-cell")}
-            ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
-            <th>Podium</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
+      <h1>Cup Competitions</h1>
+      <p>${eventRecords.length} events across ${competitionDefinitions.length} competitions.</p>
+      ${renderTabPanels("overview", tabs, competitionDefinitions[0]?.type ?? "cotd", "Overview competitions")}
     `,
     {
       pageTitle: "Cup of the Day Overview",
@@ -936,6 +1104,147 @@ async function writeIndexPage(
   );
 
   await writeFile(indexFilePath, content, "utf8");
+}
+
+function renderOverviewCompetitionSection(
+  eventRecords: EventRecord[],
+  driverFileNames: Map<string, string>,
+  authorFileNames: Map<string, string>,
+  rootPrefix: string,
+): string {
+  if (eventRecords.length === 0) {
+    return "<p>No events found for this competition.</p>";
+  }
+
+  const rows = eventRecords
+    .map((eventRecord) => {
+      const podium = renderPodium(eventRecord, driverFileNames, rootPrefix);
+      const authors = renderEventAuthors(
+        eventRecord,
+        authorFileNames,
+        rootPrefix,
+        true,
+      );
+      const fastestDriver = renderFastestPlayer(
+        eventRecord,
+        driverFileNames,
+        rootPrefix,
+      );
+      const sortAttributes = renderSortDataAttributes({
+        event: eventRecord.nr,
+        map: normalizeTextSortValue(eventRecord.map),
+        author: normalizeTextSortValue(
+          eventRecord.competitionType === "roulette"
+            ? eventRecord.author
+            : eventRecord.authors.join(", "),
+        ),
+        "fastest-time": normalizeTimeSortValue(eventRecord.fastestTime),
+        "fastest-driver": normalizeTextSortValue(eventRecord.fastestTimeDriver),
+      });
+
+      return `
+        <tr${sortAttributes}>
+          <td class="number-cell">${renderEventLink(eventRecord, rootPrefix)}</td>
+          <td class="bold">${renderEventMapLink(eventRecord, rootPrefix)}</td>
+          <td>${authors}</td>
+          <td class="align-right number-cell">${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"}</td>
+          <td>${fastestDriver}</td>
+          <td>${podium}</td>
+        </tr>`;
+    })
+    .join("\n");
+
+  return `
+    <p>${eventRecords.length} events</p>
+    <table data-sort-table>
+      <thead>
+        <tr>
+          ${renderSortableHeader("Event", "event", "number", "asc", true, "number-cell")}
+          ${renderSortableHeader("Track", "map", "text", "asc")}
+          ${renderSortableHeader("Author", "author", "text", "asc")}
+          ${renderSortableHeader("Fastest Time", "fastest-time", "number", "asc", false, "number-cell")}
+          ${renderSortableHeader("Fastest Player", "fastest-driver", "text", "asc")}
+          <th>Podium</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderCompetitionFilterPanel(
+  filterTarget: string,
+  legend = "Competitions",
+): string {
+  return `
+    <fieldset class="competition-filter-panel" data-competition-filter-group data-competition-filter-target="${escapeHtml(filterTarget)}">
+      <legend>${escapeHtml(legend)}</legend>
+      <div class="competition-filter-options">
+        ${competitionDefinitions
+          .map(
+            (definition) => `
+              <label class="competition-filter-option">
+                <input type="checkbox" data-competition-toggle value="${escapeHtml(definition.type)}" checked>
+                <span>${escapeHtml(definition.label)}</span>
+              </label>`,
+          )
+          .join("\n")}
+      </div>
+    </fieldset>
+  `;
+}
+
+function renderCompetitionMetricAttributes(
+  metrics: Record<string, Partial<Record<CompetitionType, number>>>,
+): string {
+  return Object.entries(metrics)
+    .map(([metricKey, valuesByCompetition]) =>
+      competitionDefinitions
+        .map(
+          ({ type }) =>
+            ` data-stats-${type}-${metricKey}="${valuesByCompetition[type] ?? 0}"`,
+        )
+        .join(""),
+    )
+    .join("");
+}
+
+function renderDynamicCompetitionCountCell(
+  metricKey: string,
+  value: number,
+  additionalClasses = "",
+): string {
+  const classNames = [
+    "align-right",
+    additionalClasses,
+    value === 0 ? "is-zero" : "",
+  ]
+    .filter((value) => value.length > 0)
+    .join(" ");
+
+  return `<td class="${classNames}" data-competition-cell="${escapeHtml(metricKey)}">${value === 0 ? "" : value}</td>`;
+}
+
+function renderDynamicCompetitionPercentageCell(
+  metricKey: string,
+  value: number,
+): string {
+  return `<td class="align-right${value === 0 ? " is-zero" : ""}" data-competition-cell="${escapeHtml(metricKey)}">${value === 0 ? "" : formatPercentage(value)}</td>`;
+}
+
+function buildAuthorTrackCountsByCompetition(
+  authorRecord: AuthorRecord | null,
+): Record<CompetitionType, number> {
+  return Object.fromEntries(
+    competitionDefinitions.map(({ type }) => [
+      type,
+      authorRecord?.tracks.filter(
+        (eventRecord) => eventRecord.competitionType === type,
+      ).length ?? 0,
+    ]),
+  ) as Record<CompetitionType, number>;
 }
 
 async function writeDriverIndexPage(
@@ -947,8 +1256,19 @@ async function writeDriverIndexPage(
   const rows = driverRecords
     .map((driverRecord) => {
       const stats = buildDriverStats(driverRecord, driverRatingSummary);
-      const tracksCreated =
-        authorRecordsByName.get(driverRecord.canonicalName)?.tracks.length ?? 0;
+      const tracksByCompetition = buildAuthorTrackCountsByCompetition(
+        authorRecordsByName.get(driverRecord.canonicalName) ?? null,
+      );
+      const statsByCompetition = Object.fromEntries(
+        competitionDefinitions.map(({ type }) => [
+          type,
+          buildDriverStats(driverRecord, driverRatingSummary, [type]),
+        ]),
+      ) as Record<CompetitionType, DriverStats>;
+      const tracksCreated = Object.values(tracksByCompetition).reduce(
+        (sum, count) => sum + count,
+        0,
+      );
       const aliasSummary = renderAliasSummary(
         driverRecord.aliases,
         driverRecord.canonicalName,
@@ -967,18 +1287,45 @@ async function writeDriverIndexPage(
         "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
         elo: normalizeNumberSortValue(stats.currentElo),
       });
+      const competitionAttributes = renderCompetitionMetricAttributes({
+        tracks: tracksByCompetition,
+        starts: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].starts,
+          ]),
+        ),
+        wins: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].wins,
+          ]),
+        ),
+        podiums: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].podiums,
+          ]),
+        ),
+        "fastest-times": Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].fastestTimes,
+          ]),
+        ),
+      });
 
       return `
-        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
+        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
           <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
           <td title="${driverRecord.aliases.join(", ")}"><div class="single-line alias">${aliasSummary}</div></td>
-          ${renderZeroValueCountCell(tracksCreated)}
-          ${renderZeroValueCountCell(stats.starts)}
-          ${renderZeroValueCountCell(stats.wins)}
-          ${renderZeroValuePercentageCell(stats.winRate)}
-          ${renderZeroValueCountCell(stats.podiums)}
-          ${renderZeroValuePercentageCell(stats.podiumRate)}
-          ${renderZeroValueCountCell(stats.fastestTimes)}
+          ${renderDynamicCompetitionCountCell("tracks", tracksCreated)}
+          ${renderDynamicCompetitionCountCell("starts", stats.starts)}
+          ${renderDynamicCompetitionCountCell("wins", stats.wins)}
+          ${renderDynamicCompetitionPercentageCell("win-rate", stats.winRate)}
+          ${renderDynamicCompetitionCountCell("podiums", stats.podiums)}
+          ${renderDynamicCompetitionPercentageCell("podium-rate", stats.podiumRate)}
+          ${renderDynamicCompetitionCountCell("fastest-times", stats.fastestTimes)}
           <td class="align-right">${formatElo(stats.currentElo)}</td>
         </tr>`;
     })
@@ -1001,7 +1348,8 @@ async function writeDriverIndexPage(
         >
         <p class="search-summary" data-driver-search-summary>${driverRecords.length} players shown</p>
       </div>
-      <table data-sort-table>
+      ${renderCompetitionFilterPanel("players-index", "Include competitions in totals")}
+      <table data-sort-table data-competition-stats-table="players" data-competition-filter-target="players-index">
         <thead>
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
@@ -1041,32 +1389,29 @@ async function writePlacingsIndexPage(
       const searchTerms = normalizeSearchText(
         [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
       );
+      const statsByCompetition = Object.fromEntries(
+        competitionDefinitions.map(({ type }) => [
+          type,
+          buildDriverStats(driverRecord, driverRatingSummary, [type]),
+        ]),
+      ) as Record<CompetitionType, DriverStats>;
       const placingCounts = buildPlacingCounts(driverRecord);
-      const finals = (placingCounts[0] ?? 0) + (placingCounts[1] ?? 0);
-      const podiums = finals + (placingCounts[2] ?? 0);
-      const top6 =
-        podiums +
-        (placingCounts[3] ?? 0) +
-        (placingCounts[4] ?? 0) +
-        (placingCounts[5] ?? 0);
-      const top10 =
-        top6 +
-        (placingCounts[6] ?? 0) +
-        (placingCounts[7] ?? 0) +
-        (placingCounts[8] ?? 0) +
-        (placingCounts[9] ?? 0);
-      const top25 = placingCounts
-        .slice(0, 25)
-        .reduce((sum, count) => sum + count, 0);
+      const placingSummary = summarizePlacingCounts(placingCounts);
+      const placingCountsByCompetition = Object.fromEntries(
+        competitionDefinitions.map(({ type }) => [
+          type,
+          buildPlacingCountsForCompetitions(driverRecord, [type]),
+        ]),
+      ) as Record<CompetitionType, number[]>;
       const sortAttributes = renderSortDataAttributes({
         driver: normalizeTextSortValue(driverRecord.canonicalName),
         starts: normalizeNumberSortValue(stats.starts),
         wins: normalizeNumberSortValue(stats.wins),
-        finals: normalizeNumberSortValue(finals),
-        podiums: normalizeNumberSortValue(podiums),
-        "top-6": normalizeNumberSortValue(top6),
-        "top-10": normalizeNumberSortValue(top10),
-        "top-25": normalizeNumberSortValue(top25),
+        finals: normalizeNumberSortValue(placingSummary.finals),
+        podiums: normalizeNumberSortValue(placingSummary.podiums),
+        "top-6": normalizeNumberSortValue(placingSummary.top6),
+        "top-10": normalizeNumberSortValue(placingSummary.top10),
+        "top-25": normalizeNumberSortValue(placingSummary.top25),
         ...Object.fromEntries(
           placingColumns.map((placing) => [
             `placing-${placing}`,
@@ -1074,22 +1419,81 @@ async function writePlacingsIndexPage(
           ]),
         ),
       });
+      const competitionAttributes = renderCompetitionMetricAttributes({
+        starts: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].starts,
+          ]),
+        ),
+        wins: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            placingCountsByCompetition[type][0] ?? 0,
+          ]),
+        ),
+        finals: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            summarizePlacingCounts(placingCountsByCompetition[type]).finals,
+          ]),
+        ),
+        podiums: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            summarizePlacingCounts(placingCountsByCompetition[type]).podiums,
+          ]),
+        ),
+        "top-6": Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            summarizePlacingCounts(placingCountsByCompetition[type]).top6,
+          ]),
+        ),
+        "top-10": Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            summarizePlacingCounts(placingCountsByCompetition[type]).top10,
+          ]),
+        ),
+        "top-25": Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            summarizePlacingCounts(placingCountsByCompetition[type]).top25,
+          ]),
+        ),
+        ...Object.fromEntries(
+          placingColumns.map((placing) => [
+            `placing-${placing}`,
+            Object.fromEntries(
+              competitionDefinitions.map(({ type }) => [
+                type,
+                placingCountsByCompetition[type][placing - 1] ?? 0,
+              ]),
+            ),
+          ]),
+        ),
+      });
       const placingCells = placingColumns
         .map((placing) =>
-          renderPlacingCountCell(placingCounts[placing - 1] ?? 0, placing),
+          renderDynamicCompetitionCountCell(
+            `placing-${placing}`,
+            placingCounts[placing - 1] ?? 0,
+            `placingNo bold${placing >= 1 && placing <= 25 ? ` placing-${placing}` : ""}`,
+          ),
         )
         .join("");
 
       return `
-        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}>
+        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
           <td><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
-          ${renderZeroValueCountCell(stats.starts)}
-          ${renderZeroValueCountCell(stats.wins)}
-          ${renderZeroValueCountCell(finals)}
-          ${renderZeroValueCountCell(podiums)}
-          ${renderZeroValueCountCell(top6)}
-          ${renderZeroValueCountCell(top10)}
-          ${renderZeroValueCountCell(top25)}
+          ${renderDynamicCompetitionCountCell("starts", stats.starts)}
+          ${renderDynamicCompetitionCountCell("wins", stats.wins)}
+          ${renderDynamicCompetitionCountCell("finals", placingSummary.finals)}
+          ${renderDynamicCompetitionCountCell("podiums", placingSummary.podiums)}
+          ${renderDynamicCompetitionCountCell("top-6", placingSummary.top6)}
+          ${renderDynamicCompetitionCountCell("top-10", placingSummary.top10)}
+          ${renderDynamicCompetitionCountCell("top-25", placingSummary.top25)}
           ${placingCells}
         </tr>`;
     })
@@ -1123,7 +1527,8 @@ async function writePlacingsIndexPage(
         >
         <p class="search-summary" data-driver-search-summary>${driverRecords.length} players shown</p>
       </div>
-      <table data-sort-table>
+      ${renderCompetitionFilterPanel("placings-index", "Include competitions in totals")}
+      <table data-sort-table data-competition-stats-table="placings" data-competition-filter-target="placings-index">
         <thead>
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
@@ -1155,42 +1560,23 @@ async function writeRaceResultsGraphIndexPage(
   driverRecords: DriverRecord[],
   eventRecords: EventRecord[],
 ): Promise<void> {
-  const sortedDriverRecords = [...driverRecords].sort(
-    (left, right) =>
-      getDriverWinCount(right) - getDriverWinCount(left) ||
-      getDriverResultRecords(right).length -
-        getDriverResultRecords(left).length ||
-      left.canonicalName.localeCompare(right.canonicalName),
-  );
-  const series = sortedDriverRecords.map((driverRecord, index) =>
-    buildRaceResultsGraphSeries(
-      driverRecord,
-      eventRecords,
-      graphPalette[index % graphPalette.length] ?? "#0047ab",
-      `../drivers/${driverRecord.htmlFileName}`,
+  const tabs = competitionDefinitions.map((definition) => ({
+    suffix: definition.type,
+    label: definition.label,
+    content: renderCompetitionResultsGraphSection(
+      driverRecords,
+      getCompetitionEventRecords(eventRecords, definition.type),
+      definition.type,
+      true,
+      "..",
     ),
-  );
-  const defaultVisibleIds = series
-    .slice(0, combinedGraphDefaultSelectionCount)
-    .map((entry) => entry.id);
-  const initialVisibleColors = new Map(
-    defaultVisibleIds.map((seriesId, index) => [
-      seriesId,
-      graphPalette[index % graphPalette.length] ?? "#0047ab",
-    ]),
-  );
-  const initialSeries = series.map((entry) => ({
-    ...entry,
-    color: initialVisibleColors.get(entry.id) ?? entry.color,
   }));
 
   const content = renderLayout(
     "Results Graph",
     `
       <h1>Results Graph</h1>
-      <p>Combined placing graph for all players. The top ${combinedGraphDefaultSelectionCount} players are enabled by default. Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
-      ${renderRaceResultsGraphSelector(series, defaultVisibleIds)}
-      ${renderRaceResultsGraphSvg(initialSeries, eventRecords, false, true, defaultVisibleIds, "combined-race-results")}
+      ${renderTabPanels("results-graph", tabs, competitionDefinitions[0]?.type ?? "cotd", "Results graph competitions")}
     `,
     {
       pageTitle: "Results Graph",
@@ -1205,17 +1591,41 @@ async function writeEventPage(
   eventRecord: EventRecord,
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
+  cotdEventRecordsByNumber: Map<number, EventRecord>,
   previousEventRecord: EventRecord | null,
   nextEventRecord: EventRecord | null,
 ): Promise<void> {
+  const hasRouletteColumns = eventRecord.competitionType === "roulette";
   const resultRows = eventRecord.results
     .map((result) => {
+      const sourceEventRecord = result.rouletteSourceEventNumber
+        ? cotdEventRecordsByNumber.get(result.rouletteSourceEventNumber) ?? null
+        : null;
       const sortAttributes = renderSortDataAttributes({
         placing: normalizeNumberSortValue(result.placing),
         driver: normalizeTextSortValue(result.name),
         time: normalizeTimeSortValue(result.time),
         "elimination-round": normalizeTextSortValue(result.eliminationRound),
+        "roulette-map": normalizeTextSortValue(result.rouletteMap),
+        "roulette-mapper": normalizeTextSortValue(result.rouletteMapper),
+        "roulette-source": normalizeNumberSortValue(
+          result.rouletteSourceEventNumber,
+        ),
       });
+      const rouletteMapMarkup = result.rouletteMap
+        ? sourceEventRecord
+          ? renderEventMapLink(sourceEventRecord, "..", result.rouletteMap)
+          : escapeHtml(result.rouletteMap)
+        : "-";
+      const rouletteSourceMarkup = result.rouletteSourceEventNumber
+        ? sourceEventRecord
+          ? renderEventLink(
+              sourceEventRecord,
+              "..",
+              String(result.rouletteSourceEventNumber),
+            )
+          : String(result.rouletteSourceEventNumber)
+        : "-";
 
       return `
         <tr${sortAttributes}>
@@ -1223,27 +1633,35 @@ async function writeEventPage(
           <td>${renderDriverLink(result.name, driverFileNames, "..")}</td>
           <td class="align-right number-cell">${formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
+          ${
+            hasRouletteColumns
+              ? `<td>${rouletteMapMarkup}</td>
+          <td>${result.rouletteMapper ? renderAuthorLinks([result.rouletteMapper], authorFileNames, "..") : "-"}</td>
+          <td class="align-right number-cell">${rouletteSourceMarkup}</td>`
+              : ""
+          }
         </tr>`;
     })
     .join("\n");
 
   const content = renderLayout(
-    `COTD ${eventRecord.nr} - ${eventRecord.map}`,
+    `${eventRecord.eventLabel} - ${eventRecord.map}`,
     `
       <div class="event-heading">
         <div class="event-heading-nav" aria-label="Event navigation">
-          ${previousEventRecord ? `<a class="event-nav-link" href="${escapeHtml(previousEventRecord.htmlFileName)}" aria-label="Previous event: COTD ${previousEventRecord.nr}">&larr;</a>` : ""}
+          ${previousEventRecord ? `<a class="event-nav-link" href="${escapeHtml(previousEventRecord.htmlFileName)}" aria-label="Previous event: ${escapeHtml(previousEventRecord.eventLabel)}">&larr;</a>` : ""}
         </div>
-        <h1>COTD ${eventRecord.nr}</h1>
+        <h1>${escapeHtml(eventRecord.eventLabel)}</h1>
         <div class="event-heading-nav" aria-label="Event navigation">
-          ${nextEventRecord ? `<a class="event-nav-link" href="${escapeHtml(nextEventRecord.htmlFileName)}" aria-label="Next event: COTD ${nextEventRecord.nr}">&rarr;</a>` : ""}
+          ${nextEventRecord ? `<a class="event-nav-link" href="${escapeHtml(nextEventRecord.htmlFileName)}" aria-label="Next event: ${escapeHtml(nextEventRecord.eventLabel)}">&rarr;</a>` : ""}
         </div>
       </div>
       <h2>${escapeHtml(eventRecord.map)}</h2>
       <table>
         <tbody>
-          <tr><th>Author</th><td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td></tr>
-          <tr><th>Fastest Time</th><td>${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"} by ${renderFastestPlayer(eventRecord, driverFileNames, "..")}</td></tr>
+          <tr><th>${eventRecord.competitionType === "roulette" ? "Mappers" : "Author"}</th><td>${renderEventAuthors(eventRecord, authorFileNames, "..")}</td></tr>
+          ${eventRecord.description ? `<tr><th>${eventRecord.competitionType === "roulette" ? "Pool" : "Description"}</th><td>${escapeHtml(eventRecord.description)}</td></tr>` : ""}
+          <tr><th>Fastest Time</th><td>${renderFastestTimeSummary(eventRecord, driverFileNames, "..")}</td></tr>
           <tr><th>Podium</th><td>${renderPodium(eventRecord, driverFileNames, "..")}</td></tr>
         </tbody>
       </table>
@@ -1255,6 +1673,13 @@ async function writeEventPage(
             ${renderSortableHeader("Player", "driver", "text", "asc")}
             ${renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
             ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
+            ${
+              hasRouletteColumns
+                ? `${renderSortableHeader("Map", "roulette-map", "text", "asc")}
+            ${renderSortableHeader("Mapper", "roulette-mapper", "text", "asc")}
+            ${renderSortableHeader(eventRecord.rouletteSourceLabel ?? "Source", "roulette-source", "number", "asc", false, "number-cell")}`
+                : ""
+            }
           </tr>
         </thead>
         <tbody>
@@ -1263,7 +1688,7 @@ async function writeEventPage(
       </table>
     `,
     {
-      pageTitle: `COTD ${eventRecord.nr} - ${eventRecord.map}`,
+      pageTitle: `${eventRecord.eventLabel} - ${eventRecord.map}`,
       rootPrefix: "..",
     },
   );
@@ -1282,7 +1707,7 @@ async function writeDriverPage(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
-  driverRatingHistory: Map<string, Map<number, DriverEventRating>>,
+  driverRatingHistory: Map<string, Map<string, DriverEventRating>>,
 ): Promise<void> {
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
@@ -1336,7 +1761,7 @@ async function writeAuthorPage(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
-  driverRatingHistory: Map<string, Map<number, DriverEventRating>>,
+  driverRatingHistory: Map<string, Map<string, DriverEventRating>>,
 ): Promise<void> {
   const matchingDriverRecord =
     driverRecordsByName.get(authorRecord.canonicalName) ?? null;
@@ -1382,16 +1807,22 @@ async function writeAuthorPage(
 function getDriverResultRecords(
   driverRecord: DriverRecord,
 ): DriverResultRecord[] {
-  return [...driverRecord.results].sort(
-    (left, right) => left.eventRecord.nr - right.eventRecord.nr,
+  return [...driverRecord.results].sort((left, right) =>
+    compareEventRecords(left.eventRecord, right.eventRecord),
   );
 }
 
 function buildDriverStats(
   driverRecord: DriverRecord,
   driverRatingSummary: Map<string, DriverRatingSummary>,
+  competitionTypes = competitionDefinitions.map(
+    (definition) => definition.type,
+  ),
 ): DriverStats {
-  const driverResults = getDriverResultRecords(driverRecord);
+  const selectedCompetitionTypes = new Set(competitionTypes);
+  const driverResults = getDriverResultRecords(driverRecord).filter((entry) =>
+    selectedCompetitionTypes.has(entry.eventRecord.competitionType),
+  );
   const ratingSummary =
     driverRatingSummary.get(driverRecord.canonicalName) ??
     getDefaultDriverRatingSummary();
@@ -1423,10 +1854,36 @@ function buildDriverStats(
     podiums,
     podiumRate,
     bestFinish,
-    fastestTimes: driverRecord.fastestTimes,
+    fastestTimes: countDriverFastestTimes(driverRecord, competitionTypes),
     currentElo: ratingSummary.currentElo,
     peakElo: ratingSummary.peakElo,
   };
+}
+
+function countDriverFastestTimes(
+  driverRecord: DriverRecord,
+  competitionTypes = competitionDefinitions.map(
+    (definition) => definition.type,
+  ),
+): number {
+  const selectedCompetitionTypes = new Set(competitionTypes);
+  const knownNames = new Set([
+    driverRecord.canonicalName,
+    ...driverRecord.aliases,
+  ]);
+
+  return Array.from(
+    new Set(
+      driverRecord.results
+        .filter(({ eventRecord }) =>
+          selectedCompetitionTypes.has(eventRecord.competitionType),
+        )
+        .filter(({ eventRecord }) =>
+          knownNames.has(eventRecord.fastestTimeDriver ?? ""),
+        )
+        .map(({ eventRecord }) => eventRecord.eventKey),
+    ),
+  ).length;
 }
 
 function getDefaultDriverRatingSummary(): DriverRatingSummary {
@@ -1437,9 +1894,7 @@ function getDefaultDriverRatingSummary(): DriverRatingSummary {
 }
 
 function buildAuthorStats(authorRecord: AuthorRecord): AuthorStats {
-  const sortedTracks = [...authorRecord.tracks].sort(
-    (left, right) => left.nr - right.nr,
-  );
+  const sortedTracks = [...authorRecord.tracks].sort(compareEventRecords);
   const soloTracks = sortedTracks.filter(
     (eventRecord) => eventRecord.authors.length === 1,
   ).length;
@@ -1598,7 +2053,7 @@ function renderRaceResultsSection(
   driverRecord: DriverRecord | null,
   eventRecords: EventRecord[],
   authorFileNames: Map<string, string>,
-  driverRatingHistory: Map<string, Map<number, DriverEventRating>>,
+  driverRatingHistory: Map<string, Map<string, DriverEventRating>>,
 ): string {
   if (driverRecord === null) {
     return `
@@ -1614,7 +2069,7 @@ function renderRaceResultsSection(
 
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
-      const ratingAtEvent = ratingHistory.get(eventRecord.nr) ?? null;
+      const ratingAtEvent = ratingHistory.get(eventRecord.eventKey) ?? null;
       const isTrackAuthor =
         result === null &&
         driverAuthorFileName !== null &&
@@ -1629,7 +2084,7 @@ function renderRaceResultsSection(
         .filter((value): value is string => value !== null)
         .join(" ");
       const sortAttributes = renderSortDataAttributes({
-        event: normalizeNumberSortValue(eventRecord.nr),
+        event: normalizeNumberSortValue(eventRecord.sortOrder),
         map: normalizeTextSortValue(eventRecord.map),
         author: normalizeTextSortValue(eventRecord.authors.join(", ")),
         placing: normalizeNumberSortValue(result?.placing),
@@ -1640,8 +2095,8 @@ function renderRaceResultsSection(
 
       return `
         <tr${rowClasses.length > 0 ? ` class="${rowClasses}"` : ""}${sortAttributes}>
-          <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
-          <td class="bold"><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
+          <td>${renderEventLink(eventRecord, "..")}</td>
+          <td class="bold">${renderEventMapLink(eventRecord, "..")}</td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${result === null ? (isTrackAuthor ? "Track author" : "Did not race") : "Raced"}</td>
           <td class="placings-column align-right number-cell">${result?.placing ?? "-"}</td>
@@ -1679,13 +2134,80 @@ function buildDriverTimeline(
   eventRecords: EventRecord[],
 ): DriverTimelineRecord[] {
   const resultsByEvent = new Map(
-    driverRecord.results.map((entry) => [entry.eventRecord.nr, entry.result]),
+    driverRecord.results.map((entry) => [
+      entry.eventRecord.eventKey,
+      entry.result,
+    ]),
   );
 
   return eventRecords.map((eventRecord) => ({
     eventRecord,
-    result: resultsByEvent.get(eventRecord.nr) ?? null,
+    result: resultsByEvent.get(eventRecord.eventKey) ?? null,
   }));
+}
+
+function getDriverResultRecordsForCompetition(
+  driverRecord: DriverRecord,
+  competitionType: CompetitionType,
+): DriverResultRecord[] {
+  return getDriverResultRecords(driverRecord).filter(
+    (entry) => entry.eventRecord.competitionType === competitionType,
+  );
+}
+
+function renderCompetitionResultsGraphSection(
+  driverRecords: DriverRecord[],
+  eventRecords: EventRecord[],
+  competitionType: CompetitionType,
+  includeSelector: boolean,
+  rootPrefix: string,
+): string {
+  if (eventRecords.length === 0) {
+    return '<p class="graph-empty">No graph data available.</p>';
+  }
+
+  const sortedDriverRecords = [...driverRecords]
+    .filter(
+      (driverRecord) =>
+        getDriverResultRecordsForCompetition(driverRecord, competitionType)
+          .length > 0,
+    )
+    .sort(
+      (left, right) =>
+        getDriverWinCount(right, competitionType) -
+          getDriverWinCount(left, competitionType) ||
+        getDriverResultRecordsForCompetition(right, competitionType).length -
+          getDriverResultRecordsForCompetition(left, competitionType).length ||
+        left.canonicalName.localeCompare(right.canonicalName),
+    );
+  const series = sortedDriverRecords.map((driverRecord, index) =>
+    buildRaceResultsGraphSeries(
+      driverRecord,
+      eventRecords,
+      graphPalette[index % graphPalette.length] ?? "#0047ab",
+      `${rootPrefix}/drivers/${driverRecord.htmlFileName}`,
+    ),
+  );
+  const defaultVisibleIds = series
+    .slice(0, combinedGraphDefaultSelectionCount)
+    .map((entry) => entry.id);
+  const initialVisibleColors = new Map(
+    defaultVisibleIds.map((seriesId, index) => [
+      seriesId,
+      graphPalette[index % graphPalette.length] ?? "#0047ab",
+    ]),
+  );
+  const initialSeries = series.map((entry) => ({
+    ...entry,
+    color: initialVisibleColors.get(entry.id) ?? entry.color,
+  }));
+  const graphId = `combined-race-results-${competitionType}`;
+
+  return `
+    <p class="graph-note">Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
+    ${includeSelector ? renderRaceResultsGraphSelector(series, defaultVisibleIds, graphId, competitionType) : ""}
+    ${renderRaceResultsGraphSvg(initialSeries, eventRecords, false, true, defaultVisibleIds, graphId)}
+  `;
 }
 
 function renderRaceResultsGraphSection(
@@ -1699,18 +2221,50 @@ function renderRaceResultsGraphSection(
     `;
   }
 
+  return `
+    <h2>Results Graph</h2>
+    ${renderTabPanels(
+      "player-results-graph",
+      competitionDefinitions.map((definition) => ({
+        suffix: definition.type,
+        label: definition.label,
+        content: renderPlayerCompetitionGraphSection(
+          driverRecord,
+          getCompetitionEventRecords(eventRecords, definition.type),
+          definition.type,
+        ),
+      })),
+      competitionDefinitions[0]?.type ?? "cotd",
+      "Player results graph competitions",
+    )}
+  `;
+}
+
+function renderPlayerCompetitionGraphSection(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  competitionType: CompetitionType,
+): string {
+  const competitionResults = getDriverResultRecordsForCompetition(
+    driverRecord,
+    competitionType,
+  );
+
+  if (eventRecords.length === 0 || competitionResults.length === 0) {
+    return '<p class="graph-empty">No results in this competition.</p>';
+  }
+
   const series = [
     buildRaceResultsGraphSeries(
       driverRecord,
       eventRecords,
-      graphPalette[0],
+      graphPalette[0] ?? "#0047ab",
       null,
     ),
   ];
-  const compareHref = `../race-results-graph/index.html?compare=${encodeURIComponent(series[0]?.id ?? stableId(driverRecord.canonicalName))}`;
+  const compareHref = `../race-results-graph/index.html?competition=${encodeURIComponent(competitionType)}&compare=${encodeURIComponent(series[0]?.id ?? stableId(driverRecord.canonicalName))}#results-graph-${competitionType}`;
 
   return `
-    <h2>Results Graph</h2>
     <p class="graph-note">Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
     ${renderRaceResultsGraphSvg(
       series,
@@ -1733,21 +2287,40 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
   }
 
   const placingCounts = buildPlacingCounts(driverRecord);
+  const placingCountsByCompetition = Object.fromEntries(
+    competitionDefinitions.map(({ type }) => [
+      type,
+      buildPlacingCountsForCompetitions(driverRecord, [type]),
+    ]),
+  ) as Record<CompetitionType, number[]>;
   const rows = placingCounts
     .map((count, index) => {
       const placing = index + 1;
+      const competitionAttributes = renderCompetitionMetricAttributes({
+        "placing-count": Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            placingCountsByCompetition[type][placing - 1] ?? 0,
+          ]),
+        ),
+      });
 
       return `
-        <tr>
+        <tr${competitionAttributes}>
           <th class="align-right">${placing}</th>
-          ${renderPlacingCountCell(count, placing)}
+          ${renderDynamicCompetitionCountCell(
+            "placing-count",
+            count,
+            `placingNo bold${placing >= 1 && placing <= 25 ? ` placing-${placing}` : ""}`,
+          )}
         </tr>`;
     })
     .join("\n");
 
   return `
     <h2>Placings</h2>
-    <table class="compact-table placings-table">
+    ${renderCompetitionFilterPanel("player-placings", "Include competitions in totals")}
+    <table class="compact-table placings-table" data-competition-stats-table="player-placings" data-competition-filter-target="player-placings">
       <thead>
         <tr>
           <th class="align-right">Pos</th>
@@ -1762,9 +2335,24 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
 }
 
 function buildPlacingCounts(driverRecord: DriverRecord): number[] {
-  const counts = Array.from({ length: 50 }, () => 0);
+  return buildPlacingCountsForCompetitions(
+    driverRecord,
+    competitionDefinitions.map((definition) => definition.type),
+  );
+}
 
-  for (const { result } of getDriverResultRecords(driverRecord)) {
+function buildPlacingCountsForCompetitions(
+  driverRecord: DriverRecord,
+  competitionTypes: CompetitionType[],
+): number[] {
+  const counts = Array.from({ length: 50 }, () => 0);
+  const selectedCompetitionTypes = new Set(competitionTypes);
+
+  for (const { eventRecord, result } of getDriverResultRecords(driverRecord)) {
+    if (!selectedCompetitionTypes.has(eventRecord.competitionType)) {
+      continue;
+    }
+
     if (result.placing === null || result.placing < 1 || result.placing > 50) {
       continue;
     }
@@ -1773,6 +2361,39 @@ function buildPlacingCounts(driverRecord: DriverRecord): number[] {
   }
 
   return counts;
+}
+
+function summarizePlacingCounts(placingCounts: number[]): {
+  finals: number;
+  podiums: number;
+  top6: number;
+  top10: number;
+  top25: number;
+} {
+  const finals = (placingCounts[0] ?? 0) + (placingCounts[1] ?? 0);
+  const podiums = finals + (placingCounts[2] ?? 0);
+  const top6 =
+    podiums +
+    (placingCounts[3] ?? 0) +
+    (placingCounts[4] ?? 0) +
+    (placingCounts[5] ?? 0);
+  const top10 =
+    top6 +
+    (placingCounts[6] ?? 0) +
+    (placingCounts[7] ?? 0) +
+    (placingCounts[8] ?? 0) +
+    (placingCounts[9] ?? 0);
+  const top25 = placingCounts
+    .slice(0, 25)
+    .reduce((sum, count) => sum + count, 0);
+
+  return {
+    finals,
+    podiums,
+    top6,
+    top10,
+    top25,
+  };
 }
 
 function buildRaceResultsGraphSeries(
@@ -1792,8 +2413,8 @@ function buildRaceResultsGraphSeries(
             : graphOverflowBucket,
       title:
         result?.placing === null || result?.placing === undefined
-          ? `COTD ${eventRecord.nr}: no placing`
-          : `${formatPlacingLabel(result.placing)} - COTD ${eventRecord.nr} ${eventRecord.map}`,
+          ? `${eventRecord.eventLabel}: no placing`
+          : `${formatPlacingLabel(result.placing)} - ${eventRecord.eventLabel} ${eventRecord.map}`,
       href: `../events/${eventRecord.htmlFileName}`,
     }),
   );
@@ -1967,6 +2588,8 @@ function buildGraphEventTicks(firstEvent: number, lastEvent: number): number[] {
 function renderRaceResultsGraphSelector(
   series: RaceResultsGraphSeries[],
   defaultVisibleIds: string[],
+  graphTarget: string,
+  competitionType: CompetitionType,
 ): string {
   if (series.length === 0) {
     return '<p class="graph-empty">No player graph data is available.</p>';
@@ -2007,7 +2630,7 @@ function renderRaceResultsGraphSelector(
   ).join("\n");
 
   return `
-    <div class="graph-controls" data-graph-picker data-graph-target="combined-race-results">
+    <div class="graph-controls" data-graph-picker data-graph-target="${escapeHtml(graphTarget)}" data-competition-type="${escapeHtml(competitionType)}">
       <p class="graph-note">The top ${combinedGraphDefaultSelectionCount} players are enabled by default. Each dropdown includes every player.</p>
       <div class="graph-select-list">
         ${quickPicks}
@@ -2015,10 +2638,15 @@ function renderRaceResultsGraphSelector(
     </div>`;
 }
 
-function getDriverWinCount(driverRecord: DriverRecord): number {
-  return getDriverResultRecords(driverRecord).filter(
-    (entry) => entry.result.placing === 1,
-  ).length;
+function getDriverWinCount(
+  driverRecord: DriverRecord,
+  competitionType?: CompetitionType,
+): number {
+  const resultRecords = competitionType
+    ? getDriverResultRecordsForCompetition(driverRecord, competitionType)
+    : getDriverResultRecords(driverRecord);
+
+  return resultRecords.filter((entry) => entry.result.placing === 1).length;
 }
 
 function buildResultRowClassName(placing: number | null): string {
@@ -2174,13 +2802,13 @@ function renderTracksSection(
   }
 
   const rows = [...authorRecord.tracks]
-    .sort((left, right) => left.nr - right.nr)
+    .sort(compareEventRecords)
     .map((eventRecord) => {
       const winners = eventRecord.results.filter(
         (result) => result.placing === 1,
       );
       const sortAttributes = renderSortDataAttributes({
-        event: normalizeNumberSortValue(eventRecord.nr),
+        event: normalizeNumberSortValue(eventRecord.sortOrder),
         map: normalizeTextSortValue(eventRecord.map),
         authors: normalizeTextSortValue(eventRecord.authors.join(", ")),
         winner: normalizeTextSortValue(
@@ -2192,8 +2820,8 @@ function renderTracksSection(
 
       return `
         <tr${sortAttributes}>
-          <td><a href="../events/${eventRecord.htmlFileName}">COTD ${eventRecord.nr}</a></td>
-          <td class="bold"><a href="../events/${eventRecord.htmlFileName}">${escapeHtml(eventRecord.map)}</a></td>
+          <td>${renderEventLink(eventRecord, "..")}</td>
+          <td class="bold">${renderEventMapLink(eventRecord, "..")}</td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${renderDriverList(winners, driverFileNames, "..")}</td>
           <td class="align-right">${eventRecord.fastestTime ? formatRaceTimeHtml(eventRecord.fastestTime) : "-"}</td>
@@ -2299,6 +2927,10 @@ function renderLayout(
     <link rel="stylesheet" href="${options.rootPrefix}/styles.css">
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        const competitionTypes = ${JSON.stringify(
+          competitionDefinitions.map((definition) => definition.type),
+        )};
+
         for (const tabList of document.querySelectorAll("[data-tabs]")) {
           const buttons = Array.from(
             tabList.querySelectorAll("[data-tab-target]"),
@@ -2382,7 +3014,9 @@ function renderLayout(
 
         for (const picker of document.querySelectorAll("[data-graph-picker]")) {
           const graphTarget = picker.getAttribute("data-graph-target") || "";
-          const compareSeriesId = new URLSearchParams(window.location.search).get("compare") || "";
+          const compareParams = new URLSearchParams(window.location.search);
+          const compareSeriesId = compareParams.get("compare") || "";
+          const compareCompetitionType = compareParams.get("competition") || "";
           const selects = Array.from(
             picker.querySelectorAll("[data-graph-select]"),
           );
@@ -2402,6 +3036,8 @@ function renderLayout(
 
           const hasCompareSeriesId =
             compareSeriesId.length > 0 &&
+            (compareCompetitionType.length === 0 ||
+              picker.getAttribute("data-competition-type") === compareCompetitionType) &&
             Array.from(optionSets.values()).some((optionSet) =>
               optionSet.some((option) => option.value === compareSeriesId),
             );
@@ -2630,11 +3266,25 @@ function renderLayout(
 
           const initialSorter = sorters.find((sorter) => sorter.classList.contains("active")) || sorters[0];
 
-          if (initialSorter) {
+          table.__refreshSort = () => {
+            const activeSorter =
+              sorters.find((sorter) => sorter.classList.contains("active")) ||
+              initialSorter;
+
+            if (!activeSorter) {
+              return;
+            }
+
             sortRows(
-              initialSorter,
-              initialSorter.dataset.sortDefaultDirection || "asc",
+              activeSorter,
+              activeSorter.dataset.sortDirection ||
+                activeSorter.dataset.sortDefaultDirection ||
+                "asc",
             );
+          };
+
+          if (table.__refreshSort) {
+            table.__refreshSort();
           }
 
           for (const sorter of sorters) {
@@ -2650,6 +3300,128 @@ function renderLayout(
               sortRows(sorter, nextDirection);
             });
           }
+        }
+
+        const formatDecimalParts = (value) => {
+          const normalized = String(value);
+          const match = normalized.match(/^(.*?)([.,])(\d+)$/);
+
+          if (!match) {
+            return null;
+          }
+
+          return {
+            wholePart: match[1],
+            separator: match[2],
+            fractionalPart: match[3],
+          };
+        };
+
+        const formatCompetitionCellHtml = (metricKey, value) => {
+          if (metricKey === "win-rate" || metricKey === "podium-rate") {
+            if (value === 0) {
+              return "";
+            }
+
+            const parts = formatDecimalParts(value.toFixed(1));
+
+            if (!parts) {
+              return value.toFixed(1) + "<small>%</small>";
+            }
+
+            return parts.wholePart + parts.separator + "<small>" + parts.fractionalPart + "</small><small>%</small>";
+          }
+
+          return value === 0 ? "" : String(value);
+        };
+
+        const sumCompetitionMetric = (row, metricKey, selectedCompetitionTypes) =>
+          selectedCompetitionTypes.reduce((sum, competitionType) => {
+            const attributeValue = Number(
+              row.getAttribute("data-stats-" + competitionType + "-" + metricKey) ||
+                "0",
+            );
+
+            return sum + attributeValue;
+          }, 0);
+
+        const getCompetitionMetricValue = (row, metricKey, selectedCompetitionTypes) => {
+          if (metricKey === "win-rate") {
+            const starts = sumCompetitionMetric(row, "starts", selectedCompetitionTypes);
+            const wins = sumCompetitionMetric(row, "wins", selectedCompetitionTypes);
+
+            return starts > 0 ? (wins / starts) * 100 : 0;
+          }
+
+          if (metricKey === "podium-rate") {
+            const starts = sumCompetitionMetric(row, "starts", selectedCompetitionTypes);
+            const podiums = sumCompetitionMetric(row, "podiums", selectedCompetitionTypes);
+
+            return starts > 0 ? (podiums / starts) * 100 : 0;
+          }
+
+          return sumCompetitionMetric(row, metricKey, selectedCompetitionTypes);
+        };
+
+        for (const filterGroup of document.querySelectorAll("[data-competition-filter-group]")) {
+          const filterTarget =
+            filterGroup.getAttribute("data-competition-filter-target") || "";
+          const toggles = Array.from(
+            filterGroup.querySelectorAll("[data-competition-toggle]"),
+          );
+          const tables = Array.from(
+            document.querySelectorAll(
+              '[data-competition-filter-target="' + filterTarget + '"]',
+            ),
+          ).filter((table) => table !== filterGroup);
+
+          if (!filterTarget || toggles.length === 0 || tables.length === 0) {
+            continue;
+          }
+
+          const updateCompetitionTotals = () => {
+            const selectedCompetitionTypes = competitionTypes.filter((competitionType) =>
+              toggles.some(
+                (toggle) =>
+                  toggle.value === competitionType &&
+                  toggle.checked,
+              ),
+            );
+
+            for (const table of tables) {
+              const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+              for (const row of rows) {
+                for (const cell of row.querySelectorAll("[data-competition-cell]")) {
+                  const metricKey = cell.getAttribute("data-competition-cell") || "";
+
+                  if (!metricKey) {
+                    continue;
+                  }
+
+                  const metricValue = getCompetitionMetricValue(
+                    row,
+                    metricKey,
+                    selectedCompetitionTypes,
+                  );
+
+                  cell.classList.toggle("is-zero", metricValue === 0);
+                  cell.innerHTML = formatCompetitionCellHtml(metricKey, metricValue);
+                  row.setAttribute("data-sort-" + metricKey, String(metricValue));
+                }
+              }
+
+              if (typeof table.__refreshSort === "function") {
+                table.__refreshSort();
+              }
+            }
+          };
+
+          for (const toggle of toggles) {
+            toggle.addEventListener("change", updateCompetitionTotals);
+          }
+
+          updateCompetitionTotals();
         }
       });
     </script>

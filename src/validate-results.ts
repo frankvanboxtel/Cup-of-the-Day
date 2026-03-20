@@ -1,15 +1,35 @@
-import { readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+
+type CompetitionType = "cotd" | "roulette" | "troll";
+
+type CupResultFile = {
+  competitionType: CompetitionType;
+  nr: number;
+};
 
 const projectRoot = path.resolve(__dirname, "..");
 const resultsDirectory = path.join(projectRoot, "results");
 
 async function main(): Promise<void> {
   const fileNames = await readdir(resultsDirectory);
-  const eventNumbers = fileNames
-    .filter((fileName) => /^\d+-.*\.json$/i.test(fileName))
-    .map((fileName) => Number(fileName.match(/^(\d+)-/)?.[1] ?? "NaN"))
-    .filter(Number.isFinite)
+  const eventNumbers = (
+    await Promise.all(
+      fileNames
+        .filter((fileName) => fileName.toLowerCase().endsWith(".json"))
+        .filter((fileName) => fileName !== "player-alias-proposals.json")
+        .map(async (fileName) => {
+          const content = await readFile(
+            path.join(resultsDirectory, fileName),
+            "utf8",
+          );
+          const event = JSON.parse(content) as CupResultFile;
+
+          return event.competitionType === "cotd" ? event.nr : null;
+        }),
+    )
+  )
+    .filter((value): value is number => value !== null)
     .sort((left, right) => left - right);
 
   if (eventNumbers.length === 0) {
@@ -30,20 +50,22 @@ async function main(): Promise<void> {
   const presentEventNumbers = new Set(eventNumbers);
   const missingEventNumbers: number[] = [];
 
-  for (let eventNumber = 1; eventNumber <= highestEventNumber; eventNumber += 1) {
+  for (
+    let eventNumber = 1;
+    eventNumber <= highestEventNumber;
+    eventNumber += 1
+  ) {
     if (!presentEventNumbers.has(eventNumber)) {
       missingEventNumbers.push(eventNumber);
     }
   }
 
   if (missingEventNumbers.length > 0) {
-    throw new Error(
-      `Missing event numbers: ${missingEventNumbers.join(", ")}`,
-    );
+    throw new Error(`Missing event numbers: ${missingEventNumbers.join(", ")}`);
   }
 
   console.log(
-    `Validated ${eventNumbers.length} generated event result files with no missing event numbers through ${highestEventNumber}.`,
+    `Validated ${eventNumbers.length} Cup of the Day result files with no missing event numbers through ${highestEventNumber}.`,
   );
 }
 

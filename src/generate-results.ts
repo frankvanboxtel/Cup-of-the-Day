@@ -3,28 +3,50 @@ import path from "node:path";
 
 import { parse } from "csv-parse/sync";
 
+type CompetitionType = "cotd" | "roulette" | "troll";
+
 type ResultEntry = {
   placing: number | null;
   name: string;
   time: string;
   eliminationRound: string | null;
+  rouletteMap: string | null;
+  rouletteMapper: string | null;
+  rouletteSourceEventNumber: number | null;
 };
 
 type CupResultFile = {
+  competitionType: CompetitionType;
+  competitionLabel: string;
+  eventLabel: string;
   nr: number;
   map: string;
   author: string;
+  description: string | null;
   fastestTime: string | null;
   fastestTimeDriver: string | null;
   fastestTimeRound: string | null;
+  rouletteSourceLabel: string | null;
   sourceFile: string;
   results: ResultEntry[];
 };
 
 type CupBlock = {
+  competitionType: CompetitionType;
+  competitionLabel: string;
+  eventLabel: string;
+  filePrefix: string;
   nr: number;
   headerRowIndex: number;
   placingColumnIndex: number;
+};
+
+type CompetitionHeader = {
+  competitionType: CompetitionType;
+  competitionLabel: string;
+  eventLabel: string;
+  filePrefix: string;
+  nr: number;
 };
 
 const projectRoot = path.resolve(__dirname, "..");
@@ -47,7 +69,7 @@ async function main(): Promise<void> {
       .filter(
         (fileName) =>
           fileName.toLowerCase().endsWith(".json") &&
-          /^\d+-.*\.json$/i.test(fileName),
+          fileName !== "player-alias-proposals.json",
       )
       .map((fileName) =>
         rm(path.join(outputDirectory, fileName), { force: true }),
@@ -68,8 +90,7 @@ async function main(): Promise<void> {
 
     for (const cupBlock of detectCupBlocks(rows)) {
       const cupData = extractCup(rows, cupBlock, csvFileName);
-
-      const fileName = `${cupData.nr}-${slugify(cupData.map)}-${slugify(cupData.author)}.json`;
+      const fileName = `${cupBlock.filePrefix}-${cupData.nr}-${slugify(cupData.map)}-${slugify(cupData.author)}.json`;
       const outputPath = path.join(outputDirectory, fileName);
 
       await writeFile(
@@ -88,32 +109,88 @@ async function main(): Promise<void> {
 
 function detectCupBlocks(rows: string[][]): CupBlock[] {
   const cupBlocks: CupBlock[] = [];
-  const seenCupNumbers = new Set<number>();
+  const seenCupKeys = new Set<string>();
 
   for (const [rowIndex, row] of rows.entries()) {
     for (const [columnIndex, value] of row.entries()) {
-      const normalizedValue = value.trim();
+      const header = parseCompetitionHeader(value);
 
-      if (!/^COT[DW]\s+\d+\b/i.test(normalizedValue)) {
+      if (!header) {
         continue;
       }
 
-      const nr = parseCupNumber(normalizedValue);
+      const cupKey = `${header.competitionType}:${header.nr}`;
 
-      if (seenCupNumbers.has(nr)) {
+      if (seenCupKeys.has(cupKey)) {
         continue;
       }
 
-      seenCupNumbers.add(nr);
+      seenCupKeys.add(cupKey);
       cupBlocks.push({
-        nr,
+        ...header,
         headerRowIndex: rowIndex,
         placingColumnIndex: columnIndex,
       });
     }
   }
 
-  return cupBlocks.sort((left, right) => left.nr - right.nr);
+  return cupBlocks.sort(
+    (left, right) =>
+      getCompetitionOrder(left.competitionType) -
+        getCompetitionOrder(right.competitionType) || left.nr - right.nr,
+  );
+}
+
+function parseCompetitionHeader(
+  value: string | undefined,
+): CompetitionHeader | null {
+  const normalizedValue = normalizeWhitespace(
+    stripWrappingQuotes(value?.trim() ?? ""),
+  );
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const rouletteMatch = normalizedValue.match(/^COTD Roulette\s+(\d+)\b/i);
+
+  if (rouletteMatch) {
+    const nr = Number(rouletteMatch[1]);
+
+    return {
+      competitionType: "roulette",
+      competitionLabel: "Cup of the Day Roulette",
+      eventLabel: `COTD Roulette ${nr}`,
+      filePrefix: "roulette",
+      nr,
+    };
+  }
+
+  const trollMatch = normalizedValue.match(/^Troll COT[DW]\s+(\d+)\b/i);
+
+  if (trollMatch) {
+    return {
+      competitionType: "troll",
+      competitionLabel: "Troll Cup of the Day",
+      eventLabel: normalizedValue,
+      filePrefix: "troll",
+      nr: Number(trollMatch[1]),
+    };
+  }
+
+  const cotdMatch = normalizedValue.match(/^COT[DW]\s+(\d+)\b/i);
+
+  if (cotdMatch) {
+    return {
+      competitionType: "cotd",
+      competitionLabel: "Cup of the Day",
+      eventLabel: normalizedValue,
+      filePrefix: "cotd",
+      nr: Number(cotdMatch[1]),
+    };
+  }
+
+  return null;
 }
 
 function extractCup(
@@ -121,31 +198,72 @@ function extractCup(
   cupBlock: CupBlock,
   sourceFileName: string,
 ): CupResultFile {
+  const resultsHeaderRowIndex = findResultsHeaderRowIndex(
+    rows,
+    cupBlock.headerRowIndex,
+    cupBlock.placingColumnIndex,
+  );
   const indexes = {
     placing: cupBlock.placingColumnIndex,
     name: cupBlock.placingColumnIndex + 1,
     time: cupBlock.placingColumnIndex + 2,
     eliminationRound: cupBlock.placingColumnIndex + 3,
+    rouletteMap:
+      cupBlock.competitionType === "roulette"
+        ? cupBlock.placingColumnIndex + 4
+        : undefined,
+    rouletteMapper:
+      cupBlock.competitionType === "roulette"
+        ? cupBlock.placingColumnIndex + 5
+        : undefined,
+    rouletteSource:
+      cupBlock.competitionType === "roulette"
+        ? cupBlock.placingColumnIndex + 6
+        : undefined,
   };
+  const results = extractResults(rows, indexes, resultsHeaderRowIndex + 1);
+
+  if (cupBlock.competitionType === "roulette") {
+    return {
+      competitionType: cupBlock.competitionType,
+      competitionLabel: cupBlock.competitionLabel,
+      eventLabel: cupBlock.eventLabel,
+      nr: cupBlock.nr,
+      map: "Various",
+      author: "Various",
+      description: parseRouletteDescription(
+        findMapCell(rows, cupBlock.headerRowIndex, indexes.placing),
+      ),
+      fastestTime: null,
+      fastestTimeDriver: null,
+      fastestTimeRound: null,
+      rouletteSourceLabel: normalizeOptionalText(
+        getCell(rows, resultsHeaderRowIndex, indexes.rouletteSource ?? -1),
+      ),
+      sourceFile: sourceFileName,
+      results,
+    };
+  }
+
   const mapMetadata = parseMapMetadata(
     findMapCell(rows, cupBlock.headerRowIndex, indexes.placing),
   );
   const fastestMetadata = parseFastestMetadata(
     findFastestCell(rows, cupBlock.headerRowIndex, indexes.time),
   );
-  const results = extractResults(
-    rows,
-    indexes,
-    findResultsStartRowIndex(rows, cupBlock.headerRowIndex, indexes.placing),
-  );
 
   return {
+    competitionType: cupBlock.competitionType,
+    competitionLabel: cupBlock.competitionLabel,
+    eventLabel: cupBlock.eventLabel,
     nr: cupBlock.nr,
     map: mapMetadata.map,
     author: mapMetadata.author,
+    description: null,
     fastestTime: fastestMetadata.time,
     fastestTimeDriver: fastestMetadata.driver,
     fastestTimeRound: fastestMetadata.round,
+    rouletteSourceLabel: null,
     sourceFile: sourceFileName,
     results,
   };
@@ -158,6 +276,9 @@ function extractResults(
     name: number;
     time: number;
     eliminationRound: number;
+    rouletteMap?: number;
+    rouletteMapper?: number;
+    rouletteSource?: number;
   },
   startRowIndex: number,
 ): ResultEntry[] {
@@ -175,11 +296,7 @@ function extractResults(
       continue;
     }
 
-    if (!name) {
-      continue;
-    }
-
-    if (isCommentResultName(name)) {
+    if (!name || isCommentResultName(name)) {
       continue;
     }
 
@@ -198,6 +315,15 @@ function extractResults(
       name,
       time,
       eliminationRound: normalizedEliminationRound,
+      rouletteMap: normalizeOptionalText(
+        getCell(rows, rowIndex, indexes.rouletteMap ?? -1),
+      ),
+      rouletteMapper: normalizeOptionalText(
+        getCell(rows, rowIndex, indexes.rouletteMapper ?? -1),
+      ),
+      rouletteSourceEventNumber: parseOptionalNumber(
+        getCell(rows, rowIndex, indexes.rouletteSource ?? -1)?.trim() ?? "",
+      ),
     });
   }
 
@@ -244,7 +370,7 @@ function findFastestCell(
   return undefined;
 }
 
-function findResultsStartRowIndex(
+function findResultsHeaderRowIndex(
   rows: string[][],
   headerRowIndex: number,
   placingColumnIndex: number,
@@ -261,11 +387,11 @@ function findResultsStartRowIndex(
       placingHeader?.toLowerCase() === "position" &&
       nameHeader?.toLowerCase() === "name"
     ) {
-      return rowIndex + 1;
+      return rowIndex;
     }
   }
 
-  return headerRowIndex + 4;
+  return headerRowIndex + 3;
 }
 
 function isCommentResultName(value: string): boolean {
@@ -289,22 +415,14 @@ function isCommentResultName(value: string): boolean {
   return blockedPhrases.some((phrase) => normalized.includes(phrase));
 }
 
-function parseCupNumber(value: string): number {
-  const match = value.match(/(\d+)/);
-
-  if (!match) {
-    throw new Error(`Unable to parse cup number from header: ${value}`);
-  }
-
-  return Number(match[1]);
-}
-
 function parseMapMetadata(value: string | undefined): {
   map: string;
   author: string;
 } {
-  const rawValue = value?.trim() ?? "";
-  const withoutPrefix = rawValue.replace(/^Map:\s*/i, "").trim();
+  const rawValue = normalizeWhitespace(
+    stripWrappingQuotes(value?.trim() ?? ""),
+  );
+  const withoutPrefix = rawValue.replace(/^(?:Map|Level Pack):\s*/i, "").trim();
   const separatorIndex = withoutPrefix.lastIndexOf(" by ");
 
   if (separatorIndex === -1) {
@@ -320,12 +438,22 @@ function parseMapMetadata(value: string | undefined): {
   };
 }
 
+function parseRouletteDescription(value: string | undefined): string | null {
+  const rawValue = normalizeWhitespace(
+    stripWrappingQuotes(value?.trim() ?? ""),
+  );
+  const description = rawValue.replace(/^Map:\s*/i, "").trim();
+  return description || null;
+}
+
 function parseFastestMetadata(value: string | undefined): {
   time: string | null;
   driver: string | null;
   round: string | null;
 } {
-  const rawValue = value?.trim() ?? "";
+  const rawValue = normalizeWhitespace(
+    stripWrappingQuotes(value?.trim() ?? ""),
+  );
 
   if (!rawValue) {
     return {
@@ -363,12 +491,40 @@ function parseOptionalNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function normalizeOptionalText(value: string | undefined): string | null {
+  const normalized = normalizeWhitespace(
+    stripWrappingQuotes(value?.trim() ?? ""),
+  );
+  return normalized || null;
+}
+
+function stripWrappingQuotes(value: string): string {
+  return value.replace(/^"+|"+$/g, "");
+}
+
+function normalizeWhitespace(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
 function getCell(
   rows: string[][],
   rowIndex: number,
   columnIndex: number,
 ): string | undefined {
   return rows[rowIndex]?.[columnIndex];
+}
+
+function getCompetitionOrder(competitionType: CompetitionType): number {
+  switch (competitionType) {
+    case "cotd":
+      return 0;
+    case "roulette":
+      return 1;
+    case "troll":
+      return 2;
+    default:
+      return Number.MAX_SAFE_INTEGER;
+  }
 }
 
 function slugify(value: string): string {

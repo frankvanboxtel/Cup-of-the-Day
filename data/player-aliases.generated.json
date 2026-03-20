@@ -1,8 +1,4 @@
 {
-  "[badr] Hidef09": [
-    "[badr] Hidef09",
-    "[badR] Hidef09"
-  ],
   "[bob]void": [
     "[bob]void",
     "[poop]void",
@@ -13,6 +9,16 @@
     "[CRT]NathWalt",
     "[CTR] NathWalt",
     "[CTR]NathWalt"
+  ],
+  "[CTR[Hydro": [
+    "[CTR[Hydro",
+    "[ ]",
+    "[CHR[Warsnac",
+    "[CTR[Kernkob",
+    "[Lame}stindt",
+    "[TOG[Lazy_Echidna",
+    "[VOID[//////void",
+    "[ZET}LILWOOLEY"
   ],
   "[CTR]Moody": [
     "[CTR]Moody",
@@ -30,13 +36,13 @@
     "[DHLU]MarcSubstitute",
     "[SLOW]MarcSubstitute"
   ],
+  "[dum[ Y'Rewik": [
+    "[dum[ Y'Rewik",
+    "[dum] Y'Rewik"
+  ],
   "[F1] magostinho20": [
     "[F1] magostinho20",
     "[I290] magostinho20"
-  ],
-  "[FaS] Ax1ss": [
-    "[FaS] Ax1ss",
-    "[TOG] Ax1ss"
   ],
   "[FOOL] Ruckooe": [
     "[FOOL] Ruckooe",
@@ -59,20 +65,26 @@
     "[iDad]dudeeitsraymond",
     "[iDad] dudeeitsraymond"
   ],
+  "[IRS] tws20so": [
+    "[IRS] tws20so",
+    "[DRFT] tws20so"
+  ],
+  "[KURK] lil_zwimpie": [
+    "[KURK] lil_zwimpie",
+    "[KURK[ lil_zwimpie"
+  ],
   "[KURK]Smullie": [
     "[KURK]Smullie",
     "[KURK] Smullie"
-  ],
-  "[Lame}stindt": [
-    "[Lame}stindt",
-    "[TOG[Lazy_Echidna",
-    "[VOID[//////void",
-    "[ZET}LILWOOLEY"
   ],
   "[OR]Pigbuy": [
     "[OR]Pigbuy",
     "[OREO] Pigbuy",
     "[OREO]Pigbuy"
+  ],
+  "[RB]Chinpokomon": [
+    "[RB]Chinpokomon",
+    "[RB] Chinpokomon"
   ],
   "[Tame]stindt": [
     "[Tame]stindt",
@@ -84,10 +96,6 @@
     "[TBR]TheBestMaidens",
     "[WAM] TheBestMaidens",
     "[WAM]TheBestMaidens"
-  ],
-  "[TILT]Redstony": [
-    "[TILT]Redstony",
-    "[Stc3]Redstony"
   ],
   "[TOG]ioi8": [
     "[TOG]ioi8",
@@ -120,7 +128,8 @@
   ],
   "a_random_tumbleweed": [
     "a_random_tumbleweed",
-    "[ZET] a_random_tumbleweed"
+    "[ZET] a_random_tumbleweed",
+    "[ZET]a_random_tumbleweed"
   ],
   "Achmetha0626": [
     "Achmetha0626",
@@ -137,6 +146,11 @@
     "[COMY]AndMe17",
     "[CSC]AndMe17",
     "[ORIG]AndMe16"
+  ],
+  "Ax1ss": [
+    "Ax1ss",
+    "[FaS] Ax1ss",
+    "[TOG] Ax1ss"
   ],
   "Axo": [
     "Axo",
@@ -215,6 +229,10 @@
     "[RTR]Fwogiie",
     "[Tran]Fwogiie"
   ],
+  "Galactichero623": [
+    "Galactichero623",
+    "GalacticHero623"
+  ],
   "Gimpel": [
     "Gimpel",
     "Leviathan (Gimpel)"
@@ -243,6 +261,11 @@
     "[RIP]Hi Im Yolo",
     "[Tik] Hi Im Yolo"
   ],
+  "Hidef09": [
+    "Hidef09",
+    "[badr] Hidef09",
+    "[badR] Hidef09"
+  ],
   "Hydro": [
     "Hydro",
     "[BFP] Hydro",
@@ -258,6 +281,7 @@
   ],
   "ionjig": [
     "ionjig",
+    "[ZAR] ionjig",
     "Ionjig"
   ],
   "IronDragon111000": [
@@ -330,6 +354,10 @@
   "Last": [
     "Last",
     "[dumb] Last"
+  ],
+  "Lazy_Echidna": [
+    "Lazy_Echidna",
+    "[TOG]Lazy_echidna"
   ],
   "Lexer": [
     "Lexer",
@@ -509,6 +537,11 @@
     "redal",
     "[CSC] redal"
   ],
+  "Redstony": [
+    "Redstony",
+    "[Stc3]Redstony",
+    "[TILT]Redstony"
+  ],
   "Renergy": [
     "Renergy",
     "[just] Renergy",
@@ -521,6 +554,7 @@
   ],
   "Roader": [
     "Roader",
+    "[BOB] Roader",
     "[BOB]Roader",
     "[OR] Roader"
   ],
@@ -650,7 +684,8 @@
   "Weak_Knees": [
     "Weak_Knees",
     "[Burp]Weak_Knees",
-    "[COMY]Weak_Knees"
+    "[COMY]Weak_Knees",
+    "Weak_knees"
   ],
   "Wheelie": [
     "Wheelie",
@@ -663,6 +698,7 @@
   ],
   "XpERt": [
     "XpERt",
+    "[NOR]XpERt",
     "[TBD]XpERt"
   ],
   "Zachafinackus": [
@@ -694,6 +730,7 @@
     "[BLUE] ZOMAN",
     "[Choo] ZOMAN",
     "[HDRO] ZOMAN",
+    "[Its] ZOMAN",
     "[Kung] ZOMAN",
     "[KUNG] ZOMAN",
     "[RONC] ZOMAN",

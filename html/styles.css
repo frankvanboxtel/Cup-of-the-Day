@@ -108,6 +108,33 @@ nav {
   margin: 8px 0 0;
 }
 
+.competition-filter-panel {
+  border: 1px solid #999;
+  margin: 16px 0 20px;
+  padding: 12px 14px 14px;
+}
+
+.competition-filter-panel legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.competition-filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+}
+
+.competition-filter-option {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+.competition-filter-option input {
+  margin: 0;
+}
+
 .sorter {
   align-items: center;
   color: inherit;
