@@ -2152,9 +2152,45 @@ function renderRaceResultsSection(
 
   const ratingHistory =
     driverRatingHistory.get(driverRecord.canonicalName) ?? new Map();
+
+  return `
+    <h2>Race Results</h2>
+    ${renderTabPanels(
+      "player-race-results",
+      competitionDefinitions.map((definition) => ({
+        suffix: definition.type,
+        label: definition.label,
+        content: renderPlayerCompetitionRaceResultsSection(
+          driverRecord,
+          getCompetitionEventRecords(eventRecords, definition.type),
+          authorFileNames,
+          ratingHistory,
+        ),
+      })),
+      competitionDefinitions[0]?.type ?? "cotd",
+      "Player race results competitions",
+    )}
+  `;
+}
+
+function renderPlayerCompetitionRaceResultsSection(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  authorFileNames: Map<string, string>,
+  ratingHistory: Map<string, DriverEventRating>,
+): string {
+  const competitionResults = eventRecords.filter((eventRecord) =>
+    driverRecord.results.some(
+      (entry) => entry.eventRecord.eventKey === eventRecord.eventKey,
+    ),
+  );
+
+  if (eventRecords.length === 0 || competitionResults.length === 0) {
+    return "<p>No race results in this competition.</p>";
+  }
+
   const driverAuthorFileName =
     authorFileNames.get(driverRecord.canonicalName) ?? null;
-
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
       const ratingAtEvent = ratingHistory.get(eventRecord.eventKey) ?? null;
@@ -2196,7 +2232,6 @@ function renderRaceResultsSection(
     .join("\n");
 
   return `
-    <h2>Race Results</h2>
     <table data-sort-table>
       <thead>
         <tr>
