@@ -358,18 +358,9 @@ function normalizeAllDnfRoundPlacings(results: ResultEntry[]): ResultEntry[] {
       continue;
     }
 
-    const placings = group
-      .map((result) => result.placing)
-      .filter((placing): placing is number => placing !== null);
-
-    if (placings.length === 0) {
-      startIndex = endIndex;
-      continue;
-    }
-
-    const highestPlacingInRound = Math.max(
-      Math.min(...placings) + group.length - 1,
-      ...placings,
+    const highestPlacingInRound = countPlayersLeftInRound(
+      normalizedResults,
+      eliminationRound,
     );
 
     for (let index = startIndex; index < endIndex; index += 1) {
@@ -383,6 +374,26 @@ function normalizeAllDnfRoundPlacings(results: ResultEntry[]): ResultEntry[] {
   }
 
   return normalizedResults;
+}
+
+function countPlayersLeftInRound(
+  results: ResultEntry[],
+  eliminationRound: string,
+): number {
+  const targetRound = Number(eliminationRound);
+
+  if (!Number.isFinite(targetRound)) {
+    return results.length;
+  }
+
+  return results.filter((result) => {
+    if (!result.eliminationRound) {
+      return true;
+    }
+
+    const resultRound = Number(result.eliminationRound);
+    return Number.isFinite(resultRound) && resultRound >= targetRound;
+  }).length;
 }
 
 function propagateMissingRoundWithinTiedDnfGroups(
