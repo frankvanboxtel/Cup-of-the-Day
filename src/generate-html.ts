@@ -178,8 +178,17 @@ const displayOnlyNameListPath = path.join(
 );
 const initialElo = 1500;
 const eloKFactor = 32;
-const graphMaxPlacing = 20;
-const graphOverflowBucket = graphMaxPlacing + 1;
+const graphDirectMaxPlacing = 25;
+const graphOverflowBuckets = [25, 30, 40, 50] as const;
+const graphOverflowBucketStart = graphDirectMaxPlacing + 1;
+const graphOverflowBucketLabels = new Map(
+  graphOverflowBuckets.map((threshold, index) => [
+    graphOverflowBucketStart + index,
+    `${threshold}+`,
+  ]),
+);
+const graphMaxBucketValue =
+  graphOverflowBucketStart + graphOverflowBuckets.length - 1;
 const combinedGraphDefaultSelectionCount = 3;
 const combinedGraphQuickPickCount = 10;
 const competitionDefinitions: CompetitionDefinition[] = [
@@ -2444,7 +2453,7 @@ function renderCompetitionResultsGraphSection(
   const graphId = `combined-race-results-${competitionType}`;
 
   return `
-    <p class="graph-note">Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
+    <p class="graph-note">Placings 1 through ${graphDirectMaxPlacing} are shown directly; lower results are grouped into ${graphOverflowBuckets.map((threshold) => `${threshold}+`).join(", ")}. Breaks indicate no participation.</p>
     ${includeSelector ? renderRaceResultsGraphSelector(series, defaultVisibleIds, graphId, competitionType) : ""}
     ${renderRaceResultsGraphSvg(initialSeries, eventRecords, false, true, defaultVisibleIds, graphId)}
   `;
@@ -2509,7 +2518,7 @@ function renderPlayerCompetitionGraphSection(
   const compareHref = `../race-results-graph/index.html?competition=${encodeURIComponent(competitionType)}&compare=${encodeURIComponent(series[0]?.id ?? stableId(driverRecord.canonicalName))}#results-graph-${competitionType}`;
 
   return `
-    <p class="graph-note">Only top ${graphMaxPlacing} placings are shown directly; anything below that is grouped into ${graphMaxPlacing}+. Breaks indicate no participation.</p>
+    <p class="graph-note">Placings 1 through ${graphDirectMaxPlacing} are shown directly; lower results are grouped into ${graphOverflowBuckets.map((threshold) => `${threshold}+`).join(", ")}. Breaks indicate no participation.</p>
     ${renderRaceResultsGraphSvg(
       series,
       eventRecords,
@@ -2652,9 +2661,7 @@ function buildRaceResultsGraphSeries(
       placing:
         result?.placing === null || result?.placing === undefined
           ? null
-          : result.placing <= graphMaxPlacing
-            ? Math.max(1, result.placing)
-            : graphOverflowBucket,
+          : mapGraphPlacing(result.placing),
       title:
         result?.placing === null || result?.placing === undefined
           ? `${eventRecord.eventLabel}: no placing`
@@ -2670,6 +2677,28 @@ function buildRaceResultsGraphSeries(
     href,
     points,
   };
+}
+
+function mapGraphPlacing(placing: number): number {
+  const normalizedPlacing = Math.max(1, Math.floor(placing));
+
+  if (normalizedPlacing <= graphDirectMaxPlacing) {
+    return normalizedPlacing;
+  }
+
+  if (normalizedPlacing < 30) {
+    return graphOverflowBucketStart;
+  }
+
+  if (normalizedPlacing < 40) {
+    return graphOverflowBucketStart + 1;
+  }
+
+  if (normalizedPlacing < 50) {
+    return graphOverflowBucketStart + 2;
+  }
+
+  return graphOverflowBucketStart + 3;
 }
 
 function renderRaceResultsGraphSvg(
@@ -2695,20 +2724,20 @@ function renderRaceResultsGraphSvg(
   const firstEvent = eventRecords[0]?.nr ?? 1;
   const lastEvent = eventRecords[eventRecords.length - 1]?.nr ?? firstEvent;
   const eventSpan = Math.max(1, lastEvent - firstEvent);
-  const yTicks = [1, 3, 6, 10, 15, 20, graphOverflowBucket];
+  const yTicks = [
+    ...Array.from({ length: graphDirectMaxPlacing }, (_, index) => index + 1),
+    ...Array.from(graphOverflowBucketLabels.keys()),
+  ];
   const xTicks = buildGraphEventTicks(firstEvent, lastEvent);
   const xForEvent = (eventNumber: number): number =>
     marginLeft + ((eventNumber - firstEvent) / eventSpan) * plotWidth;
   const yForPlacing = (placing: number): number =>
-    marginTop + ((placing - 1) / (graphOverflowBucket - 1)) * plotHeight;
+    marginTop + ((placing - 1) / (graphMaxBucketValue - 1)) * plotHeight;
 
   const yGrid = yTicks
     .map((placing) => {
       const y = yForPlacing(placing);
-      const label =
-        placing === graphOverflowBucket
-          ? `${graphMaxPlacing}+`
-          : String(placing);
+      const label = graphOverflowBucketLabels.get(placing) ?? String(placing);
 
       return `
         <line class="graph-grid" x1="${marginLeft}" y1="${y}" x2="${width - marginRight}" y2="${y}"></line>
@@ -3344,8 +3373,8 @@ function renderLayout(
             button.addEventListener("click", () => {
               const targetId = button.dataset.tabTarget;
               if (!targetId) {
-                return;
-              }
+                  return;
+                }
 
               activate(targetId);
 

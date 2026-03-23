@@ -15,14 +15,11 @@ npm install
 
 ## Scripts
 
-- `npm run dev` runs the TypeScript entry point directly with `tsx`
-- `npm run build` compiles the project to `dist/`
 - `npm run generate` reads all COTD CSV files from `data/source-csvs/` and writes per-cup JSON files to `data/generated-jsons/`
 - `npm run validate:results` checks that the generated result files contain a complete event-number sequence with no gaps
 - `npm run generate:all` runs the full generation pipeline: results JSON, result validation, alias proposals/generated aliases, and HTML output
 - `npm run generate:aliases` reads the generated JSON files, proposes player alias additions in `data/generated-jsons/player-alias-proposals.json`, and writes generated alias groups to `data/player-settings/player-aliases.generated.json`
 - `npm run generate:html` reads the JSON files in `data/generated-jsons/`, combines `data/player-settings/player-aliases.json` with `data/player-settings/player-aliases.generated.json`, applies `data/player-settings/display-only-names.json`, and builds a static HTML site in `html/`
-- `npm start` runs the compiled JavaScript output
 
 ## Project Structure
 
