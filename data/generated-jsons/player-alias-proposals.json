@@ -1,9 +1,73 @@
 {
-  "generatedAt": "2026-03-23T15:59:55.982Z",
+  "generatedAt": "2026-03-23T16:23:03.045Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "data/player-settings/player-aliases.json",
   "generatedAliasFile": "data/player-settings/player-aliases.generated.json",
   "knownAliasAdditions": [
+    {
+      "canonicalName": "[CSC]Tommygaming",
+      "knownAliases": [
+        "[CSC]Tommygaming",
+        "[CSC]Tommygaming6132",
+        "[jofk]Tommygaming",
+        "[OOPS]Tommygaming",
+        "Tommygaming5132"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[TG]Tommygaming5132",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 3,
+          "firstSeenEvent": 57,
+          "lastSeenEvent": 63,
+          "exampleEvents": [
+            57,
+            61,
+            63
+          ]
+        },
+        {
+          "name": "[CSC]Tommygaming5132",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 3,
+          "firstSeenEvent": 92,
+          "lastSeenEvent": 95,
+          "exampleEvents": [
+            92,
+            94,
+            95
+          ]
+        },
+        {
+          "name": "[C3PO]Tommygaming5132",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 66,
+          "lastSeenEvent": 66,
+          "exampleEvents": [
+            66
+          ]
+        },
+        {
+          "name": "TommyGaming5132",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 69,
+          "lastSeenEvent": 69,
+          "exampleEvents": [
+            69
+          ]
+        }
+      ]
+    },
     {
       "canonicalName": "AndMe17",
       "knownAliases": [
@@ -69,6 +133,7 @@
     {
       "canonicalName": "Hydro",
       "knownAliases": [
+        "[CTR[Hydro",
         "Hydro",
         "k2blue"
       ],
@@ -230,9 +295,75 @@
       ]
     },
     {
+      "canonicalName": "Kernkob",
+      "knownAliases": [
+        "[CTR[Kernkob",
+        "Kernkob",
+        "rtm_lover2007"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[CTR]Kernkob",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 42,
+          "firstSeenEvent": 7,
+          "lastSeenEvent": 81,
+          "exampleEvents": [
+            7,
+            8,
+            10,
+            42,
+            46,
+            49,
+            52,
+            53
+          ]
+        },
+        {
+          "name": "[CTR] Kernkob",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 60,
+          "lastSeenEvent": 60,
+          "exampleEvents": [
+            60
+          ]
+        },
+        {
+          "name": "[Nzt]Kernkob",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 124,
+          "lastSeenEvent": 124,
+          "exampleEvents": [
+            124
+          ]
+        },
+        {
+          "name": "rtm_lover2007 (Kernkob)",
+          "reasons": [
+            "explicit alias hint in parentheses"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 133,
+          "lastSeenEvent": 133,
+          "exampleEvents": [
+            133
+          ]
+        }
+      ]
+    },
+    {
       "canonicalName": "Lazy_Echidna",
       "knownAliases": [
         "[NIL]Lazy_Echidna",
+        "[TOG[Lazy_Echidna",
         "[TOG]Lazy_Echidna",
         "Lazy_Echidna",
         "Lazy_Ecidna"
@@ -253,26 +384,55 @@
       ]
     },
     {
+      "canonicalName": "LILWOOLEY",
+      "knownAliases": [
+        "[ZET}LILWOOLEY",
+        "LILWOOLEY",
+        "LOLWOOLEY"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[ZET]LILWOOLEY",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 53,
+          "firstSeenEvent": 2,
+          "lastSeenEvent": 136,
+          "exampleEvents": [
+            2,
+            9,
+            10,
+            57,
+            58,
+            59,
+            60,
+            61
+          ]
+        },
+        {
+          "name": "[ZST]LILWOOLEY",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 64,
+          "lastSeenEvent": 64,
+          "exampleEvents": [
+            64
+          ]
+        }
+      ]
+    },
+    {
       "canonicalName": "Quickracer10",
       "knownAliases": [
         "[AJSE] Quickracer10",
+        "[KURK[ Quickracer10",
         "[KURK] Quickracer10",
         "Quickracer10"
       ],
       "proposedAliases": [
-        {
-          "name": "[KURK[ Quickracer10",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 65,
-          "lastSeenEvent": 106,
-          "exampleEvents": [
-            65,
-            106
-          ]
-        },
         {
           "name": "[CC] Quickracer10",
           "reasons": [
@@ -330,6 +490,41 @@
           "lastSeenEvent": 121,
           "exampleEvents": [
             121
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "void",
+      "knownAliases": [
+        "[VOID[//////void",
+        "//////void",
+        "void"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[gorp]//////void",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 79,
+          "lastSeenEvent": 83,
+          "exampleEvents": [
+            79,
+            83
+          ]
+        },
+        {
+          "name": "[SWDN]//////void",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 56,
+          "lastSeenEvent": 56,
+          "exampleEvents": [
+            56
           ]
         }
       ]
@@ -571,111 +766,6 @@
     }
   ],
   "newAliasGroups": [
-    {
-      "canonicalSuggestion": "[CTR[Hydro",
-      "names": [
-        {
-          "name": "[ ]",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 1,
-          "lastSeenEvent": 5,
-          "exampleEvents": [
-            1,
-            5
-          ]
-        },
-        {
-          "name": "[CHR[Warsnac",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 9,
-          "lastSeenEvent": 9,
-          "exampleEvents": [
-            9
-          ]
-        },
-        {
-          "name": "[CTR[Hydro",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 9,
-          "lastSeenEvent": 9,
-          "exampleEvents": [
-            9
-          ]
-        },
-        {
-          "name": "[CTR[Kernkob",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 9,
-          "lastSeenEvent": 9,
-          "exampleEvents": [
-            9
-          ]
-        },
-        {
-          "name": "[TOG[Lazy_Echidna",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 53,
-          "lastSeenEvent": 53,
-          "exampleEvents": [
-            53
-          ]
-        },
-        {
-          "name": "[VOID[//////void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 53,
-          "lastSeenEvent": 53,
-          "exampleEvents": [
-            53
-          ]
-        },
-        {
-          "name": "[ZET}LILWOOLEY",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 88,
-          "lastSeenEvent": 88,
-          "exampleEvents": [
-            88
-          ]
-        },
-        {
-          "name": "[Lame}stindt",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 118,
-          "lastSeenEvent": 118,
-          "exampleEvents": [
-            118
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
     {
       "canonicalSuggestion": "ping",
       "names": [
@@ -1306,93 +1396,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "Kernkob",
-      "names": [
-        {
-          "name": "Kernkob",
-          "reasons": [
-            "explicit alias hint in parentheses",
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 73,
-          "firstSeenEvent": 1,
-          "lastSeenEvent": 135,
-          "exampleEvents": [
-            1,
-            2,
-            6,
-            8,
-            9,
-            11,
-            14,
-            15
-          ]
-        },
-        {
-          "name": "[CTR]Kernkob",
-          "reasons": [
-            "explicit alias hint in parentheses",
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 42,
-          "firstSeenEvent": 7,
-          "lastSeenEvent": 81,
-          "exampleEvents": [
-            7,
-            8,
-            10,
-            42,
-            46,
-            49,
-            52,
-            53
-          ]
-        },
-        {
-          "name": "[CTR] Kernkob",
-          "reasons": [
-            "explicit alias hint in parentheses",
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 60,
-          "lastSeenEvent": 60,
-          "exampleEvents": [
-            60
-          ]
-        },
-        {
-          "name": "[Nzt]Kernkob",
-          "reasons": [
-            "explicit alias hint in parentheses",
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 124,
-          "lastSeenEvent": 124,
-          "exampleEvents": [
-            124
-          ]
-        },
-        {
-          "name": "rtm_lover2007 (Kernkob)",
-          "reasons": [
-            "explicit alias hint in parentheses"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 133,
-          "lastSeenEvent": 133,
-          "exampleEvents": [
-            133
-          ]
-        }
-      ],
-      "groupReasons": [
-        "explicit alias hint in parentheses",
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "Ploddip",
       "names": [
         {
@@ -1714,85 +1717,6 @@
           "lastSeenEvent": 53,
           "exampleEvents": [
             53
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "Tommygaming5132",
-      "names": [
-        {
-          "name": "Tommygaming5132",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 9,
-          "firstSeenEvent": 10,
-          "lastSeenEvent": 90,
-          "exampleEvents": [
-            10,
-            11,
-            68,
-            71,
-            78,
-            79,
-            82,
-            83
-          ]
-        },
-        {
-          "name": "[TG]Tommygaming5132",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 57,
-          "lastSeenEvent": 63,
-          "exampleEvents": [
-            57,
-            61,
-            63
-          ]
-        },
-        {
-          "name": "[CSC]Tommygaming5132",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 92,
-          "lastSeenEvent": 95,
-          "exampleEvents": [
-            92,
-            94,
-            95
-          ]
-        },
-        {
-          "name": "[C3PO]Tommygaming5132",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 66,
-          "lastSeenEvent": 66,
-          "exampleEvents": [
-            66
-          ]
-        },
-        {
-          "name": "TommyGaming5132",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 69,
-          "lastSeenEvent": 69,
-          "exampleEvents": [
-            69
           ]
         }
       ],
@@ -3378,52 +3302,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "//////void",
-      "names": [
-        {
-          "name": "//////void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 11,
-          "lastSeenEvent": 15,
-          "exampleEvents": [
-            11,
-            15
-          ]
-        },
-        {
-          "name": "[gorp]//////void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 79,
-          "lastSeenEvent": 83,
-          "exampleEvents": [
-            79,
-            83
-          ]
-        },
-        {
-          "name": "[SWDN]//////void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 56,
-          "lastSeenEvent": 56,
-          "exampleEvents": [
-            56
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "a_random_tumbleweed",
       "names": [
         {
@@ -4014,63 +3892,6 @@
           "lastSeenEvent": 122,
           "exampleEvents": [
             122
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "LILWOOLEY",
-      "names": [
-        {
-          "name": "[ZET]LILWOOLEY",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 53,
-          "firstSeenEvent": 2,
-          "lastSeenEvent": 136,
-          "exampleEvents": [
-            2,
-            9,
-            10,
-            57,
-            58,
-            59,
-            60,
-            61
-          ]
-        },
-        {
-          "name": "LILWOOLEY",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 7,
-          "firstSeenEvent": 7,
-          "lastSeenEvent": 56,
-          "exampleEvents": [
-            7,
-            8,
-            50,
-            51,
-            54,
-            55,
-            56
-          ]
-        },
-        {
-          "name": "[ZST]LILWOOLEY",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 64,
-          "lastSeenEvent": 64,
-          "exampleEvents": [
-            64
           ]
         }
       ],
@@ -4750,38 +4571,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "[dum[ Y'Rewik",
-      "names": [
-        {
-          "name": "[dum] Y'Rewik",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 10,
-          "lastSeenEvent": 10,
-          "exampleEvents": [
-            10
-          ]
-        },
-        {
-          "name": "[dum[ Y'Rewik",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 67,
-          "lastSeenEvent": 67,
-          "exampleEvents": [
-            67
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "[F1] magostinho20",
       "names": [
         {
@@ -4808,39 +4597,6 @@
           "lastSeenEvent": 95,
           "exampleEvents": [
             95
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "[FOOL] Ruckooe",
-      "names": [
-        {
-          "name": "[FOOL] Ruckooe",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 125,
-          "lastSeenEvent": 133,
-          "exampleEvents": [
-            125,
-            133
-          ]
-        },
-        {
-          "name": "[FOOL} Ruckooe",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 119,
-          "lastSeenEvent": 119,
-          "exampleEvents": [
-            119
           ]
         }
       ],
@@ -4980,45 +4736,6 @@
           "lastSeenEvent": 3,
           "exampleEvents": [
             3
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "[KURK] lil_zwimpie",
-      "names": [
-        {
-          "name": "[KURK] lil_zwimpie",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 8,
-          "firstSeenEvent": 6,
-          "lastSeenEvent": 112,
-          "exampleEvents": [
-            6,
-            53,
-            65,
-            97,
-            101,
-            108,
-            111,
-            112
-          ]
-        },
-        {
-          "name": "[KURK[ lil_zwimpie",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 2,
-          "lastSeenEvent": 2,
-          "exampleEvents": [
-            2
           ]
         }
       ],

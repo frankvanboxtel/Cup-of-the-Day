@@ -674,13 +674,6 @@ function stripLeadingTags(name: string): string {
       continue;
     }
 
-    const malformedTag = remaining.match(/^\[[^\s]+\s*/);
-
-    if (malformedTag) {
-      remaining = remaining.slice(malformedTag[0].length).trim();
-      continue;
-    }
-
     break;
   }
 

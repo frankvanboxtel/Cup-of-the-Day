@@ -1401,6 +1401,10 @@ async function writeDriverIndexPage(
   const rows = driverRecords
     .map((driverRecord) => {
       const stats = buildDriverStats(driverRecord, driverRatingSummary);
+      const nameDetails = splitTaggedPlayerNames(
+        driverRecord.canonicalName,
+        driverRecord.aliases,
+      );
       const tracksByCompetition = buildAuthorTrackCountsByCompetition(
         authorRecordsByName.get(driverRecord.canonicalName) ?? null,
       );
@@ -1414,21 +1418,18 @@ async function writeDriverIndexPage(
         (sum, count) => sum + count,
         0,
       );
-      const aliasSummary = renderAliasSummary(
-        driverRecord.aliases,
-        driverRecord.canonicalName,
-      );
+      const aliasSummary = renderInlineList(nameDetails.aliases);
+      const tagSummary = renderInlineList(nameDetails.tags.map(formatTagLabel));
       const searchTerms = normalizeSearchText(
         [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
       );
       const sortAttributes = renderSortDataAttributes({
-        driver: normalizeTextSortValue(driverRecord.canonicalName),
+        driver: normalizeTextSortValue(nameDetails.primaryName),
+        aliases: normalizeTextSortValue(nameDetails.aliases.join(" ")),
+        tags: normalizeTextSortValue(nameDetails.tags.join(" ")),
         tracks: normalizeNumberSortValue(tracksCreated),
         starts: normalizeNumberSortValue(stats.starts),
         wins: normalizeNumberSortValue(stats.wins),
-        "win-rate": normalizeNumberSortValue(stats.winRate),
-        podiums: normalizeNumberSortValue(stats.podiums),
-        "podium-rate": normalizeNumberSortValue(stats.podiumRate),
         "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
         elo: normalizeNumberSortValue(stats.currentElo),
       });
@@ -1446,12 +1447,6 @@ async function writeDriverIndexPage(
             statsByCompetition[type].wins,
           ]),
         ),
-        podiums: Object.fromEntries(
-          competitionDefinitions.map(({ type }) => [
-            type,
-            statsByCompetition[type].podiums,
-          ]),
-        ),
         "fastest-times": Object.fromEntries(
           competitionDefinitions.map(({ type }) => [
             type,
@@ -1462,14 +1457,12 @@ async function writeDriverIndexPage(
 
       return `
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
-          <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
-          <td title="${driverRecord.aliases.join(", ")}"><div class="single-line alias">${aliasSummary}</div></td>
+          <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(nameDetails.primaryName)}</a></td>
+          <td title="${escapeHtml(nameDetails.aliases.join(", "))}"><div class="single-line alias">${aliasSummary}</div></td>
+          <td title="${escapeHtml(nameDetails.tags.map(formatTagLabel).join(", "))}"><div class="single-line alias">${tagSummary}</div></td>
           ${renderDynamicCompetitionCountCell("tracks", tracksCreated)}
           ${renderDynamicCompetitionCountCell("starts", stats.starts)}
           ${renderDynamicCompetitionCountCell("wins", stats.wins)}
-          ${renderDynamicCompetitionPercentageCell("win-rate", stats.winRate)}
-          ${renderDynamicCompetitionCountCell("podiums", stats.podiums)}
-          ${renderDynamicCompetitionPercentageCell("podium-rate", stats.podiumRate)}
           ${renderDynamicCompetitionCountCell("fastest-times", stats.fastestTimes)}
           <td class="align-right">${formatElo(stats.currentElo)}</td>
         </tr>`;
@@ -1480,14 +1473,14 @@ async function writeDriverIndexPage(
     "Players",
     `
       <h1>Players</h1>
-      <p>${driverRecords.length} player profiles. Search by canonical name or any alias.</p>
+      <p>${driverRecords.length} player profiles. Search by player name, alias, or tag.</p>
       <div class="search-panel">
         <label class="search-label" for="driver-search">Search players</label>
         <input
           id="driver-search"
           class="search-input"
           type="search"
-          placeholder="Type a player name or alias"
+          placeholder="Type a player name, alias, or tag"
           autocomplete="off"
           data-driver-search-input
         >
@@ -1498,13 +1491,11 @@ async function writeDriverIndexPage(
         <thead>
           <tr>
             ${renderSortableHeader("Player", "driver", "text", "asc")}
-            <th>Aliases</th>
+            ${renderSortableHeader("Aliases", "aliases", "text", "asc")}
+            ${renderSortableHeader("Tags", "tags", "text", "asc")}
             ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
             ${renderSortableHeader("Starts", "starts", "number", "desc")}
             ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Win %", "win-rate", "number", "desc")}
-            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
-            ${renderSortableHeader("Podium %", "podium-rate", "number", "desc")}
             ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
             ${renderSortableHeader("Elo", "elo", "number", "desc")}
           </tr>
@@ -1879,7 +1870,7 @@ async function writeDriverPage(
   const content = renderLayout(
     driverRecord.canonicalName,
     `
-      ${renderProfileHeading(driverRecord.canonicalName, driverRecord.aliases)}
+      ${renderPlayerProfileHeading(driverRecord.canonicalName, driverRecord.aliases)}
       ${renderProfileMetadata(
         driverRecord,
         matchingAuthorRecord,
@@ -2123,6 +2114,21 @@ function renderProfileHeading(
   return `
     <h1 class="name">${escapeHtml(canonicalName)}</h1>
     ${aliasSummary === "-" ? "" : `<div class="aliases"><div>AKA${aliases.length > 10 ? "... where to start?" : ":"}</div><em>${aliasSummary}</em></div>`}
+  `;
+}
+
+function renderPlayerProfileHeading(
+  canonicalName: string,
+  aliases: string[],
+): string {
+  const nameDetails = splitTaggedPlayerNames(canonicalName, aliases);
+  const aliasSummary = renderInlineList(nameDetails.aliases);
+  const tagSummary = renderInlineList(nameDetails.tags.map(formatTagLabel));
+
+  return `
+    <h1 class="name">${escapeHtml(nameDetails.primaryName)}</h1>
+    ${aliasSummary === "-" ? "" : `<div class="aliases"><div>AKA:</div><em>${aliasSummary}</em></div>`}
+    ${tagSummary === "-" ? "" : `<div class="aliases"><div>Tags:</div><em>${tagSummary}</em></div>`}
   `;
 }
 
@@ -3025,6 +3031,133 @@ function renderAliasSummary(aliases: string[], canonicalName: string): string {
   }
 
   return otherAliases.map((alias) => escapeHtml(alias)).join(", ");
+}
+
+function splitTaggedPlayerNames(
+  canonicalName: string,
+  aliases: string[],
+): {
+  primaryName: string;
+  aliases: string[];
+  tags: string[];
+} {
+  const seenAliases = new Set<string>();
+  const seenTags = new Set<string>();
+  const aliasNames: string[] = [];
+  const tags: string[] = [];
+  const knownNames = Array.from(
+    new Set(
+      [canonicalName, ...aliases].map(normalizeWhitespace).filter(Boolean),
+    ),
+  );
+  const primaryName = stripRedundantCanonicalParenthetical(
+    stripLeadingBracketTags(canonicalName),
+    stripLeadingBracketTags(canonicalName),
+  );
+
+  for (const knownName of knownNames) {
+    const { name, tags: extractedTags } = splitLeadingBracketTags(knownName);
+    const cleanedName = stripRedundantCanonicalParenthetical(name, primaryName);
+    const normalizedName = normalizeTextSortValue(cleanedName);
+
+    if (
+      cleanedName &&
+      normalizedName !== normalizeTextSortValue(primaryName) &&
+      !seenAliases.has(normalizedName)
+    ) {
+      seenAliases.add(normalizedName);
+      aliasNames.push(cleanedName);
+    }
+
+    for (const tag of extractedTags) {
+      const normalizedTag = normalizeTextSortValue(tag);
+
+      if (!normalizedTag || seenTags.has(normalizedTag)) {
+        continue;
+      }
+
+      seenTags.add(normalizedTag);
+      tags.push(tag);
+    }
+  }
+
+  return {
+    primaryName,
+    aliases: aliasNames,
+    tags,
+  };
+}
+
+function stripRedundantCanonicalParenthetical(
+  value: string,
+  canonicalName: string,
+): string {
+  const normalizedValue = normalizeWhitespace(value);
+  const normalizedCanonicalName = normalizeWhitespace(canonicalName);
+  const match = normalizedValue.match(/^(.*?)\s*\(([^)]+)\)$/);
+
+  if (!match) {
+    return normalizedValue;
+  }
+
+  const baseName = normalizeWhitespace(match[1] ?? "");
+  const parentheticalName = normalizeWhitespace(match[2] ?? "");
+
+  if (
+    baseName &&
+    normalizeTextSortValue(parentheticalName) ===
+      normalizeTextSortValue(normalizedCanonicalName)
+  ) {
+    return baseName;
+  }
+
+  return normalizedValue;
+}
+
+function stripLeadingBracketTags(value: string): string {
+  return splitLeadingBracketTags(value).name;
+}
+
+function splitLeadingBracketTags(value: string): {
+  name: string;
+  tags: string[];
+} {
+  const normalized = normalizeWhitespace(value);
+  const tags: string[] = [];
+  let remainder = normalized;
+
+  while (true) {
+    const match = remainder.match(/^\[([^\]]+)\]\s*/);
+
+    if (!match) {
+      break;
+    }
+
+    const tag = normalizeWhitespace(match[1] ?? "");
+
+    if (tag) {
+      tags.push(tag);
+    }
+
+    remainder = remainder.slice(match[0].length);
+  }
+
+  return {
+    name: remainder || normalized,
+    tags,
+  };
+}
+
+function formatTagLabel(tag: string): string {
+  return `[${tag}]`;
+}
+
+function renderInlineList(values: string[]): string {
+  if (values.length === 0) {
+    return "-";
+  }
+
+  return values.map((value) => escapeHtml(value)).join(", ");
 }
 
 function renderTracksSection(

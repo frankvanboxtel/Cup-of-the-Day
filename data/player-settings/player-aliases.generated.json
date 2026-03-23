@@ -10,15 +10,12 @@
     "[CTR] NathWalt",
     "[CTR]NathWalt"
   ],
-  "[CTR[Hydro": [
-    "[CTR[Hydro",
-    "[ ]",
-    "[CHR[Warsnac",
-    "[CTR[Kernkob",
-    "[Lame}stindt",
-    "[TOG[Lazy_Echidna",
-    "[VOID[//////void",
-    "[ZET}LILWOOLEY"
+  "[CSC]Tommygaming": [
+    "[CSC]Tommygaming",
+    "[C3PO]Tommygaming5132",
+    "[CSC]Tommygaming5132",
+    "[TG]Tommygaming5132",
+    "TommyGaming5132"
   ],
   "[CTR]Moody": [
     "[CTR]Moody",
@@ -36,17 +33,9 @@
     "[DHLU]MarcSubstitute",
     "[SLOW]MarcSubstitute"
   ],
-  "[dum[ Y'Rewik": [
-    "[dum[ Y'Rewik",
-    "[dum] Y'Rewik"
-  ],
   "[F1] magostinho20": [
     "[F1] magostinho20",
     "[I290] magostinho20"
-  ],
-  "[FOOL] Ruckooe": [
-    "[FOOL] Ruckooe",
-    "[FOOL} Ruckooe"
   ],
   "[GFHL]loganbradley714": [
     "[GFHL]loganbradley714",
@@ -68,10 +57,6 @@
   "[IRS] tws20so": [
     "[IRS] tws20so",
     "[DRFT] tws20so"
-  ],
-  "[KURK] lil_zwimpie": [
-    "[KURK] lil_zwimpie",
-    "[KURK[ lil_zwimpie"
   ],
   "[KURK]Smullie": [
     "[KURK]Smullie",
@@ -108,11 +93,6 @@
   "[XTR] [VK] Ulv_RaVn": [
     "[XTR] [VK] Ulv_RaVn",
     "[XTR] [VK] Ulv_Ravn"
-  ],
-  "//////void": [
-    "//////void",
-    "[gorp]//////void",
-    "[SWDN]//////void"
   ],
   "=XDC=Wolf": [
     "=XDC=Wolf",
@@ -518,7 +498,6 @@
     "Quickracer10",
     "[ASJE] Quickracer10",
     "[CC] Quickracer10",
-    "[KURK[ Quickracer10",
     "quickracer10"
   ],
   "R0nanC": [
@@ -650,13 +629,6 @@
     "TamerSteak65167",
     "[FATE]TamerSteak65167"
   ],
-  "Tommygaming5132": [
-    "Tommygaming5132",
-    "[C3PO]Tommygaming5132",
-    "[CSC]Tommygaming5132",
-    "[TG]Tommygaming5132",
-    "TommyGaming5132"
-  ],
   "TraNin": [
     "TraNin",
     "[P50] TraNin",
@@ -684,6 +656,11 @@
   "vectortrajector": [
     "vectortrajector",
     "[ZET]vectortrajector"
+  ],
+  "void": [
+    "void",
+    "[gorp]//////void",
+    "[SWDN]//////void"
   ],
   "vortex": [
     "vortex",
