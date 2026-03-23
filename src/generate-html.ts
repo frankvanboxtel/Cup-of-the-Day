@@ -514,6 +514,13 @@ function renderTabPanels(
   `;
 }
 
+function formatCompetitionTabLabel(
+  label: string,
+  participationCount: number,
+): string {
+  return `${label} (${participationCount})`;
+}
+
 async function loadAliasResolver(): Promise<AliasResolver> {
   const [manualAliases, generatedAliases] = await Promise.all([
     loadAliasList(manualAliasListPath, false),
@@ -2159,7 +2166,11 @@ function renderRaceResultsSection(
       "player-race-results",
       competitionDefinitions.map((definition) => ({
         suffix: definition.type,
-        label: definition.label,
+        label: formatCompetitionTabLabel(
+          definition.label,
+          getDriverResultRecordsForCompetition(driverRecord, definition.type)
+            .length,
+        ),
         content: renderPlayerCompetitionRaceResultsSection(
           driverRecord,
           getCompetitionEventRecords(eventRecords, definition.type),
@@ -2218,7 +2229,7 @@ function renderPlayerCompetitionRaceResultsSection(
       });
 
       return `
-        <tr${rowClasses.length > 0 ? ` class="${rowClasses}"` : ""}${sortAttributes}>
+        <tr data-player-timeline-row data-player-participated="${result !== null ? "true" : "false"}"${rowClasses.length > 0 ? ` class="${rowClasses}"` : ""}${sortAttributes}>
           <td>${renderEventLink(eventRecord, "..")}</td>
           <td class="bold">${renderEventMapLink(eventRecord, "..")}</td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
@@ -2232,6 +2243,13 @@ function renderPlayerCompetitionRaceResultsSection(
     .join("\n");
 
   return `
+    <div data-participation-filter-group>
+      <p class="race-results-filter">
+        <label class="competition-filter-option">
+          <input type="checkbox" data-participation-filter-toggle>
+          <span>Only show raced events</span>
+        </label>
+      </p>
     <table data-sort-table>
       <thead>
         <tr>
@@ -2249,6 +2267,7 @@ function renderPlayerCompetitionRaceResultsSection(
         ${rows}
       </tbody>
     </table>
+    </div>
   `;
 }
 
@@ -2350,7 +2369,11 @@ function renderRaceResultsGraphSection(
       "player-results-graph",
       competitionDefinitions.map((definition) => ({
         suffix: definition.type,
-        label: definition.label,
+        label: formatCompetitionTabLabel(
+          definition.label,
+          getDriverResultRecordsForCompetition(driverRecord, definition.type)
+            .length,
+        ),
         content: renderPlayerCompetitionGraphSection(
           driverRecord,
           getCompetitionEventRecords(eventRecords, definition.type),
@@ -3134,6 +3157,28 @@ function renderLayout(
 
           driverSearchInput.addEventListener("input", updateDriverFilter);
           updateDriverFilter();
+        }
+
+        for (const filterGroup of document.querySelectorAll("[data-participation-filter-group]")) {
+          const toggle = filterGroup.querySelector("[data-participation-filter-toggle]");
+          const rows = Array.from(
+            filterGroup.querySelectorAll("[data-player-timeline-row]"),
+          );
+
+          if (!(toggle instanceof HTMLInputElement) || rows.length === 0) {
+            continue;
+          }
+
+          const updateParticipationFilter = () => {
+            for (const row of rows) {
+              const participated =
+                row.getAttribute("data-player-participated") === "true";
+              row.hidden = toggle.checked && !participated;
+            }
+          };
+
+          toggle.addEventListener("change", updateParticipationFilter);
+          updateParticipationFilter();
         }
 
         for (const picker of document.querySelectorAll("[data-graph-picker]")) {
