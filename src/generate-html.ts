@@ -90,6 +90,8 @@ type DriverStats = {
   starts: number;
   wins: number;
   winRate: number;
+  finals: number;
+  finalsRate: number;
   podiums: number;
   podiumRate: number;
   top6: number;
@@ -1458,7 +1460,7 @@ async function writePlacingsIndexPage(
   driverRecords: DriverRecord[],
   driverRatingSummary: Map<string, DriverRatingSummary>,
 ): Promise<void> {
-  const placingColumns = Array.from({ length: 25 }, (_, index) => index + 1);
+  const placingColumns = Array.from({ length: 10 }, (_, index) => index + 1);
   const rows = driverRecords
     .map((driverRecord) => {
       const stats = buildDriverStats(driverRecord, driverRatingSummary);
@@ -1910,11 +1912,13 @@ function buildDriverStats(
     getDefaultDriverRatingSummary();
   const starts = driverResults.length;
   const wins = placingCounts[0] ?? 0;
+  const finals = placingSummary.finals;
   const podiums = placingSummary.podiums;
   const top6 = placingSummary.top6;
   const top10 = placingSummary.top10;
   const top25 = placingSummary.top25;
   const winRate = calculateRate(wins, starts);
+  const finalsRate = calculateRate(finals, starts);
   const podiumRate = calculateRate(podiums, starts);
   const top6Rate = calculateRate(top6, starts);
   const top10Rate = calculateRate(top10, starts);
@@ -1935,6 +1939,8 @@ function buildDriverStats(
     starts,
     wins,
     winRate,
+    finals,
+    finalsRate,
     podiums,
     podiumRate,
     top6,
@@ -2066,6 +2072,7 @@ function renderDriverMetadataTable(
         <tbody>
           <tr><th>Starts</th>${renderColspanValueCell(stats.starts)}</tr>
           <tr><th>Wins</th>${renderCountWithPercentageCells(stats.wins, stats.winRate)}</tr>
+          <tr><th>Finals</th>${renderCountWithPercentageCells(stats.finals, stats.finalsRate)}</tr>
           <tr><th>Podiums</th>${renderCountWithPercentageCells(stats.podiums, stats.podiumRate)}</tr>
           <tr><th>Top 6s</th>${renderCountWithPercentageCells(stats.top6, stats.top6Rate)}</tr>
           <tr><th>Top 10s</th>${renderCountWithPercentageCells(stats.top10, stats.top10Rate)}</tr>
