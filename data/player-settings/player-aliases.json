@@ -4,7 +4,7 @@
     "[KURK] Quickracer10",
     "[AJSE] Quickracer10"
   ],
-  "SadD0ge": ["SadD0ge", "JakeAdjacent", "[SWMG]JakeAdjacent"],
+  "JakeAdjacent": ["JakeAdjacent", "[SWMG]JakeAdjacent", "SadD0ge"],
   "Hydro": ["Hydro", "k2blue"],
   "Sterben": ["Sterben", "del gaming (Sterben)"],
   "ZOMAN": [
@@ -17,7 +17,8 @@
   ],
   "Joking": ["Joking", ":Z_::E_::E_::P_: Joking", ":Z_::E_::E_:P_: Joking"],
   "AndMe17": ["AndMe17", "AndMe14", "AndMe15", "AndMe16"],
-  "[CHR]Warsnac": [
+  "Warsnac": [
+    "Warsnac",
     "[CHR]Warsnac",
     "[BAP]Warsnac",
     "[old]Warsnac",

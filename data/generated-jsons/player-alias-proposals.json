@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-23T15:34:10.835Z",
+  "generatedAt": "2026-03-23T15:59:55.982Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "data/player-settings/player-aliases.json",
   "generatedAliasFile": "data/player-settings/player-aliases.generated.json",
@@ -160,6 +160,48 @@
       ]
     },
     {
+      "canonicalName": "JakeAdjacent",
+      "knownAliases": [
+        "[SWMG]JakeAdjacent",
+        "JakeAdjacent",
+        "SadD0ge"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[SWMG]SadD0ge",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 13,
+          "firstSeenEvent": 101,
+          "lastSeenEvent": 123,
+          "exampleEvents": [
+            101,
+            103,
+            105,
+            106,
+            107,
+            109,
+            110,
+            112
+          ]
+        },
+        {
+          "name": "[CD]SadD0ge",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 121,
+          "lastSeenEvent": 122,
+          "exampleEvents": [
+            121,
+            122
+          ]
+        }
+      ]
+    },
+    {
       "canonicalName": "Joking",
       "knownAliases": [
         ":Z_::E_::E_::P_: Joking",
@@ -266,48 +308,6 @@
           "lastSeenEvent": 64,
           "exampleEvents": [
             64
-          ]
-        }
-      ]
-    },
-    {
-      "canonicalName": "SadD0ge",
-      "knownAliases": [
-        "[SWMG]JakeAdjacent",
-        "JakeAdjacent",
-        "SadD0ge"
-      ],
-      "proposedAliases": [
-        {
-          "name": "[SWMG]SadD0ge",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 13,
-          "firstSeenEvent": 101,
-          "lastSeenEvent": 123,
-          "exampleEvents": [
-            101,
-            103,
-            105,
-            106,
-            107,
-            109,
-            110,
-            112
-          ]
-        },
-        {
-          "name": "[CD]SadD0ge",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 121,
-          "lastSeenEvent": 122,
-          "exampleEvents": [
-            121,
-            122
           ]
         }
       ]
