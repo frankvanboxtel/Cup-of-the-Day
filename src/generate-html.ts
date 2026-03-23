@@ -1706,9 +1706,11 @@ async function writeEventPage(
           : String(result.rouletteSourceEventNumber)
         : "-";
 
+      const rowClassName = buildResultRowClassName(result.placing);
+
       return `
-        <tr${sortAttributes}>
-          <td class="align-right number-cell">${result.placing ?? "-"}</td>
+        <tr class="${rowClassName}"${sortAttributes}>
+          <td class="placings-column align-right number-cell">${result.placing ?? "-"}</td>
           <td>${renderDriverLink(result.name, driverFileNames, "..")}</td>
           <td class="align-right number-cell">${formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>

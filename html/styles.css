@@ -464,23 +464,33 @@ thead th {
 .placingNo.placing-7,
 .placingNo.placing-8,
 .placingNo.placing-9,
-.placingNo.placing-10,
-.placingNo.placing-11,
-.placingNo.placing-12,
-.placingNo.placing-13,
-.placingNo.placing-14,
-.placingNo.placing-15,
-.placingNo.placing-16,
-.placingNo.placing-17,
-.placingNo.placing-18,
-.placingNo.placing-19,
-.placingNo.placing-20,
-.placingNo.placing-21,
-.placingNo.placing-22,
-.placingNo.placing-23,
-.placingNo.placing-24,
-.placingNo.placing-25 {
+.placingNo.placing-10 {
   --placing-style-hook: initial;
+}
+
+.placingNo.placing-1:not(.is-zero) {
+  background: #ffffbf;
+}
+
+.placingNo.placing-2:not(.is-zero) {
+  background: #dfdfdf;
+}
+
+.placingNo.placing-3:not(.is-zero) {
+  background: #ffdf9f;
+}
+
+.placingNo.placing-4:not(.is-zero),
+.placingNo.placing-5:not(.is-zero),
+.placingNo.placing-6:not(.is-zero) {
+  background: #ffdfdf;
+}
+
+.placingNo.placing-7:not(.is-zero),
+.placingNo.placing-8:not(.is-zero),
+.placingNo.placing-9:not(.is-zero),
+.placingNo.placing-10:not(.is-zero) {
+  background: #dfffdf;
 }
 
 .placings-column {
