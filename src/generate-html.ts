@@ -102,6 +102,7 @@ type DriverStats = {
   top25Rate: number;
   bestFinish: number | null;
   fastestTimes: number;
+  ratings: DriverRatingSummary;
   currentElo: number;
   peakElo: number;
 };
@@ -117,13 +118,31 @@ type AuthorStats = {
 type SortDirection = "asc" | "desc";
 type SortType = "text" | "number";
 
+type RatingModelKey = "elo" | "bayes";
+
+type BayesConfig = {
+  initialDeviation: number;
+  minDeviation: number;
+  maxDeviation: number;
+  deviationDrift: number;
+  performanceVariance: number;
+};
+
+type RatingSnapshot = {
+  current: number;
+  peak: number;
+  deviation: number | null;
+  volatility: number | null;
+};
+
 type DriverRatingSummary = {
-  currentElo: number;
-  peakElo: number;
+  elo: RatingSnapshot;
+  bayes: RatingSnapshot;
 };
 
 type DriverEventRating = {
   elo: number;
+  bayes: number;
 };
 
 type CanonicalEventResult = {
@@ -178,6 +197,13 @@ const displayOnlyNameListPath = path.join(
 );
 const initialElo = 1500;
 const eloKFactor = 32;
+const bayesConfig: BayesConfig = {
+  initialDeviation: 300,
+  minDeviation: 40,
+  maxDeviation: 350,
+  deviationDrift: 20,
+  performanceVariance: 200 ** 2,
+};
 const graphDirectMaxPlacing = 25;
 const graphOverflowBuckets = [25, 30, 40, 50] as const;
 const graphOverflowBucketStart = graphDirectMaxPlacing + 1;
@@ -828,10 +854,11 @@ function buildEventRatings(
   displayOnlyNames: Set<string>,
 ): EventRatings {
   const elo = new Map<string, number>();
-  const summary = new Map<string, DriverRatingSummary>();
+  const eloPeak = new Map<string, number>();
+  const bayes = new Map<string, BayesianPlayerState>();
   const history = new Map<string, Map<string, DriverEventRating>>();
 
-  for (const eventRecord of eventRecords) {
+  for (const [eventIndex, eventRecord] of eventRecords.entries()) {
     const participants = buildCanonicalEventResults(
       eventRecord,
       aliasResolver,
@@ -843,27 +870,29 @@ function buildEventRatings(
     }
 
     for (const participant of participants) {
-      ensureRatingParticipant(participant.canonicalName, elo, summary);
+      ensureEloParticipant(participant.canonicalName, elo, eloPeak);
+      ensureBayesianParticipant(participant.canonicalName, bayes, bayesConfig);
     }
 
-    applyEloEventResults(participants, elo, summary);
+    applyEloEventResults(participants, elo, eloPeak);
+    applyBayesianEventResults(participants, bayes, eventIndex, bayesConfig);
 
     for (const participant of participants) {
-      const participantSummary = summary.get(participant.canonicalName);
-
-      if (!participantSummary) {
-        continue;
-      }
-
       if (!history.has(participant.canonicalName)) {
         history.set(participant.canonicalName, new Map());
       }
 
       history.get(participant.canonicalName)?.set(eventRecord.eventKey, {
-        elo: participantSummary.currentElo,
+        elo: elo.get(participant.canonicalName) ?? initialElo,
+        bayes: bayes.get(participant.canonicalName)?.rating ?? initialElo,
       });
     }
   }
+
+  const finalEventIndex = eventRecords.length - 1;
+  finalizeBayesianStates(bayes, finalEventIndex, bayesConfig);
+
+  const summary = buildDriverRatingSummaryMap(elo, eloPeak, bayes);
 
   return {
     elo,
@@ -922,19 +951,40 @@ function buildCanonicalEventResults(
   });
 }
 
-function ensureRatingParticipant(
+type BayesianPlayerState = {
+  rating: number;
+  deviation: number;
+  peak: number;
+  starts: number;
+  lastEventIndex: number | null;
+};
+
+function ensureEloParticipant(
   canonicalName: string,
   elo: Map<string, number>,
-  summary: Map<string, DriverRatingSummary>,
+  peaks: Map<string, number>,
 ): void {
   if (!elo.has(canonicalName)) {
     elo.set(canonicalName, initialElo);
   }
 
-  if (!summary.has(canonicalName)) {
-    summary.set(canonicalName, {
-      currentElo: initialElo,
-      peakElo: initialElo,
+  if (!peaks.has(canonicalName)) {
+    peaks.set(canonicalName, initialElo);
+  }
+}
+
+function ensureBayesianParticipant(
+  canonicalName: string,
+  states: Map<string, BayesianPlayerState>,
+  config: BayesConfig,
+): void {
+  if (!states.has(canonicalName)) {
+    states.set(canonicalName, {
+      rating: initialElo,
+      deviation: config.initialDeviation,
+      peak: initialElo,
+      starts: 0,
+      lastEventIndex: null,
     });
   }
 }
@@ -942,7 +992,7 @@ function ensureRatingParticipant(
 function applyEloEventResults(
   participants: CanonicalEventResult[],
   eloRatings: Map<string, number>,
-  summary: Map<string, DriverRatingSummary>,
+  eloPeaks: Map<string, number>,
 ): void {
   if (participants.length === 0) {
     return;
@@ -983,15 +1033,204 @@ function applyEloEventResults(
   for (const participant of participants) {
     const current = eloRatings.get(participant.canonicalName) ?? initialElo;
     const next = current + (adjustments.get(participant.canonicalName) ?? 0);
-    const participantSummary = summary.get(participant.canonicalName);
 
     eloRatings.set(participant.canonicalName, next);
-
-    if (participantSummary) {
-      participantSummary.currentElo = next;
-      participantSummary.peakElo = Math.max(participantSummary.peakElo, next);
-    }
+    eloPeaks.set(
+      participant.canonicalName,
+      Math.max(eloPeaks.get(participant.canonicalName) ?? initialElo, next),
+    );
   }
+}
+
+function applyBayesianEventResults(
+  participants: CanonicalEventResult[],
+  states: Map<string, BayesianPlayerState>,
+  eventIndex: number,
+  config: BayesConfig,
+): void {
+  if (participants.length === 0) {
+    return;
+  }
+
+  const preparedStates = new Map<string, BayesianPlayerState>();
+
+  for (const participant of participants) {
+    const state = states.get(participant.canonicalName);
+
+    if (!state) {
+      continue;
+    }
+
+    preparedStates.set(
+      participant.canonicalName,
+      prepareBayesianStateForEvent(state, eventIndex, config),
+    );
+  }
+
+  const nextStates = new Map<string, BayesianPlayerState>();
+
+  for (const participant of participants) {
+    const currentState = preparedStates.get(participant.canonicalName);
+
+    if (!currentState) {
+      continue;
+    }
+
+    const priorVariance = currentState.deviation ** 2;
+    let precisionGain = 0;
+    let gradient = 0;
+
+    for (const opponent of participants) {
+      if (opponent.canonicalName === participant.canonicalName) {
+        continue;
+      }
+
+      const opponentState = preparedStates.get(opponent.canonicalName);
+
+      if (!opponentState) {
+        continue;
+      }
+
+      const scaleSquared =
+        2 * config.performanceVariance +
+        priorVariance +
+        opponentState.deviation ** 2;
+      const scale = Math.sqrt(scaleSquared);
+      const expected =
+        1 /
+        (1 + Math.exp(-(currentState.rating - opponentState.rating) / scale));
+      const score = comparePlacings(participant.placing, opponent.placing);
+
+      precisionGain += (expected * (1 - expected)) / scaleSquared;
+      gradient += (score - expected) / scale;
+    }
+
+    const posteriorVariance =
+      precisionGain === 0
+        ? priorVariance
+        : 1 / (1 / priorVariance + precisionGain);
+    const rating = currentState.rating + posteriorVariance * gradient;
+    const deviation = Math.max(
+      config.minDeviation,
+      Math.min(config.maxDeviation, Math.sqrt(posteriorVariance)),
+    );
+
+    nextStates.set(participant.canonicalName, {
+      rating,
+      deviation,
+      peak: Math.max(currentState.peak, rating),
+      starts: currentState.starts + 1,
+      lastEventIndex: eventIndex,
+    });
+  }
+
+  for (const [canonicalName, nextState] of nextStates) {
+    states.set(canonicalName, nextState);
+  }
+}
+
+function prepareBayesianStateForEvent(
+  state: BayesianPlayerState,
+  eventIndex: number,
+  config: BayesConfig,
+): BayesianPlayerState {
+  const elapsedPeriods =
+    state.lastEventIndex === null
+      ? 0
+      : Math.max(0, eventIndex - state.lastEventIndex);
+
+  return {
+    ...state,
+    deviation: inflateDeviation(
+      state.deviation,
+      elapsedPeriods,
+      config.deviationDrift,
+      config.maxDeviation,
+    ),
+  };
+}
+
+function finalizeBayesianStates(
+  states: Map<string, BayesianPlayerState>,
+  finalEventIndex: number,
+  config: BayesConfig,
+): void {
+  for (const [canonicalName, state] of states) {
+    const elapsedPeriods =
+      state.lastEventIndex === null
+        ? 0
+        : Math.max(0, finalEventIndex - state.lastEventIndex);
+
+    states.set(canonicalName, {
+      ...state,
+      deviation: inflateDeviation(
+        state.deviation,
+        elapsedPeriods,
+        config.deviationDrift,
+        config.maxDeviation,
+      ),
+    });
+  }
+}
+
+function buildDriverRatingSummaryMap(
+  elo: Map<string, number>,
+  eloPeak: Map<string, number>,
+  bayes: Map<string, BayesianPlayerState>,
+): Map<string, DriverRatingSummary> {
+  const names = new Set<string>([
+    ...elo.keys(),
+    ...eloPeak.keys(),
+    ...bayes.keys(),
+  ]);
+
+  return new Map(
+    Array.from(names).map((canonicalName) => [
+      canonicalName,
+      buildDriverRatingSummary(
+        elo.get(canonicalName) ?? initialElo,
+        eloPeak.get(canonicalName) ?? initialElo,
+        bayes.get(canonicalName) ?? null,
+      ),
+    ]),
+  );
+}
+
+function buildDriverRatingSummary(
+  eloRating: number,
+  eloPeak: number,
+  bayesState: BayesianPlayerState | null,
+): DriverRatingSummary {
+  return {
+    elo: {
+      current: eloRating,
+      peak: eloPeak,
+      deviation: null,
+      volatility: null,
+    },
+    bayes: {
+      current: bayesState?.rating ?? initialElo,
+      peak: bayesState?.peak ?? initialElo,
+      deviation: bayesState?.deviation ?? bayesConfig.initialDeviation,
+      volatility: null,
+    },
+  };
+}
+
+function inflateDeviation(
+  deviation: number,
+  elapsedPeriods: number,
+  periodDrift: number,
+  maxDeviation: number,
+): number {
+  if (elapsedPeriods <= 0) {
+    return deviation;
+  }
+
+  return Math.min(
+    maxDeviation,
+    Math.sqrt(deviation ** 2 + elapsedPeriods * periodDrift ** 2),
+  );
 }
 
 function comparePlacings(
@@ -1438,9 +1677,11 @@ async function writeDriverIndexPage(
         tags: normalizeTextSortValue(nameDetails.tags.join(" ")),
         tracks: normalizeNumberSortValue(tracksCreated),
         starts: normalizeNumberSortValue(stats.starts),
-        wins: normalizeNumberSortValue(stats.wins),
         "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
+        wins: normalizeNumberSortValue(stats.wins),
+        "wins-rate": normalizeNumberSortValue(stats.winRate),
         elo: normalizeNumberSortValue(stats.currentElo),
+        bayes: normalizeNumberSortValue(stats.ratings.bayes.current),
       });
       const competitionAttributes = renderCompetitionMetricAttributes({
         tracks: tracksByCompetition,
@@ -1471,9 +1712,11 @@ async function writeDriverIndexPage(
           <td title="${escapeHtml(nameDetails.tags.map(formatTagLabel).join(", "))}"><div class="single-line alias">${tagSummary}</div></td>
           ${renderDynamicCompetitionCountCell("tracks", tracksCreated)}
           ${renderDynamicCompetitionCountCell("starts", stats.starts)}
-          ${renderDynamicCompetitionCountCell("wins", stats.wins)}
           ${renderDynamicCompetitionCountCell("fastest-times", stats.fastestTimes)}
+          ${renderDynamicCompetitionCountCell("wins", stats.wins)}
+          <td class="align-right">${formatPercentage(stats.winRate)}</td>
           <td class="align-right">${formatElo(stats.currentElo)}</td>
+          <td class="align-right">${formatElo(stats.ratings.bayes.current)}</td>
         </tr>`;
     })
     .join("\n");
@@ -1482,7 +1725,7 @@ async function writeDriverIndexPage(
     "Players",
     `
       <h1>Players</h1>
-      <p>${driverRecords.length} player profiles. Search by player name, alias, or tag.</p>
+      <p>${driverRecords.length} player profiles. Search by player name, alias, or tag. Ratings include Elo plus a Bayesian skill estimate.</p>
       <div class="search-panel">
         <label class="search-label" for="driver-search">Search players</label>
         <input
@@ -1504,9 +1747,11 @@ async function writeDriverIndexPage(
             ${renderSortableHeader("Tags", "tags", "text", "asc")}
             ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
             ${renderSortableHeader("Starts", "starts", "number", "desc")}
-            ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
             ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
+            ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
+            ${renderSortableHeader("Win %", "wins-rate", "number", "desc")}
             ${renderSortableHeader("Elo", "elo", "number", "desc")}
+            ${renderSortableHeader("Bayes", "bayes", "number", "desc")}
           </tr>
         </thead>
         <tbody>
@@ -2036,8 +2281,9 @@ function buildDriverStats(
     top25Rate,
     bestFinish,
     fastestTimes: countDriverFastestTimes(driverRecord, competitionTypes),
-    currentElo: ratingSummary.currentElo,
-    peakElo: ratingSummary.peakElo,
+    ratings: ratingSummary,
+    currentElo: ratingSummary.elo.current,
+    peakElo: ratingSummary.elo.peak,
   };
 }
 
@@ -2073,8 +2319,18 @@ function countDriverFastestTimes(
 
 function getDefaultDriverRatingSummary(): DriverRatingSummary {
   return {
-    currentElo: initialElo,
-    peakElo: initialElo,
+    elo: {
+      current: initialElo,
+      peak: initialElo,
+      deviation: null,
+      volatility: null,
+    },
+    bayes: {
+      current: initialElo,
+      peak: initialElo,
+      deviation: bayesConfig.initialDeviation,
+      volatility: null,
+    },
   };
 }
 
@@ -2179,8 +2435,8 @@ function renderDriverMetadataTable(
           <tr><th>Top 25s</th>${renderCountWithPercentageCells(stats.top25, stats.top25Rate)}</tr>
           <tr><th>Best Finish</th>${renderColspanValueCell(stats.bestFinish ?? "-")}</tr>
           <tr><th>Fastest Times</th>${renderColspanValueCell(stats.fastestTimes)}</tr>
-          <tr><th>Elo Current</th>${renderColspanValueCell(formatElo(stats.currentElo))}</tr>
-          <tr><th>Elo Peak</th>${renderColspanValueCell(formatElo(stats.peakElo))}</tr>
+          <tr><th>Elo</th>${renderColspanValueCell(renderRatingSnapshotSummary(stats.ratings.elo, "RD"))}</tr>
+          <tr><th>Bayesian</th>${renderColspanValueCell(renderRatingSnapshotSummary(stats.ratings.bayes, "Sigma"))}</tr>
         </tbody>
       </table>
     </section>
@@ -2333,6 +2589,7 @@ function renderPlayerCompetitionRaceResultsSection(
         time: normalizeTimeSortValue(result?.time),
         "elimination-round": normalizeTextSortValue(result?.eliminationRound),
         elo: normalizeNumberSortValue(ratingAtEvent?.elo),
+        bayes: normalizeNumberSortValue(ratingAtEvent?.bayes),
       });
 
       return `
@@ -2345,6 +2602,7 @@ function renderPlayerCompetitionRaceResultsSection(
           <td class="align-right number-cell">${result === null ? "-" : formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
           <td class="align-right number-cell">${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
+          <td class="align-right number-cell">${ratingAtEvent ? formatElo(ratingAtEvent.bayes) : "-"}</td>
         </tr>`;
     })
     .join("\n");
@@ -2368,6 +2626,7 @@ function renderPlayerCompetitionRaceResultsSection(
           ${renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
           ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
           ${renderSortableHeader("Elo", "elo", "number", "desc", false, "number-cell")}
+          ${renderSortableHeader("Bayes", "bayes", "number", "desc", false, "number-cell")}
         </tr>
       </thead>
       <tbody>
@@ -3877,6 +4136,32 @@ function normalizeSearchText(value: string): string {
 
 function formatPercentage(value: number): string {
   return `${formatDecimalHtml(value.toFixed(1))}<small>%</small>`;
+}
+
+function formatRatingDetail(value: number, digits: number): string {
+  return digits === 0 ? Math.round(value).toString() : value.toFixed(digits);
+}
+
+function renderRatingSnapshotSummary(
+  snapshot: RatingSnapshot,
+  deviationLabel: string,
+): string {
+  const parts = [
+    `Current ${formatElo(snapshot.current)}`,
+    `Peak ${formatElo(snapshot.peak)}`,
+  ];
+
+  if (snapshot.deviation !== null) {
+    parts.push(
+      `${deviationLabel} ${formatRatingDetail(snapshot.deviation, 1)}`,
+    );
+  }
+
+  if (snapshot.volatility !== null) {
+    parts.push(`Vol ${formatRatingDetail(snapshot.volatility, 3)}`);
+  }
+
+  return escapeHtml(parts.join(" / "));
 }
 
 function renderCountWithPercentageCells(

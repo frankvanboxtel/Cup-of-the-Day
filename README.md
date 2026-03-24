@@ -59,6 +59,18 @@ Result generation detects event blocks dynamically from the CSV headers, which m
 - HTML generation merges the manual and generated alias files into shared driver and author pages
 - The TypeScript configuration includes `src/**/*.ts`
 
+## Rating Systems
+
+The player pages and players index expose two rating systems side by side. Both rate only `cotd` events and treat each event as a multiplayer placement result.
+
+- `Elo`: pairwise multiplayer Elo with a fixed `K=32`. This is the most stable and easiest to read, but it does not track uncertainty or inactivity directly.
+- `Bayesian`: a Bayesian skill estimate with a mean rating and sigma-like uncertainty. This tends to reward strong finishes while keeping noisy or low-sample players less certain.
+
+### How To Read Them
+
+- `Elo` is the simpler baseline and mostly reflects accumulated pairwise event results.
+- `Bayesian` adds uncertainty, so a high rating based on a small or noisy sample should be treated more cautiously than the same rating backed by many strong results.
+
 ## Example Workflow
 
 ```bash
