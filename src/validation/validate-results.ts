@@ -8,7 +8,7 @@ type CupResultFile = {
   nr: number;
 };
 
-const projectRoot = path.resolve(__dirname, "..");
+const projectRoot = path.resolve(__dirname, "../..");
 const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 
 async function main(): Promise<void> {

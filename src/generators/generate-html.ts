@@ -6,23 +6,27 @@ import {
   competitionDefinitions,
   getCompetitionEventRecords,
   loadEventRecords,
-} from "./event-data";
-import type { CompetitionType, EventRecord, ResultEntry } from "./event-data";
+} from "../lib/event-data";
+import type {
+  CompetitionType,
+  EventRecord,
+  ResultEntry,
+} from "../lib/event-data";
 import {
   isDisplayOnlyName,
   loadAliasResolver,
   loadDisplayOnlyNames,
   normalizeWhitespace,
   resolveAlias,
-} from "./player-names";
-import type { AliasResolver } from "./player-names";
-import { bayesConfig, buildEventRatings, initialElo } from "./ratings";
+} from "../lib/player-names";
+import type { AliasResolver } from "../lib/player-names";
+import { bayesConfig, buildEventRatings, initialElo } from "../lib/ratings";
 import type {
   DriverEventRating,
   DriverRatingSummary,
   RatingParticipant,
   RatingSnapshot,
-} from "./ratings";
+} from "../lib/ratings";
 
 type DriverRecord = {
   canonicalName: string;
@@ -96,7 +100,7 @@ type AuthorStats = {
 type SortDirection = "asc" | "desc";
 type SortType = "text" | "number";
 
-const projectRoot = path.resolve(__dirname, "..");
+const projectRoot = path.resolve(__dirname, "../..");
 const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 const outputDirectory = path.join(projectRoot, "html");
 const eventsDirectory = path.join(outputDirectory, "events");
@@ -114,7 +118,7 @@ const raceResultsGraphIndexFilePath = path.join(
   raceResultsGraphDirectory,
   "index.html",
 );
-const playerDataDirectory = path.join(projectRoot, "data", "player-settings");
+const playerDataDirectory = path.join(projectRoot, "preferences");
 const manualAliasListPath = path.join(
   playerDataDirectory,
   "player-aliases.json",

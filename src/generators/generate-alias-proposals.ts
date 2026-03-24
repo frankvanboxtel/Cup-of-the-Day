@@ -67,10 +67,10 @@ type AliasProposalFile = {
   newAliasGroups: NewAliasGroup[];
 };
 
-const projectRoot = path.resolve(__dirname, "..");
+const projectRoot = path.resolve(__dirname, "../..");
 const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 const outputDirectory = resultsDirectory;
-const playerDataDirectory = path.join(projectRoot, "data", "player-settings");
+const playerDataDirectory = path.join(projectRoot, "preferences");
 const aliasListPath = path.join(playerDataDirectory, "player-aliases.json");
 const generatedAliasListPath = path.join(
   playerDataDirectory,

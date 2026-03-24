@@ -9,9 +9,9 @@
     "dev": "npm run generate:all",
     "generate": "tsx src/generate-results.ts",
     "generate:all": "npm run generate && npm run validate:results && npm run generate:aliases && npm run generate:html",
-    "generate:aliases": "tsx src/generate-alias-proposals.ts",
-    "generate:html": "tsx src/generate-html.ts",
-    "validate:results": "tsx src/validate-results.ts",
+    "generate:aliases": "tsx src/generators/generate-alias-proposals.ts",
+    "generate:html": "tsx src/generators/generate-html.ts",
+    "validate:results": "tsx src/validation/validate-results.ts",
     "start": "npm run generate:all"
   },
   "dependencies": {

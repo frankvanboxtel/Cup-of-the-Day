@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-03-24T17:40:51.843Z",
+  "generatedAt": "2026-03-24T17:48:36.107Z",
   "sourceDirectory": "data/generated-jsons",
-  "knownAliasFile": "data/player-settings/player-aliases.json",
-  "generatedAliasFile": "data/player-settings/player-aliases.generated.json",
+  "knownAliasFile": "preferences/player-aliases.json",
+  "generatedAliasFile": "preferences/player-aliases.generated.json",
   "knownAliasAdditions": [
     {
       "canonicalName": "[CSC]Tommygaming",
