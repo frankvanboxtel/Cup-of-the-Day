@@ -28,6 +28,65 @@ export function renderLayout(
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const competitionTypes = ${JSON.stringify(options.competitionTypes)};
+        const themeStorageKey = "cup-of-the-day-theme";
+        const themeModes = ["light", "dark"];
+
+        const getStoredTheme = () => {
+          try {
+            const storedTheme = window.localStorage.getItem(themeStorageKey);
+            return themeModes.includes(storedTheme) ? storedTheme : themeModes[0];
+          } catch {
+            return themeModes[0];
+          }
+        };
+
+        const applyTheme = (theme) => {
+          if (!document.body) {
+            return;
+          }
+
+          document.body.classList.remove("light-mode", "dark-mode");
+          document.body.classList.add(theme + "-mode");
+          document.body.setAttribute("data-theme", theme);
+        };
+
+        const syncThemeToggle = (theme) => {
+          const themeToggle = document.querySelector("[data-theme-toggle]");
+          if (themeToggle instanceof HTMLButtonElement) {
+            const isDarkMode = theme === "dark";
+            themeToggle.setAttribute("aria-pressed", String(isDarkMode));
+            themeToggle.textContent = isDarkMode ? "Light mode" : "Dark mode";
+            themeToggle.setAttribute(
+              "aria-label",
+              isDarkMode ? "Switch to light mode" : "Switch to dark mode",
+            );
+          }
+        };
+
+        const persistTheme = (theme) => {
+          applyTheme(theme);
+          syncThemeToggle(theme);
+
+          try {
+            window.localStorage.setItem(themeStorageKey, theme);
+          } catch {
+            // Ignore storage failures and keep the in-memory theme applied.
+          }
+        };
+
+        const initialTheme = getStoredTheme();
+        applyTheme(initialTheme);
+        syncThemeToggle(initialTheme);
+
+        const themeToggle = document.querySelector("[data-theme-toggle]");
+        if (themeToggle instanceof HTMLButtonElement) {
+          themeToggle.addEventListener("click", () => {
+            const nextTheme = document.body.classList.contains("dark-mode")
+              ? "light"
+              : "dark";
+            persistTheme(nextTheme);
+          });
+        }
 
         for (const tabList of document.querySelectorAll("[data-tabs]")) {
           const buttons = Array.from(
@@ -547,11 +606,40 @@ export function renderLayout(
     </script>
   </head>
   <body>
-    <nav>
+    <script>
+      (() => {
+        const themeStorageKey = "cup-of-the-day-theme";
+        const fallbackTheme = "light";
+
+        let theme = fallbackTheme;
+
+        try {
+          const storedTheme = window.localStorage.getItem(themeStorageKey);
+          if (storedTheme === "light" || storedTheme === "dark") {
+            theme = storedTheme;
+          }
+        } catch {
+          theme = fallbackTheme;
+        }
+
+        document.body.classList.add(theme + "-mode");
+        document.body.setAttribute("data-theme", theme);
+      })();
+    </script>
+    <nav style="width: 100%; align-items: center;">
       <a href="${options.rootPrefix}/index.html">Overview</a>
       <a href="${options.rootPrefix}/drivers/index.html">Players</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>
       <a href="${options.rootPrefix}/race-results-graph/index.html">Results Graph</a>
+      <button
+        type="button"
+        data-theme-toggle
+        aria-pressed="false"
+        aria-label="Switch to dark mode"
+        style="margin-left: auto;"
+      >
+        Light mode
+      </button>
     </nav>
     ${bodyContent}
   </body>
