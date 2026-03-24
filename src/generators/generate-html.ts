@@ -2,6 +2,18 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
+  renderAuthorPageContent,
+  renderDriverPageContent,
+  renderEventPageContent,
+} from "./html/detail-pages";
+import {
+  renderDriverIndexPageContent,
+  renderOverviewPageContent,
+  renderPlacingsIndexPageContent,
+  renderResultsGraphIndexPageContent,
+} from "./html/index-pages";
+import { escapeHtml, renderLayout } from "./html/shell";
+import {
   compareEventRecords,
   competitionDefinitions,
   getCompetitionEventRecords,
@@ -156,6 +168,9 @@ const graphPalette = [
   "#c1121f",
   "#577590",
 ];
+const competitionTypes = competitionDefinitions.map(
+  (definition) => definition.type,
+);
 
 async function main(): Promise<void> {
   const aliasResolver = await loadAliasResolver(
@@ -643,18 +658,15 @@ async function writeIndexPage(
     ),
   }));
 
-  const content = renderLayout(
-    "Cup of the Day",
-    `
-      <h1>Cup Competitions</h1>
-      <p>${eventRecords.length} events across ${competitionDefinitions.length} competitions.</p>
-      ${renderTabPanels("overview", tabs, competitionDefinitions[0]?.type ?? "cotd", "Overview competitions")}
-    `,
-    {
-      pageTitle: "Cup of the Day Overview",
-      rootPrefix: ".",
-    },
-  );
+  const content = renderOverviewPageContent({
+    eventCount: eventRecords.length,
+    competitionCount: competitionDefinitions.length,
+    tabs,
+    defaultCompetitionType: competitionTypes[0] ?? "cotd",
+    competitionTypes,
+    renderLayout,
+    renderTabPanels,
+  });
 
   await writeFile(indexFilePath, content, "utf8");
 }
@@ -947,49 +959,14 @@ async function writeDriverIndexPage(
     })
     .join("\n");
 
-  const content = renderLayout(
-    "Players",
-    `
-      <h1>Players</h1>
-      <p>${driverRecords.length} player profiles. Search by player name, alias, or tag. Ratings include Elo plus a Bayesian skill estimate.</p>
-      <div class="search-panel">
-        <label class="search-label" for="driver-search">Search players</label>
-        <input
-          id="driver-search"
-          class="search-input"
-          type="search"
-          placeholder="Type a player name, alias, or tag"
-          autocomplete="off"
-          data-driver-search-input
-        >
-        <p class="search-summary" data-driver-search-summary>${driverRecords.length} players shown</p>
-      </div>
-      ${renderCompetitionFilterPanel("players-index", "Include competitions in totals")}
-      <table data-sort-table data-competition-stats-table="players" data-competition-filter-target="players-index">
-        <thead>
-          <tr>
-            ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Aliases", "aliases", "text", "asc")}
-            ${renderSortableHeader("Tags", "tags", "text", "asc")}
-            ${renderSortableHeader("Tracks", "tracks", "number", "desc")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc")}
-            ${renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
-            ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Win %", "wins-rate", "number", "desc")}
-            ${renderSortableHeader("Elo", "elo", "number", "desc")}
-            ${renderSortableHeader("Bayes", "bayes", "number", "desc")}
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `,
-    {
-      pageTitle: "Players",
-      rootPrefix: "..",
-    },
-  );
+  const content = renderDriverIndexPageContent({
+    driverCount: driverRecords.length,
+    rowsHtml: rows,
+    competitionTypes,
+    renderLayout,
+    renderCompetitionFilterPanel,
+    renderSortableHeader,
+  });
 
   await writeFile(driverIndexFilePath, content, "utf8");
 }
@@ -1127,47 +1104,15 @@ async function writePlacingsIndexPage(
     )
     .join("\n");
 
-  const content = renderLayout(
-    "Placings",
-    `
-      <h1>Placings</h1>
-      <div class="search-panel">
-        <label class="search-label" for="driver-search">Search players</label>
-        <input
-          id="driver-search"
-          class="search-input"
-          type="search"
-          placeholder="Type a player name or alias"
-          autocomplete="off"
-          data-driver-search-input
-        >
-        <p class="search-summary" data-driver-search-summary>${driverRecords.length} players shown</p>
-      </div>
-      ${renderCompetitionFilterPanel("placings-index", "Include competitions in totals")}
-      <table data-sort-table data-competition-stats-table="placings" data-competition-filter-target="placings-index">
-        <thead>
-          <tr>
-            ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Starts", "starts", "number", "desc")}
-            ${renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
-            ${renderSortableHeader("Finals", "finals", "number", "desc")}
-            ${renderSortableHeader("Podiums", "podiums", "number", "desc")}
-            ${renderSortableHeader("Top 6s", "top-6", "number", "desc")}
-            ${renderSortableHeader("Top 10s", "top-10", "number", "desc")}
-            ${renderSortableHeader("Top 25s", "top-25", "number", "desc")}
-            ${placingHeaders}
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `,
-    {
-      pageTitle: "Placings",
-      rootPrefix: "..",
-    },
-  );
+  const content = renderPlacingsIndexPageContent({
+    driverCount: driverRecords.length,
+    rowsHtml: rows,
+    placingHeadersHtml: placingHeaders,
+    competitionTypes,
+    renderLayout,
+    renderCompetitionFilterPanel,
+    renderSortableHeader,
+  });
 
   await writeFile(placingsIndexFilePath, content, "utf8");
 }
@@ -1188,17 +1133,13 @@ async function writeRaceResultsGraphIndexPage(
     ),
   }));
 
-  const content = renderLayout(
-    "Results Graph",
-    `
-      <h1>Results Graph</h1>
-      ${renderTabPanels("results-graph", tabs, competitionDefinitions[0]?.type ?? "cotd", "Results graph competitions")}
-    `,
-    {
-      pageTitle: "Results Graph",
-      rootPrefix: "..",
-    },
-  );
+  const content = renderResultsGraphIndexPageContent({
+    tabs,
+    defaultCompetitionType: competitionTypes[0] ?? "cotd",
+    competitionTypes,
+    renderLayout,
+    renderTabPanels,
+  });
 
   await writeFile(raceResultsGraphIndexFilePath, content, "utf8");
 }
@@ -1275,58 +1216,22 @@ async function writeEventPage(
     })
     .join("\n");
 
-  const content = renderLayout(
-    `${eventRecord.eventLabel} - ${eventRecord.map}`,
-    `
-      <div class="event-heading">
-        <div class="event-heading-nav" aria-label="Event navigation">
-          ${previousEventRecord ? `<a class="event-nav-link" href="${escapeHtml(previousEventRecord.htmlFileName)}" aria-label="Previous event: ${escapeHtml(previousEventRecord.eventLabel)}">&larr;</a>` : ""}
-        </div>
-        <h1>${escapeHtml(eventRecord.eventLabel)}</h1>
-        <div class="event-heading-nav" aria-label="Event navigation">
-          ${nextEventRecord ? `<a class="event-nav-link" href="${escapeHtml(nextEventRecord.htmlFileName)}" aria-label="Next event: ${escapeHtml(nextEventRecord.eventLabel)}">&rarr;</a>` : ""}
-        </div>
-      </div>
-      <h2>${escapeHtml(eventRecord.map)}</h2>
-      <table>
-        <tbody>
-          <tr><th>${eventRecord.competitionType === "roulette" ? "Mappers" : "Author"}</th><td>${renderEventAuthors(eventRecord, authorFileNames, "..")}</td></tr>
-          <tr><th>Participants</th><td>${eventStats.participantCount}</td></tr>
-          <tr><th>DNFs</th><td>${eventStats.dnfCount}</td></tr>
-          <tr><th>Winners (all time)</th><td>${eventStats.winnersAllTime}</td></tr>
-          <tr><th>Wins (all time)</th><td>${eventStats.winsAllTime}</td></tr>
-          ${eventRecord.description ? `<tr><th>${eventRecord.competitionType === "roulette" ? "Pool" : "Description"}</th><td>${escapeHtml(eventRecord.description)}</td></tr>` : ""}
-          <tr><th>Fastest Time</th><td>${renderFastestTimeSummary(eventRecord, driverFileNames, "..")}</td></tr>
-          <tr><th>Podium</th><td>${renderPodium(eventRecord, driverFileNames, "..")}</td></tr>
-        </tbody>
-      </table>
-      <h2>Results</h2>
-      <table data-sort-table>
-        <thead>
-          <tr>
-            ${renderSortableHeader("Placing", "placing", "number", "asc", true, "number-cell")}
-            ${renderSortableHeader("Player", "driver", "text", "asc")}
-            ${renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
-            ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
-            ${
-              hasRouletteColumns
-                ? `${renderSortableHeader("Map", "roulette-map", "text", "asc")}
-            ${renderSortableHeader("Mapper", "roulette-mapper", "text", "asc")}
-            ${renderSortableHeader(eventRecord.rouletteSourceLabel ?? "Source", "roulette-source", "number", "asc", false, "number-cell")}`
-                : ""
-            }
-          </tr>
-        </thead>
-        <tbody>
-          ${resultRows}
-        </tbody>
-      </table>
-    `,
-    {
-      pageTitle: `${eventRecord.eventLabel} - ${eventRecord.map}`,
-      rootPrefix: "..",
-    },
-  );
+  const content = renderEventPageContent({
+    eventRecord,
+    eventStats,
+    resultRowsHtml: resultRows,
+    hasRouletteColumns,
+    previousEventRecord,
+    nextEventRecord,
+    competitionTypes,
+    renderLayout,
+    renderSortableHeader,
+    renderEventAuthors,
+    renderFastestTimeSummary,
+    renderPodium,
+    driverFileNames,
+    authorFileNames,
+  });
 
   await writeFile(
     path.join(eventsDirectory, eventRecord.htmlFileName),
@@ -1347,40 +1252,31 @@ async function writeDriverPage(
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
 
-  const content = renderLayout(
-    driverRecord.canonicalName,
-    `
-      ${renderPlayerProfileHeading(driverRecord.canonicalName, driverRecord.aliases)}
-      ${renderProfileMetadata(
-        driverRecord,
-        matchingAuthorRecord,
-        driverFileNames,
-        authorFileNames,
-        "..",
-        driverRatingSummary,
-      )}
-      ${renderProfileTabs(
-        renderRaceResultsSection(
-          driverRecord,
-          eventRecords,
-          authorFileNames,
-          driverRatingHistory,
-        ),
-        renderRaceResultsGraphSection(driverRecord, eventRecords),
-        renderPlacingsSection(driverRecord),
-        renderTracksSection(
-          matchingAuthorRecord,
-          driverFileNames,
-          authorFileNames,
-        ),
-        "race-results",
-      )}
-    `,
-    {
-      pageTitle: driverRecord.canonicalName,
-      rootPrefix: "..",
-    },
-  );
+  const content = renderDriverPageContent({
+    driverRecord,
+    matchingAuthorRecord,
+    driverFileNames,
+    authorFileNames,
+    driverRatingSummary,
+    competitionTypes,
+    renderLayout,
+    renderPlayerProfileHeading,
+    renderProfileMetadata,
+    renderProfileTabs,
+    raceResultsMarkup: renderRaceResultsSection(
+      driverRecord,
+      eventRecords,
+      authorFileNames,
+      driverRatingHistory,
+    ),
+    graphMarkup: renderRaceResultsGraphSection(driverRecord, eventRecords),
+    placingsMarkup: renderPlacingsSection(driverRecord),
+    tracksMarkup: renderTracksSection(
+      matchingAuthorRecord,
+      driverFileNames,
+      authorFileNames,
+    ),
+  });
 
   await writeFile(
     path.join(driversDirectory, driverRecord.htmlFileName),
@@ -1401,36 +1297,34 @@ async function writeAuthorPage(
   const matchingDriverRecord =
     driverRecordsByName.get(authorRecord.canonicalName) ?? null;
 
-  const content = renderLayout(
-    authorRecord.canonicalName,
-    `
-      ${renderProfileHeading(authorRecord.canonicalName, authorRecord.aliases)}
-      ${renderProfileMetadata(
-        matchingDriverRecord,
-        authorRecord,
-        driverFileNames,
-        authorFileNames,
-        "..",
-        driverRatingSummary,
-      )}
-      ${renderProfileTabs(
-        renderRaceResultsSection(
-          matchingDriverRecord,
-          eventRecords,
-          authorFileNames,
-          driverRatingHistory,
-        ),
-        renderRaceResultsGraphSection(matchingDriverRecord, eventRecords),
-        renderPlacingsSection(matchingDriverRecord),
-        renderTracksSection(authorRecord, driverFileNames, authorFileNames),
-        "tracks",
-      )}
-    `,
-    {
-      pageTitle: authorRecord.canonicalName,
-      rootPrefix: "..",
-    },
-  );
+  const content = renderAuthorPageContent({
+    authorRecord,
+    matchingDriverRecord,
+    driverFileNames,
+    authorFileNames,
+    driverRatingSummary,
+    competitionTypes,
+    renderLayout,
+    renderProfileHeading,
+    renderProfileMetadata,
+    renderProfileTabs,
+    raceResultsMarkup: renderRaceResultsSection(
+      matchingDriverRecord,
+      eventRecords,
+      authorFileNames,
+      driverRatingHistory,
+    ),
+    graphMarkup: renderRaceResultsGraphSection(
+      matchingDriverRecord,
+      eventRecords,
+    ),
+    placingsMarkup: renderPlacingsSection(matchingDriverRecord),
+    tracksMarkup: renderTracksSection(
+      authorRecord,
+      driverFileNames,
+      authorFileNames,
+    ),
+  });
 
   await writeFile(
     path.join(authorsDirectory, authorRecord.htmlFileName),
@@ -2797,563 +2691,6 @@ function renderAuthorLinks(
       return `<a href="${rootPrefix}/authors/${fileName}">${escapeHtml(author)}</a>`;
     })
     .join(", ");
-}
-
-function renderLayout(
-  title: string,
-  bodyContent: string,
-  options: { pageTitle: string; rootPrefix: string },
-): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${escapeHtml(options.pageTitle)}</title>
-    <link rel="stylesheet" href="${options.rootPrefix}/styles.css">
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const competitionTypes = ${JSON.stringify(
-          competitionDefinitions.map((definition) => definition.type),
-        )};
-
-        for (const tabList of document.querySelectorAll("[data-tabs]")) {
-          const buttons = Array.from(
-            tabList.querySelectorAll("[data-tab-target]"),
-          );
-
-          const activate = (targetId) => {
-            for (const button of buttons) {
-              const isActive = button.dataset.tabTarget === targetId;
-              button.classList.toggle("is-active", isActive);
-              button.setAttribute("aria-selected", String(isActive));
-            }
-
-            for (const button of buttons) {
-              const target = button.dataset.tabTarget;
-              if (!target) {
-                continue;
-              }
-
-              const panel = document.getElementById(target);
-              if (panel) {
-                panel.hidden = panel.id !== targetId;
-              }
-            }
-          };
-
-          const requestedHash = window.location.hash.replace("#", "");
-          const defaultTab = tabList.dataset.defaultTab || buttons[0]?.dataset.tabTarget;
-          const initialTab = buttons.some(
-            (button) => button.dataset.tabTarget === requestedHash,
-          )
-            ? requestedHash
-            : defaultTab;
-
-          if (initialTab) {
-            activate(initialTab);
-          }
-
-          for (const button of buttons) {
-            button.addEventListener("click", () => {
-              const targetId = button.dataset.tabTarget;
-              if (!targetId) {
-                  return;
-                }
-
-              activate(targetId);
-
-              if (window.history?.replaceState) {
-                window.history.replaceState(null, "", "#" + targetId);
-              } else {
-                window.location.hash = targetId;
-              }
-            });
-          }
-        }
-
-        const driverSearchInput = document.querySelector("[data-driver-search-input]");
-        const driverSearchSummary = document.querySelector("[data-driver-search-summary]");
-        const driverRows = Array.from(document.querySelectorAll("[data-driver-row]"));
-
-        if (driverSearchInput && driverSearchSummary && driverRows.length > 0) {
-          const updateDriverFilter = () => {
-            const query = (driverSearchInput.value || "").trim().toLowerCase();
-            let visibleCount = 0;
-
-            for (const row of driverRows) {
-              const haystack = (row.getAttribute("data-driver-search") || "").toLowerCase();
-              const isVisible = query.length === 0 || haystack.includes(query);
-              row.hidden = !isVisible;
-
-              if (isVisible) {
-                visibleCount += 1;
-              }
-            }
-
-            driverSearchSummary.textContent = visibleCount + " player" + (visibleCount === 1 ? "" : "s") + " shown";
-          };
-
-          driverSearchInput.addEventListener("input", updateDriverFilter);
-          updateDriverFilter();
-        }
-
-        for (const filterGroup of document.querySelectorAll("[data-participation-filter-group]")) {
-          const toggle = filterGroup.querySelector("[data-participation-filter-toggle]");
-          const rows = Array.from(
-            filterGroup.querySelectorAll("[data-player-timeline-row]"),
-          );
-
-          if (!(toggle instanceof HTMLInputElement) || rows.length === 0) {
-            continue;
-          }
-
-          const updateParticipationFilter = () => {
-            for (const row of rows) {
-              const participated =
-                row.getAttribute("data-player-participated") === "true";
-              row.hidden = toggle.checked && !participated;
-            }
-          };
-
-          toggle.addEventListener("change", updateParticipationFilter);
-          updateParticipationFilter();
-        }
-
-        for (const picker of document.querySelectorAll("[data-graph-picker]")) {
-          const graphTarget = picker.getAttribute("data-graph-target") || "";
-          const compareParams = new URLSearchParams(window.location.search);
-          const compareSeriesId = compareParams.get("compare") || "";
-          const compareCompetitionType = compareParams.get("competition") || "";
-          const selects = Array.from(
-            picker.querySelectorAll("[data-graph-select]"),
-          );
-          const optionSets = new Map(
-            selects.map((select) => [
-              select,
-              Array.from(select.querySelectorAll("option")).map((option) => ({
-                value: option.value,
-                label: option.textContent || "",
-              })),
-            ]),
-          );
-
-          if (!graphTarget || selects.length === 0) {
-            continue;
-          }
-
-          const hasCompareSeriesId =
-            compareSeriesId.length > 0 &&
-            (compareCompetitionType.length === 0 ||
-              picker.getAttribute("data-competition-type") === compareCompetitionType) &&
-            Array.from(optionSets.values()).some((optionSet) =>
-              optionSet.some((option) => option.value === compareSeriesId),
-            );
-
-          const graphRoot = document.querySelector(
-            '[data-graph-root="' + graphTarget + '"]',
-          );
-
-          const getUnavailableSeriesIds = (currentSelect) =>
-            new Set(
-              selects
-                .filter((select) => select !== currentSelect)
-                .map((select) => select.value)
-                .filter((value) => value.length > 0),
-            );
-
-          const updateSelectOptions = (select, query) => {
-            const optionSet = optionSets.get(select) || [];
-            const selectedValue = select.value;
-            const normalizedQuery = (query || "").trim().toLowerCase();
-            const unavailableSeriesIds = getUnavailableSeriesIds(select);
-            const matchingOptions = optionSet.filter((option) => {
-              if (option.value === "") {
-                return true;
-              }
-
-              if (option.value === selectedValue) {
-                return true;
-              }
-
-              if (unavailableSeriesIds.has(option.value)) {
-                return false;
-              }
-
-              return (
-                normalizedQuery.length === 0 ||
-                option.label.toLowerCase().includes(normalizedQuery)
-              );
-            });
-
-            select.innerHTML = matchingOptions
-              .map((option) => {
-                const selectedAttribute =
-                  option.value === selectedValue ? " selected" : "";
-
-                return '<option value="' + option.value + '"' + selectedAttribute + '>' + option.label + '</option>';
-              })
-              .join("");
-
-            select.value = selectedValue;
-          };
-
-          const refreshSelectOptions = () => {
-            for (const select of selects) {
-              const filterInput = select
-                .closest(".graph-select-item")
-                ?.querySelector("[data-graph-select-filter]");
-              updateSelectOptions(select, filterInput?.value || "");
-            }
-          };
-
-          const updateGraphSelection = () => {
-            const selectedIds = new Set();
-            const selectedColors = new Map();
-
-            for (const select of selects) {
-              const swatch = select
-                .closest(".graph-select-item")
-                ?.querySelector("[data-graph-select-swatch]");
-              const slotColor =
-                select.getAttribute("data-graph-slot-color") || "#0047ab";
-
-              if (swatch) {
-                swatch.style.background = slotColor;
-              }
-
-              if (select.value) {
-                selectedIds.add(select.value);
-
-                if (!selectedColors.has(select.value)) {
-                  selectedColors.set(select.value, slotColor);
-                }
-              }
-            }
-
-            if (!graphRoot) {
-              return;
-            }
-
-            for (const seriesGroup of graphRoot.querySelectorAll("[data-graph-series]")) {
-              const seriesId = seriesGroup.getAttribute("data-graph-series") || "";
-              seriesGroup.classList.toggle("is-hidden", !selectedIds.has(seriesId));
-
-              const seriesColor = selectedColors.get(seriesId) || "#0047ab";
-
-              for (const path of seriesGroup.querySelectorAll(".graph-line")) {
-                path.setAttribute("stroke", seriesColor);
-              }
-
-              for (const point of seriesGroup.querySelectorAll(".graph-point")) {
-                point.setAttribute("fill", seriesColor);
-              }
-            }
-          };
-
-          for (const select of selects) {
-            const filterInput = select
-              .closest(".graph-select-item")
-              ?.querySelector("[data-graph-select-filter]");
-
-            if (hasCompareSeriesId) {
-              select.value = select === selects[0] ? compareSeriesId : "";
-
-              if (filterInput) {
-                filterInput.value = "";
-              }
-            }
-
-            if (filterInput) {
-              filterInput.addEventListener("input", () => {
-                updateSelectOptions(select, filterInput.value);
-              });
-            }
-
-            select.addEventListener("change", () => {
-              refreshSelectOptions();
-              updateGraphSelection();
-            });
-          }
-
-          refreshSelectOptions();
-          updateGraphSelection();
-        }
-
-        for (const table of document.querySelectorAll("[data-sort-table]")) {
-          const tbody = table.tBodies[0];
-
-          if (!tbody) {
-            continue;
-          }
-
-          const sorters = Array.from(table.querySelectorAll(".sorter[data-sort-key]"));
-
-          if (sorters.length === 0) {
-            continue;
-          }
-
-          const updateSorterState = (activeSorter, direction) => {
-            for (const sorter of sorters) {
-              const isActive = sorter === activeSorter;
-              sorter.classList.toggle("active", isActive);
-              sorter.dataset.sortDirection = isActive ? direction : "";
-              sorter.setAttribute("aria-pressed", String(isActive));
-
-              const indicator = sorter.querySelector(".sort-indicator");
-              if (indicator) {
-                indicator.textContent = isActive
-                  ? direction === "asc"
-                    ? "▲"
-                    : "▼"
-                  : "↕";
-              }
-
-              const headerCell = sorter.closest("th");
-              if (headerCell) {
-                headerCell.setAttribute(
-                  "aria-sort",
-                  isActive
-                    ? direction === "asc"
-                      ? "ascending"
-                      : "descending"
-                    : "none",
-                );
-              }
-            }
-          };
-
-          const sortRows = (sorter, direction) => {
-            const sortKey = sorter.dataset.sortKey;
-            const sortType = sorter.dataset.sortType || "text";
-
-            if (!sortKey) {
-              return;
-            }
-
-            const rows = Array.from(tbody.querySelectorAll("tr")).map((row, index) => ({
-              row,
-              index,
-            }));
-
-            rows.sort((left, right) => {
-              const leftValue = left.row.getAttribute("data-sort-" + sortKey) || "";
-              const rightValue = right.row.getAttribute("data-sort-" + sortKey) || "";
-              const leftEmpty = leftValue.length === 0;
-              const rightEmpty = rightValue.length === 0;
-
-              if (leftEmpty || rightEmpty) {
-                if (leftEmpty && rightEmpty) {
-                  return left.index - right.index;
-                }
-
-                return leftEmpty ? 1 : -1;
-              }
-
-              let comparison = 0;
-
-              if (sortType === "number") {
-                comparison = Number(leftValue) - Number(rightValue);
-              } else {
-                comparison = leftValue.localeCompare(rightValue, undefined, {
-                  numeric: true,
-                  sensitivity: "base",
-                });
-              }
-
-              if (comparison === 0) {
-                comparison = left.index - right.index;
-              }
-
-              return direction === "asc" ? comparison : -comparison;
-            });
-
-            tbody.append(...rows.map((entry) => entry.row));
-            updateSorterState(sorter, direction);
-          };
-
-          const initialSorter = sorters.find((sorter) => sorter.classList.contains("active")) || sorters[0];
-
-          table.__refreshSort = () => {
-            const activeSorter =
-              sorters.find((sorter) => sorter.classList.contains("active")) ||
-              initialSorter;
-
-            if (!activeSorter) {
-              return;
-            }
-
-            sortRows(
-              activeSorter,
-              activeSorter.dataset.sortDirection ||
-                activeSorter.dataset.sortDefaultDirection ||
-                "asc",
-            );
-          };
-
-          if (table.__refreshSort) {
-            table.__refreshSort();
-          }
-
-          for (const sorter of sorters) {
-            sorter.addEventListener("click", (event) => {
-              event.preventDefault();
-
-              const nextDirection = sorter.classList.contains("active")
-                ? sorter.dataset.sortDirection === "asc"
-                  ? "desc"
-                  : "asc"
-                : sorter.dataset.sortDefaultDirection || "asc";
-
-              sortRows(sorter, nextDirection);
-            });
-          }
-        }
-
-        const formatDecimalParts = (value) => {
-          const normalized = String(value);
-          const match = normalized.match(/^(.*?)([.,])(\d+)$/);
-
-          if (!match) {
-            return null;
-          }
-
-          return {
-            wholePart: match[1],
-            separator: match[2],
-            fractionalPart: match[3],
-          };
-        };
-
-        const formatCompetitionCellHtml = (metricKey, value) => {
-          if (metricKey === "win-rate" || metricKey === "podium-rate") {
-            if (value === 0) {
-              return "";
-            }
-
-            const parts = formatDecimalParts(value.toFixed(1));
-
-            if (!parts) {
-              return value.toFixed(1) + "<small>%</small>";
-            }
-
-            return parts.wholePart + parts.separator + "<small>" + parts.fractionalPart + "</small><small>%</small>";
-          }
-
-          return value === 0 ? "" : String(value);
-        };
-
-        const sumCompetitionMetric = (row, metricKey, selectedCompetitionTypes) =>
-          selectedCompetitionTypes.reduce((sum, competitionType) => {
-            const attributeValue = Number(
-              row.getAttribute("data-stats-" + competitionType + "-" + metricKey) ||
-                "0",
-            );
-
-            return sum + attributeValue;
-          }, 0);
-
-        const getCompetitionMetricValue = (row, metricKey, selectedCompetitionTypes) => {
-          if (metricKey === "win-rate") {
-            const starts = sumCompetitionMetric(row, "starts", selectedCompetitionTypes);
-            const wins = sumCompetitionMetric(row, "wins", selectedCompetitionTypes);
-
-            return starts > 0 ? (wins / starts) * 100 : 0;
-          }
-
-          if (metricKey === "podium-rate") {
-            const starts = sumCompetitionMetric(row, "starts", selectedCompetitionTypes);
-            const podiums = sumCompetitionMetric(row, "podiums", selectedCompetitionTypes);
-
-            return starts > 0 ? (podiums / starts) * 100 : 0;
-          }
-
-          return sumCompetitionMetric(row, metricKey, selectedCompetitionTypes);
-        };
-
-        for (const filterGroup of document.querySelectorAll("[data-competition-filter-group]")) {
-          const filterTarget =
-            filterGroup.getAttribute("data-competition-filter-target") || "";
-          const toggles = Array.from(
-            filterGroup.querySelectorAll("[data-competition-toggle]"),
-          );
-          const tables = Array.from(
-            document.querySelectorAll(
-              '[data-competition-filter-target="' + filterTarget + '"]',
-            ),
-          ).filter((table) => table !== filterGroup);
-
-          if (!filterTarget || toggles.length === 0 || tables.length === 0) {
-            continue;
-          }
-
-          const updateCompetitionTotals = () => {
-            const selectedCompetitionTypes = competitionTypes.filter((competitionType) =>
-              toggles.some(
-                (toggle) =>
-                  toggle.value === competitionType &&
-                  toggle.checked,
-              ),
-            );
-
-            for (const table of tables) {
-              const rows = Array.from(table.querySelectorAll("tbody tr"));
-
-              for (const row of rows) {
-                for (const cell of row.querySelectorAll("[data-competition-cell]")) {
-                  const metricKey = cell.getAttribute("data-competition-cell") || "";
-
-                  if (!metricKey) {
-                    continue;
-                  }
-
-                  const metricValue = getCompetitionMetricValue(
-                    row,
-                    metricKey,
-                    selectedCompetitionTypes,
-                  );
-
-                  cell.classList.toggle("is-zero", metricValue === 0);
-                  cell.innerHTML = formatCompetitionCellHtml(metricKey, metricValue);
-                  row.setAttribute("data-sort-" + metricKey, String(metricValue));
-                }
-              }
-
-              if (typeof table.__refreshSort === "function") {
-                table.__refreshSort();
-              }
-            }
-          };
-
-          for (const toggle of toggles) {
-            toggle.addEventListener("change", updateCompetitionTotals);
-          }
-
-          updateCompetitionTotals();
-        }
-      });
-    </script>
-  </head>
-  <body>
-    <nav>
-      <a href="${options.rootPrefix}/index.html">Overview</a>
-      <a href="${options.rootPrefix}/drivers/index.html">Players</a>
-      <a href="${options.rootPrefix}/placings/index.html">Placings</a>
-      <a href="${options.rootPrefix}/race-results-graph/index.html">Results Graph</a>
-    </nav>
-    ${bodyContent}
-  </body>
-</html>
-`;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
 
 function normalizeSearchText(value: string): string {
