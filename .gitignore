@@ -1,7 +1,7 @@
 node_modules/
 dist/
 results/
-html/index.html
-html/**/*.html
+dist/index.html
+dist/**/*.html
 
 .DS_Store

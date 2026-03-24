@@ -102,7 +102,7 @@ type SortType = "text" | "number";
 
 const projectRoot = path.resolve(__dirname, "../..");
 const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
-const outputDirectory = path.join(projectRoot, "html");
+const outputDirectory = path.join(projectRoot, "dist");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const placingsDirectory = path.join(outputDirectory, "placings");
