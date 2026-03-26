@@ -1,6 +1,6 @@
 # Cup of the Day
 
-Minimal Node.js + TypeScript project for working with the Cup of the Day CSV dataset in this repository.
+The project generates Zeepkist statistics pages from CSV exports of [Google Sheets](https://docs.google.com/spreadsheets/d/1rqtVPKeDxEaBfbNl7whL5HjmzeqIDk8mj3xOtfACyeE/edit?gid=1536349458#gid=1536349458) maintained by Lexer. It's built with Node.js and TypeScript.
 
 ## Requirements
 
@@ -13,41 +13,21 @@ Minimal Node.js + TypeScript project for working with the Cup of the Day CSV dat
 npm install
 ```
 
-## Scripts
+## Generate statistics pages
+
+```bash
+npm run generate:all
+```
+
+To view the pages open `./dist/index.html` in your browser.
+
+## Scripts Overview
 
 - `npm run generate` reads all COTD CSV files from `data/source-csvs/` and writes per-cup JSON files to `data/generated-jsons/`
 - `npm run validate:results` checks that the generated result files contain a complete event-number sequence with no gaps
 - `npm run generate:all` runs the full generation pipeline: results JSON, result validation, alias proposals/generated aliases, and static site output
 - `npm run generate:aliases` reads the generated JSON files, proposes player alias additions in `data/generated-jsons/player-alias-proposals.json`, and writes generated alias groups to `preferences/player-aliases.generated.json`
 - `npm run generate:html` reads the JSON files in `data/generated-jsons/`, combines `preferences/player-aliases.json` with `preferences/player-aliases.generated.json`, applies `preferences/display-only-names.json`, and builds a static site in `dist/`
-
-## Project Structure
-
-```text
-data/
-  source-csvs/
-    CSV source files
-  generated-jsons/
-    Generated per-cup JSON files
-    Generated alias proposal output
-preferences/
-  player-aliases.json
-  player-aliases.generated.json
-  display-only-names.json
-dist/
-  Generated static site output
-src/
-  generate-results.ts
-  generators/
-    generate-alias-proposals.ts
-    generate-html.ts
-  lib/
-    event-data.ts
-    player-names.ts
-    ratings.ts
-  validation/
-    validate-results.ts
-```
 
 ## Current Behavior
 
@@ -74,13 +54,3 @@ The player pages and players index expose two rating systems side by side. Both 
 
 - `Elo` is the simpler baseline and mostly reflects accumulated pairwise event results.
 - `Bayesian` adds uncertainty, so a high rating based on a small or noisy sample should be treated more cautiously than the same rating backed by many strong results.
-
-## Example Workflow
-
-```bash
-npm install
-npm run generate:all
-npm run dev
-npm run build
-npm start
-```

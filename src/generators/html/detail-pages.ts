@@ -13,6 +13,8 @@ type RenderLayout = (
 ) => string;
 
 type ProfileDefaultTab =
+  | "bayes-graph"
+  | "elo-graph"
   | "placings"
   | "race-results-graph"
   | "tracks"
@@ -149,15 +151,19 @@ type DriverPageOptions<TDriverRecord, TAuthorRecord, TDriverRatingSummary> = {
     rootPrefix: string,
     driverRatingSummary: TDriverRatingSummary,
   ) => string;
-  renderProfileTabs: (
+  renderPlayerProfileTabs: (
     raceResultsMarkup: string,
     graphMarkup: string,
+    eloGraphMarkup: string,
+    bayesGraphMarkup: string,
     placingsMarkup: string,
     tracksMarkup: string,
     defaultTab: ProfileDefaultTab,
   ) => string;
   raceResultsMarkup: string;
   graphMarkup: string;
+  eloGraphMarkup: string;
+  bayesGraphMarkup: string;
   placingsMarkup: string;
   tracksMarkup: string;
 };
@@ -185,9 +191,11 @@ export function renderDriverPageContent<
         "..",
         options.driverRatingSummary,
       )}
-      ${options.renderProfileTabs(
+      ${options.renderPlayerProfileTabs(
         options.raceResultsMarkup,
         options.graphMarkup,
+        options.eloGraphMarkup,
+        options.bayesGraphMarkup,
         options.placingsMarkup,
         options.tracksMarkup,
         "race-results",

@@ -2,6 +2,7 @@
   "name": "cup-of-the-day",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Node.js TypeScript project for Cup of the Day data.",
   "main": "dist/src/index.js",
   "scripts": {

@@ -80,6 +80,21 @@ type RaceResultsGraphSeries = {
   points: RaceResultsGraphPoint[];
 };
 
+type RatingGraphPoint = {
+  eventNumber: number;
+  value: number | null;
+  title: string;
+  href: string | null;
+};
+
+type RatingGraphSeries = {
+  id: string;
+  label: string;
+  color: string;
+  href: string | null;
+  points: RatingGraphPoint[];
+};
+
 type DriverStats = {
   starts: number;
   wins: number;
@@ -188,13 +203,29 @@ async function main(): Promise<void> {
       eventRecord,
     ]),
   );
-  const ratedEventRecords = eventRecords.filter(
-    (eventRecord) => eventRecord.competitionType === "cotd",
+  const eventRatingsByCompetition = new Map(
+    competitionTypes.map((competitionType) => [
+      competitionType,
+      buildEventRatings(
+        getCompetitionEventRecords(eventRecords, competitionType),
+        (eventRecord) =>
+          buildCanonicalEventResults(
+            eventRecord,
+            aliasResolver,
+            displayOnlyNames,
+          ),
+      ),
+    ]),
   );
-  const eventRatings = buildEventRatings(ratedEventRecords, (eventRecord) =>
-    buildCanonicalEventResults(eventRecord, aliasResolver, displayOnlyNames),
+  const eventRatings =
+    eventRatingsByCompetition.get("cotd") ??
+    buildEventRatings([], () => [] as RatingParticipant[]);
+  const driverRatingHistoryByCompetition = new Map(
+    competitionTypes.map((competitionType) => [
+      competitionType,
+      eventRatingsByCompetition.get(competitionType)?.history ?? new Map(),
+    ]),
   );
-  const driverRatingHistory = eventRatings.history;
   const driverRecords = buildDriverRecords(
     eventRecords,
     aliasResolver,
@@ -269,7 +300,7 @@ async function main(): Promise<void> {
         driverFileNames,
         authorFileNames,
         eventRatings.summary,
-        driverRatingHistory,
+        driverRatingHistoryByCompetition,
       ),
     ),
     ...authorRecords.map((authorRecord) =>
@@ -280,7 +311,7 @@ async function main(): Promise<void> {
         driverFileNames,
         authorFileNames,
         eventRatings.summary,
-        driverRatingHistory,
+        driverRatingHistoryByCompetition,
       ),
     ),
   ]);
@@ -1252,7 +1283,10 @@ async function writeDriverPage(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
-  driverRatingHistory: Map<string, Map<string, DriverEventRating>>,
+  driverRatingHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventRating>>
+  >,
 ): Promise<void> {
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
@@ -1267,14 +1301,26 @@ async function writeDriverPage(
     renderLayout,
     renderPlayerProfileHeading,
     renderProfileMetadata,
-    renderProfileTabs,
+    renderPlayerProfileTabs,
     raceResultsMarkup: renderRaceResultsSection(
       driverRecord,
       eventRecords,
       authorFileNames,
-      driverRatingHistory,
+      driverRatingHistoryByCompetition,
     ),
     graphMarkup: renderRaceResultsGraphSection(driverRecord, eventRecords),
+    eloGraphMarkup: renderPlayerRatingGraphSection(
+      driverRecord,
+      eventRecords,
+      driverRatingHistoryByCompetition,
+      "elo",
+    ),
+    bayesGraphMarkup: renderPlayerRatingGraphSection(
+      driverRecord,
+      eventRecords,
+      driverRatingHistoryByCompetition,
+      "bayes",
+    ),
     placingsMarkup: renderPlacingsSection(driverRecord),
     tracksMarkup: renderTracksSection(
       matchingAuthorRecord,
@@ -1297,7 +1343,10 @@ async function writeAuthorPage(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
-  driverRatingHistory: Map<string, Map<string, DriverEventRating>>,
+  driverRatingHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventRating>>
+  >,
 ): Promise<void> {
   const matchingDriverRecord =
     driverRecordsByName.get(authorRecord.canonicalName) ?? null;
@@ -1317,7 +1366,7 @@ async function writeAuthorPage(
       matchingDriverRecord,
       eventRecords,
       authorFileNames,
-      driverRatingHistory,
+      driverRatingHistoryByCompetition,
     ),
     graphMarkup: renderRaceResultsGraphSection(
       matchingDriverRecord,
@@ -1560,8 +1609,8 @@ function renderDriverMetadataTable(
           <tr><th>Top 25s</th>${renderCountWithPercentageCells(stats.top25, stats.top25Rate)}</tr>
           <tr><th>Best Finish</th>${renderColspanValueCell(stats.bestFinish ?? "-")}</tr>
           <tr><th>Fastest Times</th>${renderColspanValueCell(stats.fastestTimes)}</tr>
-          <tr><th>Elo</th>${renderColspanValueCell(renderRatingSnapshotSummary(stats.ratings.elo, "RD"))}</tr>
-          <tr><th>Bayesian</th>${renderColspanValueCell(renderRatingSnapshotSummary(stats.ratings.bayes, "Sigma"))}</tr>
+          <tr><th>Elo</th>${renderPrimarySecondaryValueCells(formatElo(stats.ratings.elo.current), formatElo(stats.ratings.elo.peak))}</tr>
+          <tr><th>Bayesian</th>${renderPrimarySecondaryValueCells(formatElo(stats.ratings.bayes.current), formatElo(stats.ratings.bayes.peak))}</tr>
         </tbody>
       </table>
     </section>
@@ -1603,12 +1652,63 @@ function renderAuthorMetadataTable(
   `;
 }
 
+function renderPlayerProfileTabs(
+  raceResultsContent: string,
+  raceResultsGraphContent: string,
+  eloGraphContent: string,
+  bayesGraphContent: string,
+  placingsContent: string,
+  tracksContent: string,
+  defaultTab:
+    | "race-results"
+    | "race-results-graph"
+    | "elo-graph"
+    | "bayes-graph"
+    | "placings"
+    | "tracks",
+): string {
+  return `
+    <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
+      <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Results Graph</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="elo-graph">Elo Graph</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="bayes-graph">Bayes Graph</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks</button>
+    </div>
+    <section id="race-results" class="tab-panel" role="tabpanel">
+      ${raceResultsContent}
+    </section>
+    <section id="race-results-graph" class="tab-panel" role="tabpanel" hidden>
+      ${raceResultsGraphContent}
+    </section>
+    <section id="elo-graph" class="tab-panel" role="tabpanel" hidden>
+      ${eloGraphContent}
+    </section>
+    <section id="bayes-graph" class="tab-panel" role="tabpanel" hidden>
+      ${bayesGraphContent}
+    </section>
+    <section id="placings" class="tab-panel" role="tabpanel" hidden>
+      ${placingsContent}
+    </section>
+    <section id="tracks" class="tab-panel" role="tabpanel" hidden>
+      ${tracksContent}
+    </section>
+  `;
+}
+
 function renderProfileTabs(
   raceResultsContent: string,
   raceResultsGraphContent: string,
   placingsContent: string,
   tracksContent: string,
-  defaultTab: "race-results" | "race-results-graph" | "placings" | "tracks",
+  defaultTab:
+    | "race-results"
+    | "race-results-graph"
+    | "elo-graph"
+    | "bayes-graph"
+    | "placings"
+    | "tracks",
 ): string {
   return `
     <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
@@ -1636,7 +1736,10 @@ function renderRaceResultsSection(
   driverRecord: DriverRecord | null,
   eventRecords: EventRecord[],
   authorFileNames: Map<string, string>,
-  driverRatingHistory: Map<string, Map<string, DriverEventRating>>,
+  driverRatingHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventRating>>
+  >,
 ): string {
   if (driverRecord === null) {
     return `
@@ -1644,9 +1747,6 @@ function renderRaceResultsSection(
       <p>No race results found for this name.</p>
     `;
   }
-
-  const ratingHistory =
-    driverRatingHistory.get(driverRecord.canonicalName) ?? new Map();
 
   return `
     <h2>Race Results</h2>
@@ -1663,7 +1763,7 @@ function renderRaceResultsSection(
           driverRecord,
           getCompetitionEventRecords(eventRecords, definition.type),
           authorFileNames,
-          ratingHistory,
+          driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
         ),
       })),
       competitionDefinitions[0]?.type ?? "cotd",
@@ -1676,7 +1776,7 @@ function renderPlayerCompetitionRaceResultsSection(
   driverRecord: DriverRecord,
   eventRecords: EventRecord[],
   authorFileNames: Map<string, string>,
-  ratingHistory: Map<string, DriverEventRating>,
+  competitionRatingHistory: Map<string, Map<string, DriverEventRating>>,
 ): string {
   const competitionResults = eventRecords.filter((eventRecord) =>
     driverRecord.results.some(
@@ -1690,6 +1790,8 @@ function renderPlayerCompetitionRaceResultsSection(
 
   const driverAuthorFileName =
     authorFileNames.get(driverRecord.canonicalName) ?? null;
+  const ratingHistory =
+    competitionRatingHistory.get(driverRecord.canonicalName) ?? new Map();
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
       const ratingAtEvent = ratingHistory.get(eventRecord.eventKey) ?? null;
@@ -1874,6 +1976,82 @@ function renderRaceResultsGraphSection(
       competitionDefinitions[0]?.type ?? "cotd",
       "Player results graph competitions",
     )}
+  `;
+}
+
+function renderPlayerRatingGraphSection(
+  driverRecord: DriverRecord | null,
+  eventRecords: EventRecord[],
+  driverRatingHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventRating>>
+  >,
+  ratingKey: "elo" | "bayes",
+): string {
+  const graphTitle = ratingKey === "elo" ? "Elo Graph" : "Bayes Graph";
+
+  if (driverRecord === null) {
+    return `
+      <h2>${graphTitle}</h2>
+      <p>No race results found for this name.</p>
+    `;
+  }
+
+  return `
+    <h2>${graphTitle}</h2>
+    ${renderTabPanels(
+      `player-${ratingKey}-graph`,
+      competitionDefinitions.map((definition) => ({
+        suffix: definition.type,
+        label: formatCompetitionTabLabel(
+          definition.label,
+          getDriverResultRecordsForCompetition(driverRecord, definition.type)
+            .length,
+        ),
+        content: renderPlayerCompetitionRatingGraphSection(
+          driverRecord,
+          getCompetitionEventRecords(eventRecords, definition.type),
+          driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
+          ratingKey,
+        ),
+      })),
+      competitionDefinitions[0]?.type ?? "cotd",
+      `${graphTitle} competitions`,
+    )}
+  `;
+}
+
+function renderPlayerCompetitionRatingGraphSection(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  competitionRatingHistory: Map<string, Map<string, DriverEventRating>>,
+  ratingKey: "elo" | "bayes",
+): string {
+  const competitionResults = getDriverResultRecordsForCompetition(
+    driverRecord,
+    eventRecords[0]?.competitionType ?? "cotd",
+  );
+
+  if (eventRecords.length === 0 || competitionResults.length === 0) {
+    return '<p class="graph-empty">No rating data in this competition.</p>';
+  }
+
+  const graphTitle = ratingKey === "elo" ? "Elo" : "Bayes";
+  const ratingHistory =
+    competitionRatingHistory.get(driverRecord.canonicalName) ?? new Map();
+  const series = [
+    buildRatingGraphSeries(
+      driverRecord,
+      eventRecords,
+      ratingHistory,
+      graphPalette[0] ?? "#0047ab",
+      ratingKey,
+      null,
+    ),
+  ];
+
+  return `
+    ${renderRatingGraphSvg(series, eventRecords, graphTitle)}
   `;
 }
 
@@ -2063,6 +2241,38 @@ function buildRaceResultsGraphSeries(
   };
 }
 
+function buildRatingGraphSeries(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  ratingHistory: Map<string, DriverEventRating>,
+  color: string,
+  ratingKey: "elo" | "bayes",
+  href: string | null,
+): RatingGraphSeries {
+  const label = ratingKey === "elo" ? "Elo" : "Bayes";
+  const points = eventRecords.map((eventRecord) => {
+    const value = ratingHistory.get(eventRecord.eventKey)?.[ratingKey] ?? null;
+
+    return {
+      eventNumber: eventRecord.nr,
+      value,
+      title:
+        value === null
+          ? `${eventRecord.eventLabel}: no ${label.toLowerCase()} value`
+          : `${label} ${formatElo(value)} - ${eventRecord.eventLabel} ${eventRecord.map}`,
+      href: `../events/${eventRecord.htmlFileName}`,
+    } satisfies RatingGraphPoint;
+  });
+
+  return {
+    id: `${stableId(driverRecord.canonicalName)}-${ratingKey}`,
+    label: `${driverRecord.canonicalName} ${label}`,
+    color,
+    href,
+    points,
+  };
+}
+
 function mapGraphPlacing(placing: number): number {
   const normalizedPlacing = Math.max(1, Math.floor(placing));
 
@@ -2201,6 +2411,115 @@ function renderRaceResultsGraphSvg(
   `;
 }
 
+function renderRatingGraphSvg(
+  series: RatingGraphSeries[],
+  eventRecords: EventRecord[],
+  metricLabel: string,
+): string {
+  if (series.length === 0 || eventRecords.length === 0) {
+    return '<p class="graph-empty">No graph data available.</p>';
+  }
+
+  const values = series.flatMap((entry) =>
+    entry.points.flatMap((point) =>
+      point.value === null ? [] : [point.value],
+    ),
+  );
+
+  if (values.length === 0) {
+    return '<p class="graph-empty">No graph data available.</p>';
+  }
+
+  const width = 960;
+  const height = 380;
+  const marginTop = 20;
+  const marginRight = 20;
+  const marginBottom = 42;
+  const marginLeft = 56;
+  const plotWidth = width - marginLeft - marginRight;
+  const plotHeight = height - marginTop - marginBottom;
+  const firstEvent = eventRecords[0]?.nr ?? 1;
+  const lastEvent = eventRecords[eventRecords.length - 1]?.nr ?? firstEvent;
+  const eventSpan = Math.max(1, lastEvent - firstEvent);
+  const { min: yMin, max: yMax, ticks: yTicks } = buildRatingGraphAxis(values);
+  const xTicks = buildGraphEventTicks(firstEvent, lastEvent);
+  const xForEvent = (eventNumber: number): number =>
+    marginLeft + ((eventNumber - firstEvent) / eventSpan) * plotWidth;
+  const yForValue = (value: number): number =>
+    marginTop + ((yMax - value) / Math.max(1, yMax - yMin)) * plotHeight;
+
+  const yGrid = yTicks
+    .map((value) => {
+      const y = yForValue(value);
+
+      return `
+        <line class="graph-grid" x1="${marginLeft}" y1="${y}" x2="${width - marginRight}" y2="${y}"></line>
+        <text class="graph-label" x="${marginLeft - 10}" y="${y + 4}" text-anchor="end">${formatElo(value)}</text>`;
+    })
+    .join("\n");
+
+  const xGrid = xTicks
+    .map((eventNumber) => {
+      const x = xForEvent(eventNumber);
+
+      return `
+        <line class="graph-grid" x1="${x}" y1="${marginTop}" x2="${x}" y2="${height - marginBottom}"></line>
+        <text class="graph-label" x="${x}" y="${height - marginBottom + 18}" text-anchor="middle">${eventNumber}</text>`;
+    })
+    .join("\n");
+
+  const paths = series
+    .map((entry, seriesIndex) => {
+      const linePoints = buildContinuousRatingGraphPoints(entry.points);
+      const pathMarkup =
+        linePoints.length === 0
+          ? ""
+          : `<path class="graph-line graph-series-${seriesIndex}" d="${linePoints
+              .map((point, index) => {
+                const x = xForEvent(point.eventNumber);
+                const y = yForValue(point.value);
+
+                return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+              })
+              .join(" ")}" stroke="${entry.color}"></path>`;
+      const pointMarkup = entry.points
+        .filter(
+          (point): point is RatingGraphPoint & { value: number } =>
+            point.value !== null,
+        )
+        .map((point) => {
+          const x = xForEvent(point.eventNumber);
+          const y = yForValue(point.value);
+          const title = escapeHtml(`${entry.label} - ${point.title}`);
+          const circleMarkup = `<circle class="graph-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3" fill="${entry.color}"><title>${title}</title></circle>`;
+
+          if (!point.href) {
+            return circleMarkup;
+          }
+
+          return `<a href="${escapeHtml(point.href)}" aria-label="${title}">${circleMarkup}</a>`;
+        })
+        .join("\n");
+
+      return `<g>${pathMarkup}\n${pointMarkup}</g>`;
+    })
+    .join("\n");
+
+  return `
+    <div class="graph-card">
+      <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(metricLabel)} graph">
+        ${yGrid}
+        ${xGrid}
+        <line class="graph-axis" x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${height - marginBottom}"></line>
+        <line class="graph-axis" x1="${marginLeft}" y1="${height - marginBottom}" x2="${width - marginRight}" y2="${height - marginBottom}"></line>
+        <text class="graph-label" x="${width / 2}" y="${height - 8}" text-anchor="middle">Event</text>
+        <text class="graph-label" x="18" y="${height / 2}" text-anchor="middle" transform="rotate(-90 18 ${height / 2})">${escapeHtml(metricLabel)}</text>
+        ${paths}
+      </svg>
+    </div>
+  `;
+}
+
 function buildGraphSegments(
   points: RaceResultsGraphPoint[],
 ): Array<Array<RaceResultsGraphPoint & { placing: number }>> {
@@ -2228,6 +2547,22 @@ function buildGraphSegments(
   return segments;
 }
 
+function buildRatingGraphSegments(
+  points: RatingGraphPoint[],
+): Array<Array<RatingGraphPoint & { value: number }>> {
+  return [buildContinuousRatingGraphPoints(points)].filter(
+    (segment) => segment.length > 0,
+  );
+}
+
+function buildContinuousRatingGraphPoints(
+  points: RatingGraphPoint[],
+): Array<RatingGraphPoint & { value: number }> {
+  return points.flatMap((point) =>
+    point.value === null ? [] : [{ ...point, value: point.value }],
+  );
+}
+
 function buildGraphEventTicks(firstEvent: number, lastEvent: number): number[] {
   const ticks = new Set<number>([firstEvent, lastEvent]);
 
@@ -2240,6 +2575,50 @@ function buildGraphEventTicks(firstEvent: number, lastEvent: number): number[] {
   }
 
   return Array.from(ticks).sort((left, right) => left - right);
+}
+
+function buildRatingGraphAxis(values: number[]): {
+  min: number;
+  max: number;
+  ticks: number[];
+} {
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const range = Math.max(1, maxValue - minValue);
+  const step = selectRatingTickStep(range);
+  const min = Math.floor((minValue - step) / step) * step;
+  const max = Math.ceil((maxValue + step) / step) * step;
+  const ticks: number[] = [];
+
+  for (let value = min; value <= max; value += step) {
+    ticks.push(value);
+  }
+
+  if (ticks.length < 2) {
+    ticks.push(min + step);
+  }
+
+  return {
+    min,
+    max: ticks.at(-1) ?? max,
+    ticks,
+  };
+}
+
+function selectRatingTickStep(range: number): number {
+  if (range <= 80) {
+    return 20;
+  }
+
+  if (range <= 160) {
+    return 40;
+  }
+
+  if (range <= 300) {
+    return 50;
+  }
+
+  return 100;
 }
 
 function renderRaceResultsGraphSelector(
@@ -2737,6 +3116,13 @@ function renderCountWithPercentageCells(
   percentage: number,
 ): string {
   return `<td class="align-right" style="width: 33%">${count}</td><td class="align-right" style="width: 33%">${formatPercentage(percentage)}</td>`;
+}
+
+function renderPrimarySecondaryValueCells(
+  primaryValue: number | string,
+  secondaryValue: number | string,
+): string {
+  return `<td class="align-right" style="width: 33%"><small>Current:</small> ${primaryValue}</td><td class="align-right" style="width: 33%"><small>Peak:</small> ${secondaryValue}</td>`;
 }
 
 function renderColspanValueCell(value: number | string): string {
