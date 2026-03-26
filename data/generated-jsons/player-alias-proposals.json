@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-26T13:24:10.343Z",
+  "generatedAt": "2026-03-26T13:36:30.464Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "preferences/player-aliases.json",
   "generatedAliasFile": "preferences/player-aliases.generated.json",
@@ -133,30 +133,11 @@
     {
       "canonicalName": "Hydro",
       "knownAliases": [
-        "[CTR[Hydro",
+        "[CTR]Hydro",
         "Hydro",
         "k2blue"
       ],
       "proposedAliases": [
-        {
-          "name": "[CTR]Hydro",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 28,
-          "firstSeenEvent": 5,
-          "lastSeenEvent": 79,
-          "exampleEvents": [
-            5,
-            6,
-            41,
-            44,
-            45,
-            46,
-            47,
-            48
-          ]
-        },
         {
           "name": "[RTR] Hydro",
           "reasons": [
@@ -297,29 +278,10 @@
     {
       "canonicalName": "Kernkob",
       "knownAliases": [
-        "[CTR[Kernkob",
+        "[CTR]Kernkob",
         "Kernkob"
       ],
       "proposedAliases": [
-        {
-          "name": "[CTR]Kernkob",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 42,
-          "firstSeenEvent": 7,
-          "lastSeenEvent": 81,
-          "exampleEvents": [
-            7,
-            8,
-            10,
-            42,
-            46,
-            49,
-            52,
-            53
-          ]
-        },
         {
           "name": "[CTR] Kernkob",
           "reasons": [
@@ -350,7 +312,6 @@
       "canonicalName": "Lazy_Echidna",
       "knownAliases": [
         "[NIL]Lazy_Echidna",
-        "[TOG[Lazy_Echidna",
         "[TOG]Lazy_Echidna",
         "Lazy_Echidna",
         "Lazy_Ecidna"
@@ -373,30 +334,11 @@
     {
       "canonicalName": "LILWOOLEY",
       "knownAliases": [
-        "[ZET}LILWOOLEY",
+        "[ZET]LILWOOLEY",
         "LILWOOLEY",
         "LOLWOOLEY"
       ],
       "proposedAliases": [
-        {
-          "name": "[ZET]LILWOOLEY",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 53,
-          "firstSeenEvent": 2,
-          "lastSeenEvent": 136,
-          "exampleEvents": [
-            2,
-            9,
-            10,
-            57,
-            58,
-            59,
-            60,
-            61
-          ]
-        },
         {
           "name": "[ZST]LILWOOLEY",
           "reasons": [
@@ -415,7 +357,6 @@
       "canonicalName": "Quickracer10",
       "knownAliases": [
         "[AJSE] Quickracer10",
-        "[KURK[ Quickracer10",
         "[KURK] Quickracer10",
         "Quickracer10"
       ],
@@ -482,9 +423,59 @@
       ]
     },
     {
+      "canonicalName": "stindt",
+      "knownAliases": [
+        "[Lame]stindt",
+        "stindt"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[Tame]stindt",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 6,
+          "firstSeenEvent": 126,
+          "lastSeenEvent": 136,
+          "exampleEvents": [
+            126,
+            128,
+            130,
+            132,
+            134,
+            136
+          ]
+        },
+        {
+          "name": "[KAAS]stindt",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 96,
+          "lastSeenEvent": 96,
+          "exampleEvents": [
+            96
+          ]
+        },
+        {
+          "name": "[Slow]stindt",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 109,
+          "lastSeenEvent": 109,
+          "exampleEvents": [
+            109
+          ]
+        }
+      ]
+    },
+    {
       "canonicalName": "void",
       "knownAliases": [
-        "[VOID[//////void",
+        "[VOID]//////void",
         "//////void",
         "void"
       ],
@@ -1762,67 +1753,6 @@
           "lastSeenEvent": 121,
           "exampleEvents": [
             121
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "[Tame]stindt",
-      "names": [
-        {
-          "name": "[Tame]stindt",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 6,
-          "firstSeenEvent": 126,
-          "lastSeenEvent": 136,
-          "exampleEvents": [
-            126,
-            128,
-            130,
-            132,
-            134,
-            136
-          ]
-        },
-        {
-          "name": "[KAAS]stindt",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 96,
-          "lastSeenEvent": 96,
-          "exampleEvents": [
-            96
-          ]
-        },
-        {
-          "name": "[Slow]stindt",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 109,
-          "lastSeenEvent": 109,
-          "exampleEvents": [
-            109
-          ]
-        },
-        {
-          "name": "[Lame]stindt",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 115,
-          "lastSeenEvent": 115,
-          "exampleEvents": [
-            115
           ]
         }
       ],

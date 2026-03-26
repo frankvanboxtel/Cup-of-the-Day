@@ -93,11 +93,47 @@ export function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
+export function normalizePlayerName(value: string): string {
+  const normalized = normalizeWhitespace(value);
+
+  if (!normalized.startsWith("[")) {
+    return normalized;
+  }
+
+  let remaining = normalized;
+  let rebuilt = "";
+  let normalizedTagCount = 0;
+
+  while (remaining.startsWith("[")) {
+    const match = remaining.match(/^\[([^\]\[}]+)([\]\[}])(\s*)/);
+
+    if (!match) {
+      break;
+    }
+
+    const tag = normalizeWhitespace(match[1] ?? "");
+
+    if (!tag) {
+      break;
+    }
+
+    rebuilt += `[${tag}]${match[3] ?? ""}`;
+    remaining = remaining.slice(match[0].length);
+    normalizedTagCount += 1;
+  }
+
+  if (normalizedTagCount === 0) {
+    return normalized;
+  }
+
+  return normalizeWhitespace(`${rebuilt}${remaining}`);
+}
+
 export function resolveAlias(
   name: string,
   aliasResolver: AliasResolver,
 ): string {
-  const normalizedName = normalizeWhitespace(name);
+  const normalizedName = normalizePlayerName(name);
   return aliasResolver.canonicalByName.get(normalizedName) ?? normalizedName;
 }
 
@@ -166,11 +202,11 @@ function registerAliasList(
   for (const [index, [rawCanonicalName, rawAliases]] of Object.entries(
     aliasList,
   ).entries()) {
-    const canonicalName = normalizeWhitespace(rawCanonicalName);
+    const canonicalName = normalizePlayerName(rawCanonicalName);
     canonicalOrder.set(canonicalName, index);
 
     const aliases = [canonicalName, ...rawAliases]
-      .map(normalizeWhitespace)
+      .map(normalizePlayerName)
       .filter((name) => name.length > 0);
 
     for (const alias of aliases) {
@@ -221,5 +257,5 @@ function pickCanonicalName(
 }
 
 function normalizeDisplayOnlyName(value: string): string {
-  return normalizeWhitespace(value).toLowerCase();
+  return normalizePlayerName(value).toLowerCase();
 }

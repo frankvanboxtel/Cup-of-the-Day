@@ -5,6 +5,8 @@ import { parse } from "csv-parse/sync";
 
 type CompetitionType = "cotd" | "roulette" | "troll";
 
+import { isCommentResultName, normalizePlayerName } from "./lib/player-names";
+
 type ResultEntry = {
   placing: number | null;
   name: string;
@@ -286,7 +288,7 @@ function extractResults(
   let currentPlacing: number | null = null;
 
   for (let rowIndex = startRowIndex; rowIndex < rows.length; rowIndex += 1) {
-    const name = getCell(rows, rowIndex, indexes.name)?.trim() ?? "";
+    const name = normalizePlayerName(getCell(rows, rowIndex, indexes.name) ?? "");
     const placingValue = getCell(rows, rowIndex, indexes.placing)?.trim() ?? "";
     const time = getCell(rows, rowIndex, indexes.time)?.trim() ?? "";
     const eliminationRound =
@@ -317,7 +319,7 @@ function extractResults(
       rouletteMap: normalizeOptionalText(
         getCell(rows, rowIndex, indexes.rouletteMap ?? -1),
       ),
-      rouletteMapper: normalizeOptionalText(
+      rouletteMapper: normalizeOptionalPlayerText(
         getCell(rows, rowIndex, indexes.rouletteMapper ?? -1),
       ),
       rouletteSourceEventNumber: parseOptionalNumber(
@@ -498,27 +500,6 @@ function findResultsHeaderRowIndex(
   return headerRowIndex + 3;
 }
 
-function isCommentResultName(value: string): boolean {
-  const normalized = value.trim().toLowerCase();
-
-  if (normalized.startsWith("*")) {
-    return true;
-  }
-
-  const blockedPhrases = [
-    "at the time of leaving",
-    "at time of leaving",
-    "had to leave",
-    "awarded joint",
-    "due to disconnection",
-    "would not have",
-    "despite not being knocked out",
-    "prevented",
-  ];
-
-  return blockedPhrases.some((phrase) => normalized.includes(phrase));
-}
-
 function parseMapMetadata(value: string | undefined): {
   map: string;
   author: string;
@@ -538,7 +519,9 @@ function parseMapMetadata(value: string | undefined): {
 
   return {
     map: withoutPrefix.slice(0, separatorIndex).trim() || "unknown-map",
-    author: withoutPrefix.slice(separatorIndex + 4).trim() || "unknown-author",
+    author:
+      normalizePlayerName(withoutPrefix.slice(separatorIndex + 4)) ||
+      "unknown-author",
   };
 }
 
@@ -581,7 +564,7 @@ function parseFastestMetadata(value: string | undefined): {
 
   return {
     time: match[1].trim(),
-    driver: match[2].trim(),
+    driver: normalizePlayerName(match[2] ?? "") || null,
     round: match[3].trim(),
   };
 }
@@ -597,6 +580,13 @@ function parseOptionalNumber(value: string): number | null {
 
 function normalizeOptionalText(value: string | undefined): string | null {
   const normalized = normalizeWhitespace(
+    stripWrappingQuotes(value?.trim() ?? ""),
+  );
+  return normalized || null;
+}
+
+function normalizeOptionalPlayerText(value: string | undefined): string | null {
+  const normalized = normalizePlayerName(
     stripWrappingQuotes(value?.trim() ?? ""),
   );
   return normalized || null;

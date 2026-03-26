@@ -84,12 +84,3 @@ npm run dev
 npm run build
 npm start
 ```
-
-## Next Steps
-
-Possible extensions for this project:
-
-- parse the CSV files into typed records
-- add a small CLI for querying cup results
-- add tests for data parsing and result validation
-- export normalized JSON from the CSV source data

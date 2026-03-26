@@ -71,12 +71,6 @@
     "[RB]Chinpokomon",
     "[RB] Chinpokomon"
   ],
-  "[Tame]stindt": [
-    "[Tame]stindt",
-    "[KAAS]stindt",
-    "[Lame]stindt",
-    "[Slow]stindt"
-  ],
   "[TBR]TheBestMaidens": [
     "[TBR]TheBestMaidens",
     "[WAM] TheBestMaidens",
@@ -249,7 +243,6 @@
   "Hydro": [
     "Hydro",
     "[BFP] Hydro",
-    "[CTR]Hydro",
     "[RTR] Hydro",
     "[SLOW] Hydro",
     "[WOW]Hydro",
@@ -320,7 +313,6 @@
   "Kernkob": [
     "Kernkob",
     "[CTR] Kernkob",
-    "[CTR]Kernkob",
     "[Nzt]Kernkob"
   ],
   "L3it3R": [
@@ -349,7 +341,6 @@
   ],
   "LILWOOLEY": [
     "LILWOOLEY",
-    "[ZET]LILWOOLEY",
     "[ZST]LILWOOLEY"
   ],
   "lucanakin": [
@@ -619,6 +610,12 @@
   "Stick": [
     "Stick",
     "[ZET]Stick"
+  ],
+  "stindt": [
+    "stindt",
+    "[KAAS]stindt",
+    "[Slow]stindt",
+    "[Tame]stindt"
   ],
   "Striking Vyper": [
     "Striking Vyper",

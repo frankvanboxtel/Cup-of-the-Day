@@ -1,6 +1,8 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { normalizePlayerName } from "../lib/player-names";
+
 type ResultEntry = {
   placing: number | null;
   name: string;
@@ -154,9 +156,9 @@ function buildGeneratedAliasList(
 }
 
 function orderAliasNames(canonicalName: string, names: string[]): string[] {
-  const canonical = normalizeWhitespace(canonicalName);
+  const canonical = normalizePlayerName(canonicalName);
   const uniqueNames = Array.from(
-    new Set(names.map(normalizeWhitespace).filter((name) => name.length > 0)),
+    new Set(names.map(normalizePlayerName).filter((name) => name.length > 0)),
   );
   const otherNames = uniqueNames
     .filter((name) => name !== canonical)
@@ -227,7 +229,7 @@ function registerName(
   isFastestTime: boolean,
   displayOnlyNames: Set<string>,
 ): void {
-  const name = normalizeWhitespace(rawName);
+  const name = normalizePlayerName(rawName);
 
   if (displayOnlyNames.has(normalizeDisplayOnlyName(name))) {
     return;
@@ -338,7 +340,7 @@ function collectKnownAliasNames(knownAliases: AliasList): Set<string> {
   return new Set(
     Object.entries(knownAliases)
       .flatMap(([canonicalName, aliases]) => [canonicalName, ...aliases])
-      .map(normalizeWhitespace),
+      .map(normalizePlayerName),
   );
 }
 
@@ -352,7 +354,7 @@ function buildKnownAliasAdditions(
   return Object.entries(knownAliases)
     .map(([canonicalName, aliases]) => {
       const knownNames = new Set(
-        [canonicalName, ...aliases].map(normalizeWhitespace),
+        [canonicalName, ...aliases].map(normalizePlayerName),
       );
       const proposedAliases = Array.from(observations.keys())
         .filter((name) => !knownNames.has(name) && !allKnownNames.has(name))
@@ -388,7 +390,7 @@ function buildNewAliasGroups(
   const knownNames = new Set(
     Object.entries(knownAliases)
       .flatMap(([canonicalName, aliases]) => [canonicalName, ...aliases])
-      .map(normalizeWhitespace),
+      .map(normalizePlayerName),
   );
   const visited = new Set<string>();
   const groups: NewAliasGroup[] = [];
@@ -773,7 +775,7 @@ function normalizeWhitespace(value: string): string {
 }
 
 function normalizeDisplayOnlyName(value: string): string {
-  return normalizeWhitespace(value).toLowerCase();
+  return normalizePlayerName(value).toLowerCase();
 }
 
 main().catch((error: unknown) => {
