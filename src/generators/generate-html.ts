@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -115,6 +115,9 @@ type SortType = "text" | "number";
 const projectRoot = path.resolve(__dirname, "../..");
 const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
 const outputDirectory = path.join(projectRoot, "dist");
+const sourceStylesDirectory = path.join(projectRoot, "styles");
+const sourceStylesFilePath = path.join(sourceStylesDirectory, "styles.css");
+const outputStylesFilePath = path.join(outputDirectory, "styles.css");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const placingsDirectory = path.join(outputDirectory, "placings");
@@ -208,6 +211,7 @@ async function main(): Promise<void> {
   await mkdir(outputDirectory, { recursive: true });
   await Promise.all([
     rm(indexFilePath, { force: true }),
+    rm(outputStylesFilePath, { force: true }),
     rm(eventsDirectory, { recursive: true, force: true }),
     rm(driversDirectory, { recursive: true, force: true }),
     rm(placingsDirectory, { recursive: true, force: true }),
@@ -235,6 +239,7 @@ async function main(): Promise<void> {
   );
 
   await Promise.all([
+    copyFile(sourceStylesFilePath, outputStylesFilePath),
     writeIndexPage(eventRecords, driverFileNames, authorFileNames),
     writeDriverIndexPage(
       driverRecords,
