@@ -1,5 +1,7 @@
 import type { CompetitionType } from "../../lib/event-data";
 
+import { renderTableContainer } from "./shell";
+
 type TabDefinition = {
   suffix: string;
   label: string;
@@ -93,6 +95,7 @@ export function renderDriverIndexPageContent(
         <p class="search-summary" data-driver-search-summary>${options.driverCount} players shown</p>
       </div>
       ${options.renderCompetitionFilterPanel("players-index", "Include competitions in totals")}
+      ${renderTableContainer(`
       <table data-sort-table data-competition-stats-table="players" data-competition-filter-target="players-index">
         <thead>
           <tr>
@@ -112,6 +115,7 @@ export function renderDriverIndexPageContent(
           ${options.rowsHtml}
         </tbody>
       </table>
+      `)}
     `,
     {
       pageTitle: "Players",
@@ -151,6 +155,7 @@ export function renderPlacingsIndexPageContent(
         <p class="search-summary" data-driver-search-summary>${options.driverCount} players shown</p>
       </div>
       ${options.renderCompetitionFilterPanel("placings-index", "Include competitions in totals")}
+      ${renderTableContainer(`
       <table data-sort-table data-competition-stats-table="placings" data-competition-filter-target="placings-index">
         <thead>
           <tr>
@@ -169,6 +174,7 @@ export function renderPlacingsIndexPageContent(
           ${options.rowsHtml}
         </tbody>
       </table>
+      `)}
     `,
     {
       pageTitle: "Placings",

@@ -9,6 +9,10 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+export function renderTableContainer(content: string): string {
+  return `<div class="table-container">${content}</div>`;
+}
+
 export function renderLayout(
   _title: string,
   bodyContent: string,
@@ -626,7 +630,7 @@ export function renderLayout(
         document.body.setAttribute("data-theme", theme);
       })();
     </script>
-    <nav style="width: 100%; align-items: center;">
+    <nav class="nav nav-main" style="width: 100%; align-items: center;">
       <a href="${options.rootPrefix}/index.html">Overview</a>
       <a href="${options.rootPrefix}/drivers/index.html">Players</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>

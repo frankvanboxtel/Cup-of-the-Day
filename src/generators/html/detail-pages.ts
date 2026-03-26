@@ -1,6 +1,6 @@
 import type { CompetitionType, EventRecord } from "../../lib/event-data";
 
-import { escapeHtml } from "./shell";
+import { escapeHtml, renderTableContainer } from "./shell";
 
 type RenderLayout = (
   title: string,
@@ -89,6 +89,7 @@ export function renderEventPageContent(options: EventPageOptions): string {
         </div>
       </div>
       <h2>${escapeHtml(eventRecord.map)}</h2>
+      ${renderTableContainer(`
       <table>
         <tbody>
           <tr><th>${eventRecord.competitionType === "roulette" ? "Mappers" : "Author"}</th><td>${options.renderEventAuthors(eventRecord, options.authorFileNames, "..")}</td></tr>
@@ -101,7 +102,9 @@ export function renderEventPageContent(options: EventPageOptions): string {
           <tr><th>Podium</th><td>${options.renderPodium(eventRecord, options.driverFileNames, "..")}</td></tr>
         </tbody>
       </table>
+      `)}
       <h2>Results</h2>
+      ${renderTableContainer(`
       <table data-sort-table>
         <thead>
           <tr>
@@ -122,6 +125,7 @@ export function renderEventPageContent(options: EventPageOptions): string {
           ${resultRowsHtml}
         </tbody>
       </table>
+      `)}
     `,
     {
       pageTitle: `${eventRecord.eventLabel} - ${eventRecord.map}`,

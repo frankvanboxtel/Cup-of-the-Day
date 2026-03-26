@@ -36,7 +36,7 @@
     color: #aaa;
   }
 
-  .graph-card {
+  .graph-container {
     .graph-grid {
       stroke: #353535;
     }
@@ -298,6 +298,16 @@ nav {
   background: #ddd;
 }
 
+.table-container {
+  overflow-x: auto;
+}
+
+.player-name {
+  max-width: 30vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
@@ -341,7 +351,7 @@ table td:nth-child(1) {
   text-align: center;
 }
 
-.graph-card {
+.graph-container {
   border: 1px solid #999;
   margin-bottom: 16px;
   overflow-x: auto;

@@ -12,7 +12,7 @@ import {
   renderPlacingsIndexPageContent,
   renderResultsGraphIndexPageContent,
 } from "./html/index-pages";
-import { escapeHtml, renderLayout } from "./html/shell";
+import { escapeHtml, renderLayout, renderTableContainer } from "./html/shell";
 import {
   compareEventRecords,
   competitionDefinitions,
@@ -397,7 +397,7 @@ function renderTabPanels(
   ariaLabel: string,
 ): string {
   return `
-    <div class="tab-list" role="tablist" aria-label="${escapeHtml(ariaLabel)}" data-tabs data-default-tab="${escapeHtml(`${tabPrefix}-${defaultSuffix}`)}">
+    <div class="tab-list nav tabs" role="tablist" aria-label="${escapeHtml(ariaLabel)}" data-tabs data-default-tab="${escapeHtml(`${tabPrefix}-${defaultSuffix}`)}">
       ${tabs
         .map(
           (tab) =>
@@ -773,6 +773,7 @@ function renderOverviewCompetitionSection(
 
   return `
     <p>${eventRecords.length} events</p>
+    ${renderTableContainer(`
     <table data-sort-table>
       <thead>
         <tr>
@@ -792,6 +793,7 @@ function renderOverviewCompetitionSection(
         ${rows}
       </tbody>
     </table>
+    `)}
   `;
 }
 
@@ -981,7 +983,7 @@ async function writeDriverIndexPage(
 
       return `
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
-          <td><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(nameDetails.primaryName)}</a></td>
+          <td class="player-name"><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(nameDetails.primaryName)}</a></td>
           <td title="${escapeHtml(nameDetails.aliases.join(", "))}"><div class="single-line alias">${aliasSummary}</div></td>
           <td title="${escapeHtml(nameDetails.tags.map(formatTagLabel).join(", "))}"><div class="single-line alias">${tagSummary}</div></td>
           ${renderDynamicCompetitionCountCell("tracks", tracksCreated)}
@@ -1115,7 +1117,7 @@ async function writePlacingsIndexPage(
 
       return `
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
-          <td><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
+          <td class="player-name"><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
           ${renderDynamicCompetitionCountCell("starts", stats.starts)}
           ${renderDynamicCompetitionCountCell("wins", stats.wins)}
           ${renderDynamicCompetitionCountCell("finals", placingSummary.finals)}
@@ -1598,6 +1600,7 @@ function renderDriverMetadataTable(
   return `
     <section>
       <h3>Player</h3>
+      ${renderTableContainer(`
       <table>
         <tbody>
           <tr><th>Starts</th>${renderColspanValueCell(stats.starts)}</tr>
@@ -1613,6 +1616,7 @@ function renderDriverMetadataTable(
           <tr><th>Bayesian</th>${renderPrimarySecondaryValueCells(formatElo(stats.ratings.bayes.current), formatElo(stats.ratings.bayes.peak))}</tr>
         </tbody>
       </table>
+      `)}
     </section>
   `;
 }
@@ -1639,6 +1643,7 @@ function renderAuthorMetadataTable(
   return `
     <section>
       <h3>Author</h3>
+      ${renderTableContainer(`
       <table>
         <tbody>
           <tr><th>Tracks</th><td class="align-right" style="width: 50%">${stats.tracks}</td></tr>
@@ -1648,6 +1653,7 @@ function renderAuthorMetadataTable(
           <tr><th>Latest Event</th><td class="align-right" style="width: 50%">${stats.latestEvent ?? "-"}</td></tr>
         </tbody>
       </table>
+      `)}
     </section>
   `;
 }
@@ -1668,7 +1674,7 @@ function renderPlayerProfileTabs(
     | "tracks",
 ): string {
   return `
-    <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
+    <div class="tab-list nav tabs" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Results Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="elo-graph">Elo Graph</button>
@@ -1711,7 +1717,7 @@ function renderProfileTabs(
     | "tracks",
 ): string {
   return `
-    <div class="tab-list" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
+    <div class="tab-list nav tabs" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Results Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
@@ -1842,6 +1848,7 @@ function renderPlayerCompetitionRaceResultsSection(
           <span>Only show raced events</span>
         </label>
       </p>
+    ${renderTableContainer(`
     <table data-sort-table>
       <thead>
         <tr>
@@ -1860,6 +1867,7 @@ function renderPlayerCompetitionRaceResultsSection(
         ${rows}
       </tbody>
     </table>
+    `)}
     </div>
   `;
 }
@@ -2135,6 +2143,7 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
   return `
     <h2>Placings</h2>
     ${renderCompetitionFilterPanel("player-placings", "Include competitions in totals")}
+    ${renderTableContainer(`
     <table class="compact-table placings-table" data-competition-stats-table="player-placings" data-competition-filter-target="player-placings">
       <thead>
         <tr>
@@ -2146,6 +2155,7 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
         ${rows}
       </tbody>
     </table>
+    `)}
   `;
 }
 
@@ -2397,7 +2407,7 @@ function renderRaceResultsGraphSvg(
     graphId === null ? "" : ` data-graph-root="${escapeHtml(graphId)}"`;
 
   return `
-    <div class="graph-card">
+    <div class="graph-container">
       <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Results graph"${graphRootAttribute}>
         ${yGrid}
         ${xGrid}
@@ -2506,7 +2516,7 @@ function renderRatingGraphSvg(
     .join("\n");
 
   return `
-    <div class="graph-card">
+    <div class="graph-container">
       <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(metricLabel)} graph">
         ${yGrid}
         ${xGrid}
@@ -2995,6 +3005,7 @@ function renderTracksSection(
 
   return `
     <h2>Tracks</h2>
+    ${renderTableContainer(`
     <table data-sort-table>
       <thead>
         <tr>
@@ -3010,6 +3021,7 @@ function renderTracksSection(
         ${rows}
       </tbody>
     </table>
+    `)}
   `;
 }
 
