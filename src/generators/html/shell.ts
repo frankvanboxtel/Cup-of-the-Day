@@ -59,7 +59,7 @@ export function renderLayout(
           if (themeToggle instanceof HTMLButtonElement) {
             const isDarkMode = theme === "dark";
             themeToggle.setAttribute("aria-pressed", String(isDarkMode));
-            themeToggle.textContent = isDarkMode ? "Light mode" : "Dark mode";
+            themeToggle.textContent = isDarkMode ? "☀️" : "🌙";
             themeToggle.setAttribute(
               "aria-label",
               isDarkMode ? "Switch to light mode" : "Switch to dark mode",
@@ -90,6 +90,24 @@ export function renderLayout(
               : "dark";
             persistTheme(nextTheme);
           });
+        }
+
+        const navMain = document.querySelector(".nav-main");
+        if (navMain instanceof HTMLElement) {
+          const currentPath = window.location.pathname.replace(/\\/+$/, "");
+
+          for (const navLink of navMain.querySelectorAll("a[href]")) {
+            const linkPath = new URL(navLink.href, window.location.href).pathname
+              .replace(/\\/+$/, "");
+            const isActive = linkPath === currentPath;
+
+            navLink.classList.toggle("active", isActive);
+            if (isActive) {
+              navLink.setAttribute("aria-current", "page");
+            } else {
+              navLink.removeAttribute("aria-current");
+            }
+          }
         }
 
         for (const tabList of document.querySelectorAll("[data-tabs]")) {
@@ -630,7 +648,7 @@ export function renderLayout(
         document.body.setAttribute("data-theme", theme);
       })();
     </script>
-    <nav class="nav nav-main" style="width: 100%; align-items: center;">
+    <nav class="nav nav-main">
       <a href="${options.rootPrefix}/index.html">Overview</a>
       <a href="${options.rootPrefix}/drivers/index.html">Players</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>
@@ -642,7 +660,7 @@ export function renderLayout(
         aria-label="Switch to dark mode"
         style="margin-left: auto;"
       >
-        Light mode
+        ☀️
       </button>
     </nav>
     ${bodyContent}

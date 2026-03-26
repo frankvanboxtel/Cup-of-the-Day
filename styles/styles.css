@@ -1,3 +1,9 @@
+/* Variables */
+
+body {
+  --default-border-radius: 10px;
+}
+
 /* Helpers */
 
 .align-right {
@@ -18,6 +24,64 @@
   overflow: hidden;
 }
 
+/* Navigation */
+
+.nav.nav-main {
+  display: flex;
+  gap: 12px;
+  margin: -24px -24px 24px -24px;
+  padding: 16px;
+  box-shadow: 0px 0px 3px rgba(122, 122, 122, 0.67);
+  font-weight: bold;
+
+  @media (max-width: 900px) {
+    margin: -16px -16px 16px -16px;
+  }
+
+  a.active {
+    text-decoration: none;
+    color: #000;
+    cursor: default;
+
+    &:hover {
+      color: #000;
+    }
+  }
+
+  button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    margin-left: auto;
+    padding: 3px 6px;
+    border: 1px solid #999;
+    border-radius: 100%;
+    background: transparent;
+    font-size: 20px;
+  }
+}
+
+.nav.tab-list {
+  display: flex;
+  gap: 8px 0;
+  margin: 20px 0 16px;
+
+  .tab-button {
+    flex: 1;
+    padding: 10px 5px;
+    border-right: 0;
+  }
+
+  .tab-button:first-child {
+    border-radius: var(--default-border-radius) 0 0 var(--default-border-radius);
+  }
+
+  .tab-button:last-child {
+    border-radius: 0 var(--default-border-radius) var(--default-border-radius) 0;
+    border-right: 1px solid #999;
+  }
+}
+
 /* Dark mode */
 .dark-mode {
   background: #222;
@@ -28,6 +92,16 @@
   }
   a:hover {
     color: #fff;
+  }
+
+  .nav.nav-main {
+    a.active {
+      color: #fff;
+
+      &:hover {
+        color: #fff;
+      }
+    }
   }
 
   .aliases,
@@ -127,6 +201,19 @@
 
 /* Elements */
 
+* {
+  box-sizing: border-box;
+}
+
+button {
+  display: inline-block;
+  border: none;
+  margin: 0;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
 body {
   font-family: sans-serif;
   line-height: 1.4;
@@ -143,15 +230,6 @@ a {
   &:hover {
     color: #000;
   }
-}
-
-nav {
-  display: flex;
-  gap: 12px;
-  width: fit-content;
-  padding-bottom: 16px;
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
-  font-weight: bold;
 }
 
 .name {
@@ -269,12 +347,6 @@ nav {
 
 .sorter.active .sort-indicator {
   color: currentColor;
-}
-
-.tab-list {
-  display: flex;
-  gap: 8px;
-  margin: 20px 0 16px;
 }
 
 .tab-button {
@@ -602,7 +674,7 @@ td {
     margin: 16px;
   }
 
-  .tab-list {
+  nav.tab-list {
     flex-wrap: wrap;
   }
 
