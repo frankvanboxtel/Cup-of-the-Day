@@ -86,7 +86,10 @@ async function main(): Promise<void> {
   const knownAliases = await loadKnownAliases();
   const displayOnlyNames = await loadDisplayOnlyNames();
   const observations = await collectNameObservations(displayOnlyNames);
-  const graph = buildAliasGraph(observations);
+  const graph = buildAliasGraph(
+    observations,
+    collectKnownAliasNames(knownAliases),
+  );
   const knownAliasAdditions = buildKnownAliasAdditions(
     knownAliases,
     observations,
@@ -265,6 +268,7 @@ function registerName(
 
 function buildAliasGraph(
   observations: Map<string, NameObservation>,
+  knownAliasNames: Set<string>,
 ): Map<string, Map<string, Set<string>>> {
   const graph = new Map<string, Map<string, Set<string>>>();
   const byBase = new Map<string, string[]>();
@@ -303,6 +307,10 @@ function buildAliasGraph(
       continue;
     }
 
+    if (knownAliasNames.has(observation.parentheticalAlias.displayName)) {
+      continue;
+    }
+
     const hintedBase = normalizeBaseName(
       observation.parentheticalAlias.hintedName,
     );
@@ -326,18 +334,28 @@ function buildAliasGraph(
   return graph;
 }
 
+function collectKnownAliasNames(knownAliases: AliasList): Set<string> {
+  return new Set(
+    Object.entries(knownAliases)
+      .flatMap(([canonicalName, aliases]) => [canonicalName, ...aliases])
+      .map(normalizeWhitespace),
+  );
+}
+
 function buildKnownAliasAdditions(
   knownAliases: AliasList,
   observations: Map<string, NameObservation>,
   graph: Map<string, Map<string, Set<string>>>,
 ): KnownAliasAddition[] {
+  const allKnownNames = collectKnownAliasNames(knownAliases);
+
   return Object.entries(knownAliases)
     .map(([canonicalName, aliases]) => {
       const knownNames = new Set(
         [canonicalName, ...aliases].map(normalizeWhitespace),
       );
       const proposedAliases = Array.from(observations.keys())
-        .filter((name) => !knownNames.has(name))
+        .filter((name) => !knownNames.has(name) && !allKnownNames.has(name))
         .map((name) => ({
           name,
           reasons: collectReasonsToKnownGroup(name, knownNames, graph),

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-26T13:09:58.989Z",
+  "generatedAt": "2026-03-26T13:24:10.343Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "preferences/player-aliases.json",
   "generatedAliasFile": "preferences/player-aliases.generated.json",
@@ -298,8 +298,7 @@
       "canonicalName": "Kernkob",
       "knownAliases": [
         "[CTR[Kernkob",
-        "Kernkob",
-        "rtm_lover2007"
+        "Kernkob"
       ],
       "proposedAliases": [
         {
@@ -343,18 +342,6 @@
           "lastSeenEvent": 124,
           "exampleEvents": [
             124
-          ]
-        },
-        {
-          "name": "rtm_lover2007 (Kernkob)",
-          "reasons": [
-            "explicit alias hint in parentheses"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 133,
-          "lastSeenEvent": 133,
-          "exampleEvents": [
-            133
           ]
         }
       ]
