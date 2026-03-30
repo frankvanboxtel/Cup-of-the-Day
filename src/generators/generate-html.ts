@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -124,6 +124,12 @@ type AuthorStats = {
   latestEvent: number | null;
 };
 
+type LatestResultsUpdate = {
+  relativeLabel: string;
+  eventLabel: string;
+  mapLabel: string;
+};
+
 type SortDirection = "asc" | "desc";
 type SortType = "text" | "number";
 
@@ -189,6 +195,21 @@ const graphPalette = [
 const competitionTypes = competitionDefinitions.map(
   (definition) => definition.type,
 );
+let latestResultsUpdate: LatestResultsUpdate | null = null;
+
+const renderPageLayout = (
+  title: string,
+  bodyContent: string,
+  options: {
+    pageTitle: string;
+    rootPrefix: string;
+    competitionTypes: CompetitionType[];
+  },
+): string =>
+  renderLayout(title, bodyContent, {
+    ...options,
+    latestResultsUpdate,
+  });
 
 async function main(): Promise<void> {
   const aliasResolver = await loadAliasResolver(
@@ -238,6 +259,7 @@ async function main(): Promise<void> {
   const authorRecordsByName = new Map(
     authorRecords.map((record) => [record.canonicalName, record]),
   );
+  latestResultsUpdate = await buildLatestResultsUpdate(eventRecords);
 
   await mkdir(outputDirectory, { recursive: true });
   await Promise.all([
@@ -337,6 +359,48 @@ function buildEventNavigationPairs(eventRecords: EventRecord[]): Array<{
       nextEventRecord: competitionEvents[index + 1] ?? null,
     }));
   });
+}
+
+async function buildLatestResultsUpdate(
+  eventRecords: EventRecord[],
+): Promise<LatestResultsUpdate | null> {
+  const latestCotdEvent = getCompetitionEventRecords(eventRecords, "cotd").at(
+    -1,
+  );
+
+  if (!latestCotdEvent) {
+    return null;
+  }
+
+  const resultFileStats = await stat(
+    path.join(resultsDirectory, latestCotdEvent.jsonFileName),
+  );
+
+  return {
+    relativeLabel: formatRelativeUpdateLabel(resultFileStats.mtime, new Date()),
+    eventLabel: latestCotdEvent.eventLabel,
+    mapLabel: latestCotdEvent.map,
+  };
+}
+
+function formatRelativeUpdateLabel(updatedAt: Date, now: Date): string {
+  const elapsedMs = Math.max(0, now.getTime() - updatedAt.getTime());
+  const elapsedHours = Math.floor(elapsedMs / (1000 * 60 * 60));
+  const elapsedDays = Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
+
+  if (elapsedDays >= 2) {
+    return `${elapsedDays} days ago`;
+  }
+
+  if (elapsedDays >= 1) {
+    return "yesterday";
+  }
+
+  if (elapsedHours >= 1) {
+    return `${elapsedHours} hour${elapsedHours === 1 ? "" : "s"} ago`;
+  }
+
+  return "1 hour ago";
 }
 
 function renderEventLink(
@@ -700,7 +764,7 @@ async function writeIndexPage(
     tabs,
     defaultCompetitionType: competitionTypes[0] ?? "cotd",
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderTabPanels,
   });
 
@@ -1001,7 +1065,7 @@ async function writeDriverIndexPage(
     driverCount: driverRecords.length,
     rowsHtml: rows,
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderCompetitionFilterPanel,
     renderSortableHeader,
   });
@@ -1147,7 +1211,7 @@ async function writePlacingsIndexPage(
     rowsHtml: rows,
     placingHeadersHtml: placingHeaders,
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderCompetitionFilterPanel,
     renderSortableHeader,
   });
@@ -1175,7 +1239,7 @@ async function writeRaceResultsGraphIndexPage(
     tabs,
     defaultCompetitionType: competitionTypes[0] ?? "cotd",
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderTabPanels,
   });
 
@@ -1262,7 +1326,7 @@ async function writeEventPage(
     previousEventRecord,
     nextEventRecord,
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderSortableHeader,
     renderEventAuthors,
     renderFastestTimeSummary,
@@ -1300,7 +1364,7 @@ async function writeDriverPage(
     authorFileNames,
     driverRatingSummary,
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderPlayerProfileHeading,
     renderProfileMetadata,
     renderPlayerProfileTabs,
@@ -1360,7 +1424,7 @@ async function writeAuthorPage(
     authorFileNames,
     driverRatingSummary,
     competitionTypes,
-    renderLayout,
+    renderLayout: renderPageLayout,
     renderProfileHeading,
     renderProfileMetadata,
     renderProfileTabs,

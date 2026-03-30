@@ -1,5 +1,11 @@
 import type { CompetitionType } from "../../lib/event-data";
 
+type LatestResultsUpdate = {
+  relativeLabel: string;
+  eventLabel: string;
+  mapLabel: string;
+};
+
 export function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -20,6 +26,7 @@ export function renderLayout(
     pageTitle: string;
     rootPrefix: string;
     competitionTypes: CompetitionType[];
+    latestResultsUpdate?: LatestResultsUpdate | null;
   },
 ): string {
   return `<!DOCTYPE html>
@@ -653,12 +660,16 @@ export function renderLayout(
       <a href="${options.rootPrefix}/drivers/index.html">Players</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>
       <a href="${options.rootPrefix}/race-results-graph/index.html">Results Graph</a>
+      ${
+        options.latestResultsUpdate
+          ? `<span class="nav-update">Updated: ${escapeHtml(options.latestResultsUpdate.relativeLabel)} (${escapeHtml(options.latestResultsUpdate.eventLabel)}, ${escapeHtml(options.latestResultsUpdate.mapLabel)})</span>`
+          : ""
+      }
       <button
         type="button"
         data-theme-toggle
         aria-pressed="false"
         aria-label="Switch to dark mode"
-        style="margin-left: auto;"
       >
         ☀️
       </button>

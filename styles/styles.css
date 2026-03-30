@@ -28,9 +28,11 @@ body {
 
 .nav.nav-main {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
   margin: -24px -24px 24px -24px;
-  padding: 16px;
+  padding: 16px 56px 16px 16px;
   box-shadow: 0px 0px 3px rgba(122, 122, 122, 0.67);
   font-weight: bold;
 
@@ -59,6 +61,14 @@ body {
     background: transparent;
     font-size: 20px;
   }
+}
+
+.nav-update {
+  margin-left: auto;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: normal;
+  white-space: nowrap;
 }
 
 .nav.tab-list {
@@ -106,7 +116,8 @@ body {
 
   .aliases,
   .graph-note,
-  .search-summary {
+  .search-summary,
+  .nav-update {
     color: #aaa;
   }
 

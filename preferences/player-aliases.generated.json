@@ -41,11 +41,6 @@
     "[GFHL]loganbradley714",
     "[GLHF]loganbradley714"
   ],
-  "[GGG]Lkat": [
-    "[GGG]Lkat",
-    "[GGG]LKat",
-    "[MMM]LKat"
-  ],
   "[GGG]Victor": [
     "[GGG]Victor",
     "[MMM]Victor"
@@ -61,6 +56,11 @@
   "[KURK]Smullie": [
     "[KURK]Smullie",
     "[KURK] Smullie"
+  ],
+  "[MMM]LKat": [
+    "[MMM]LKat",
+    "[GGG]Lkat",
+    "[GGG]LKat"
   ],
   "[OR]Pigbuy": [
     "[OR]Pigbuy",
@@ -194,6 +194,7 @@
   "frenchteost": [
     "frenchteost",
     "[LEXR]frenchteost",
+    "[Slow]frenchteost",
     "[ZET]frenchteost"
   ],
   "Fwogiie": [

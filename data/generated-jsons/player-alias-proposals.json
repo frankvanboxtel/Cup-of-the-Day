@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-26T16:50:03.693Z",
+  "generatedAt": "2026-03-30T07:34:17.264Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "preferences/player-aliases.json",
   "generatedAliasFile": "preferences/player-aliases.generated.json",
@@ -752,9 +752,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 33,
+          "appearances": 34,
           "firstSeenEvent": 84,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             84,
             87,
@@ -867,6 +867,25 @@
       "canonicalSuggestion": "Renergy",
       "names": [
         {
+          "name": "Renergy",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 13,
+          "firstSeenEvent": 4,
+          "lastSeenEvent": 137,
+          "exampleEvents": [
+            4,
+            7,
+            8,
+            11,
+            13,
+            14,
+            19,
+            24
+          ]
+        },
+        {
           "name": "[TBD] Renergy",
           "reasons": [
             "shared base name after removing tags/casing"
@@ -883,25 +902,6 @@
             64,
             65,
             69
-          ]
-        },
-        {
-          "name": "Renergy",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 12,
-          "firstSeenEvent": 4,
-          "lastSeenEvent": 113,
-          "exampleEvents": [
-            4,
-            7,
-            8,
-            11,
-            13,
-            14,
-            19,
-            24
           ]
         },
         {
@@ -1115,9 +1115,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 43,
+          "appearances": 44,
           "firstSeenEvent": 10,
-          "lastSeenEvent": 135,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             10,
             69,
@@ -1630,9 +1630,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 115,
+          "appearances": 116,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 135,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             1,
             2,
@@ -1787,9 +1787,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 7,
+          "appearances": 8,
           "firstSeenEvent": 104,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             104,
             105,
@@ -1797,7 +1797,8 @@
             132,
             133,
             134,
-            136
+            136,
+            137
           ]
         },
         {
@@ -1891,6 +1892,69 @@
           "lastSeenEvent": 80,
           "exampleEvents": [
             80
+          ]
+        }
+      ],
+      "groupReasons": [
+        "shared base name after removing tags/casing"
+      ]
+    },
+    {
+      "canonicalSuggestion": "frenchteost",
+      "names": [
+        {
+          "name": "[ZET]frenchteost",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 5,
+          "firstSeenEvent": 73,
+          "lastSeenEvent": 79,
+          "exampleEvents": [
+            73,
+            74,
+            76,
+            78,
+            79
+          ]
+        },
+        {
+          "name": "frenchteost",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 3,
+          "firstSeenEvent": 99,
+          "lastSeenEvent": 113,
+          "exampleEvents": [
+            99,
+            106,
+            113
+          ]
+        },
+        {
+          "name": "[LEXR]frenchteost",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 90,
+          "lastSeenEvent": 95,
+          "exampleEvents": [
+            90,
+            95
+          ]
+        },
+        {
+          "name": "[Slow]frenchteost",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 137,
+          "lastSeenEvent": 137,
+          "exampleEvents": [
+            137
           ]
         }
       ],
@@ -2102,9 +2166,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 11,
+          "appearances": 12,
           "firstSeenEvent": 116,
-          "lastSeenEvent": 135,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             116,
             120,
@@ -2316,9 +2380,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 32,
+          "appearances": 33,
           "firstSeenEvent": 95,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             95,
             96,
@@ -2591,16 +2655,17 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 6,
+          "appearances": 7,
           "firstSeenEvent": 6,
-          "lastSeenEvent": 120,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             6,
             8,
             11,
             13,
             14,
-            120
+            120,
+            137
           ]
         },
         {
@@ -3083,8 +3148,21 @@
       ]
     },
     {
-      "canonicalSuggestion": "[GGG]Lkat",
+      "canonicalSuggestion": "[MMM]LKat",
       "names": [
+        {
+          "name": "[MMM]LKat",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 124,
+          "lastSeenEvent": 137,
+          "exampleEvents": [
+            124,
+            137
+          ]
+        },
         {
           "name": "[GGG]Lkat",
           "reasons": [
@@ -3107,18 +3185,6 @@
           "lastSeenEvent": 108,
           "exampleEvents": [
             108
-          ]
-        },
-        {
-          "name": "[MMM]LKat",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 124,
-          "lastSeenEvent": 124,
-          "exampleEvents": [
-            124
           ]
         }
       ],
@@ -3465,57 +3531,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "frenchteost",
-      "names": [
-        {
-          "name": "[ZET]frenchteost",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 5,
-          "firstSeenEvent": 73,
-          "lastSeenEvent": 79,
-          "exampleEvents": [
-            73,
-            74,
-            76,
-            78,
-            79
-          ]
-        },
-        {
-          "name": "frenchteost",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 99,
-          "lastSeenEvent": 113,
-          "exampleEvents": [
-            99,
-            106,
-            113
-          ]
-        },
-        {
-          "name": "[LEXR]frenchteost",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 90,
-          "lastSeenEvent": 95,
-          "exampleEvents": [
-            90,
-            95
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "GuAlexItar",
       "names": [
         {
@@ -3523,9 +3538,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 81,
+          "appearances": 82,
           "firstSeenEvent": 2,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             2,
             7,
@@ -3824,9 +3839,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 11,
+          "appearances": 12,
           "firstSeenEvent": 121,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             121,
             123,
@@ -4085,9 +4100,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 83,
+          "appearances": 84,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 135,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             1,
             2,
@@ -4241,9 +4256,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 63,
+          "appearances": 64,
           "firstSeenEvent": 2,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             2,
             7,
@@ -4704,9 +4719,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 54,
+          "appearances": 55,
           "firstSeenEvent": 8,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             8,
             9,
@@ -5377,15 +5392,16 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 5,
+          "appearances": 6,
           "firstSeenEvent": 122,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             122,
             129,
             133,
             134,
-            136
+            136,
+            137
           ]
         }
       ],
@@ -5763,9 +5779,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 141,
+          "appearances": 142,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             1,
             2,
@@ -6196,9 +6212,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 10,
+          "appearances": 11,
           "firstSeenEvent": 9,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             9,
             10,
@@ -6630,11 +6646,12 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 1,
+          "appearances": 2,
           "firstSeenEvent": 136,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
-            136
+            136,
+            137
           ]
         }
       ],
@@ -6767,9 +6784,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 31,
+          "appearances": 32,
           "firstSeenEvent": 10,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             10,
             11,
@@ -6960,9 +6977,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 31,
+          "appearances": 32,
           "firstSeenEvent": 8,
-          "lastSeenEvent": 136,
+          "lastSeenEvent": 137,
           "exampleEvents": [
             8,
             10,

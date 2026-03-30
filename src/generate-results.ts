@@ -288,7 +288,9 @@ function extractResults(
   let currentPlacing: number | null = null;
 
   for (let rowIndex = startRowIndex; rowIndex < rows.length; rowIndex += 1) {
-    const name = normalizePlayerName(getCell(rows, rowIndex, indexes.name) ?? "");
+    const name = normalizePlayerName(
+      getCell(rows, rowIndex, indexes.name) ?? "",
+    );
     const placingValue = getCell(rows, rowIndex, indexes.placing)?.trim() ?? "";
     const time = getCell(rows, rowIndex, indexes.time)?.trim() ?? "";
     const eliminationRound =
@@ -360,9 +362,13 @@ function normalizeAllDnfRoundPlacings(results: ResultEntry[]): ResultEntry[] {
       continue;
     }
 
-    const highestPlacingInRound = countPlayersLeftInRound(
+    const lowestPlacingInRound = countPlayersLeftInRound(
       normalizedResults,
       eliminationRound,
+    );
+    const highestPlacingInRound = Math.max(
+      1,
+      lowestPlacingInRound - group.length + 1,
     );
 
     for (let index = startIndex; index < endIndex; index += 1) {
