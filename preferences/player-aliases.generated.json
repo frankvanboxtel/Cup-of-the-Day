@@ -33,6 +33,10 @@
     "[DHLU]MarcSubstitute",
     "[SLOW]MarcSubstitute"
   ],
+  "[Err] Veneficus": [
+    "[Err] Veneficus",
+    "[Tech] Veneficus"
+  ],
   "[F1] magostinho20": [
     "[F1] magostinho20",
     "[I290] magostinho20"
@@ -175,6 +179,10 @@
   "DragonBoi": [
     "DragonBoi",
     "[Top3]DragonBoi"
+  ],
+  "DragonShadow84290": [
+    "DragonShadow84290",
+    "[TTR]DragonShadow84290"
   ],
   "Exterminate": [
     "Exterminate",
@@ -690,6 +698,10 @@
   "Zeke Ryu'kai": [
     "Zeke Ryu'kai",
     "[BoF3] Zeke Ryu'kai"
+  ],
+  "Zeus": [
+    "Zeus",
+    "[NewB]Zeus"
   ],
   "zivecef": [
     "zivecef",
