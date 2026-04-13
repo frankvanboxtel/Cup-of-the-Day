@@ -7,14 +7,14 @@
   "author": "icRS",
   "description": null,
   "fastestTime": "45.842",
-  "fastestTimeDriver": "[CTR]Hydro",
+  "fastestTimeDriver": "[CTR] Hydro",
   "fastestTimeRound": "Round 13",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 26-50 - COTD 41-45.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "45.887",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[RTR]GuAlexItar",
+      "name": "[RTR] GuAlexItar",
       "time": "DNF",
       "eliminationRound": "10",
       "rouletteMap": null,
@@ -113,7 +113,7 @@
     },
     {
       "placing": 12,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "DNF",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -122,7 +122,7 @@
     },
     {
       "placing": 13,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "46.896",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -239,7 +239,7 @@
     },
     {
       "placing": 26,
-      "name": "[ZET]rtyyyyb",
+      "name": "[ZET] rtyyyyb",
       "time": "DNF",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -302,7 +302,7 @@
     },
     {
       "placing": 32,
-      "name": "[ZET]toast",
+      "name": "[ZET] toast",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

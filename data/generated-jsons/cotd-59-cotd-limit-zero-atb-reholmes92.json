@@ -4,7 +4,7 @@
   "eventLabel": "COTW 59",
   "nr": 59,
   "map": "COTD-Limit Zero",
-  "author": "[ATB]reholmes92",
+  "author": "[ATB] reholmes92",
   "description": null,
   "fastestTime": "38.784",
   "fastestTimeDriver": "RoundNzt",
@@ -14,7 +14,7 @@
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "38.866",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "39.286",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -239,7 +239,7 @@
     },
     {
       "placing": 26,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "39.965",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -284,7 +284,7 @@
     },
     {
       "placing": 31,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -320,7 +320,7 @@
     },
     {
       "placing": 35,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

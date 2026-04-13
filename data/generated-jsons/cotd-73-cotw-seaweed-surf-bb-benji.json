@@ -7,14 +7,14 @@
   "author": "BB_Benji",
   "description": null,
   "fastestTime": "42.175",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 10",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 71-75.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "42.215",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -41,7 +41,7 @@
     },
     {
       "placing": 4,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "43.681",
       "eliminationRound": "10",
       "rouletteMap": null,
@@ -50,7 +50,7 @@
     },
     {
       "placing": 5,
-      "name": "[FPV]PandaMane",
+      "name": "[FPV] PandaMane",
       "time": "43.630",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -104,7 +104,7 @@
     },
     {
       "placing": 11,
-      "name": "[CTR]L3it3R",
+      "name": "[CTR] L3it3R",
       "time": "45.612",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -131,7 +131,7 @@
     },
     {
       "placing": 13,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[WAM]zivecef",
+      "name": "[WAM] zivecef",
       "time": "DNF",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -158,7 +158,7 @@
     },
     {
       "placing": 15,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "DNF",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -230,7 +230,7 @@
     },
     {
       "placing": 20,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -266,7 +266,7 @@
     },
     {
       "placing": 27,
-      "name": "[TBD]XpERt",
+      "name": "[TBD] XpERt",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,
@@ -329,7 +329,7 @@
     },
     {
       "placing": 27,
-      "name": "[ZET]frenchteost",
+      "name": "[ZET] frenchteost",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,
@@ -347,7 +347,7 @@
     },
     {
       "placing": 27,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

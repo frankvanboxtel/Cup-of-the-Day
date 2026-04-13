@@ -7,14 +7,14 @@
   "author": "justMaki",
   "description": null,
   "fastestTime": "1:36.225",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 3",
   "rouletteSourceLabel": null,
   "sourceFile": "COTD Results - Troll COTDs.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "1:36.431",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -32,7 +32,7 @@
     },
     {
       "placing": 3,
-      "name": "[XTR]Hawk",
+      "name": "[XTR] Hawk",
       "time": "1:38.261",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -68,7 +68,7 @@
     },
     {
       "placing": 7,
-      "name": "[TOG]Lazy_echidna",
+      "name": "[TOG] Lazy_echidna",
       "time": "1:40.119",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -131,7 +131,7 @@
     },
     {
       "placing": 14,
-      "name": "[Poop]Sheriff",
+      "name": "[Poop] Sheriff",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 14,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -149,7 +149,7 @@
     },
     {
       "placing": 14,
-      "name": "[CTR]L3it3R",
+      "name": "[CTR] L3it3R",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,

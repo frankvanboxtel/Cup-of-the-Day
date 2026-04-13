@@ -7,14 +7,14 @@
   "author": "readfreak7",
   "description": null,
   "fastestTime": "48.579",
-  "fastestTimeDriver": "[CTR]Cbad Cruiser",
+  "fastestTimeDriver": "[CTR] Cbad Cruiser",
   "fastestTimeRound": "Final",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 1-25 - COTD 21-25.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "48.579",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -77,7 +77,7 @@
     },
     {
       "placing": 8,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "49.447",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -86,7 +86,7 @@
     },
     {
       "placing": 9,
-      "name": "[CTR]R0nanC",
+      "name": "[CTR] R0nanC",
       "time": "49.450",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -194,7 +194,7 @@
     },
     {
       "placing": 21,
-      "name": "[CTR]L3it3R",
+      "name": "[CTR] L3it3R",
       "time": "50.325",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -212,7 +212,7 @@
     },
     {
       "placing": 23,
-      "name": "[XTR]Hawk",
+      "name": "[XTR] Hawk",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,

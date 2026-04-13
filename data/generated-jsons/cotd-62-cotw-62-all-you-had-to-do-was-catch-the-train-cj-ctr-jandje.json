@@ -7,14 +7,14 @@
   "author": "[CTR] jandje",
   "description": null,
   "fastestTime": "41.354",
-  "fastestTimeDriver": "[CTR]Hydro",
+  "fastestTimeDriver": "[CTR] Hydro",
   "fastestTimeRound": "Round 6",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 61-65.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "41.620",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -50,7 +50,7 @@
     },
     {
       "placing": 5,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "42.645",
       "eliminationRound": "12",
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "43.230",
       "eliminationRound": "11",
       "rouletteMap": null,
@@ -95,7 +95,7 @@
     },
     {
       "placing": 10,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "DNF",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -122,7 +122,7 @@
     },
     {
       "placing": 13,
-      "name": "[CTR]PoopSheriff",
+      "name": "[CTR] PoopSheriff",
       "time": "43.780",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -194,7 +194,7 @@
     },
     {
       "placing": 21,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "45.591",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -257,7 +257,7 @@
     },
     {
       "placing": 28,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -302,7 +302,7 @@
     },
     {
       "placing": 33,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -383,7 +383,7 @@
     },
     {
       "placing": 38,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

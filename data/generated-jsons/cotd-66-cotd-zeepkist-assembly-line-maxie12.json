@@ -7,14 +7,14 @@
   "author": "maxie12",
   "description": null,
   "fastestTime": "39.353",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 11",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 66-70.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "39.753",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -41,7 +41,7 @@
     },
     {
       "placing": 3,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "DNF",
       "eliminationRound": "11",
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[CHR]Warsnac",
+      "name": "[CHR] Warsnac",
       "time": "40.663",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -104,7 +104,7 @@
     },
     {
       "placing": 10,
-      "name": "[C3PO]Tommygaming5132",
+      "name": "[C3PO] Tommygaming5132",
       "time": "DNF",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "42.07483",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -194,7 +194,7 @@
     },
     {
       "placing": 18,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -257,7 +257,7 @@
     },
     {
       "placing": 27,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -266,7 +266,7 @@
     },
     {
       "placing": 27,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -329,7 +329,7 @@
     },
     {
       "placing": 33,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

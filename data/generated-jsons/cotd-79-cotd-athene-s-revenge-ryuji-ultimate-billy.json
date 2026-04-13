@@ -7,14 +7,14 @@
   "author": "Ryuji & Ultimate Billy",
   "description": null,
   "fastestTime": "42.884",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Final",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 76-100 - COTD 76-80.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "42.884",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -23,7 +23,7 @@
     },
     {
       "placing": 2,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "43.083",
       "eliminationRound": "18",
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "43.469",
       "eliminationRound": "14",
       "rouletteMap": null,
@@ -104,7 +104,7 @@
     },
     {
       "placing": 11,
-      "name": "[ZET]MackCheesy",
+      "name": "[ZET] MackCheesy",
       "time": "43.934",
       "eliminationRound": "11",
       "rouletteMap": null,
@@ -176,7 +176,7 @@
     },
     {
       "placing": 19,
-      "name": "[CTR]Mμ",
+      "name": "[CTR] Mμ",
       "time": "DNF",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -212,7 +212,7 @@
     },
     {
       "placing": 23,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "44.684",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -230,7 +230,7 @@
     },
     {
       "placing": 25,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "45.069",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -248,7 +248,7 @@
     },
     {
       "placing": 27,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "45.300",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -257,7 +257,7 @@
     },
     {
       "placing": 28,
-      "name": "[GLHF]loganbradley714",
+      "name": "[GLHF] loganbradley714",
       "time": "45.589",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -302,7 +302,7 @@
     },
     {
       "placing": 33,
-      "name": "[ZET]frenchteost",
+      "name": "[ZET] frenchteost",
       "time": "45.689",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -338,7 +338,7 @@
     },
     {
       "placing": 37,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "49.264",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -356,7 +356,7 @@
     },
     {
       "placing": 39,
-      "name": "[gorp]//////void",
+      "name": "[gorp] //////void",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -437,7 +437,7 @@
     },
     {
       "placing": 46,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -464,7 +464,7 @@
     },
     {
       "placing": 49,
-      "name": "[ZET]Sword125",
+      "name": "[ZET] Sword125",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

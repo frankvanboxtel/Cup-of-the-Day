@@ -7,14 +7,14 @@
   "author": "Shadynook",
   "description": null,
   "fastestTime": "44.261",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 5",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 51-55.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "44.432",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -23,7 +23,7 @@
     },
     {
       "placing": 2,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "44.477",
       "eliminationRound": "12",
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[CHR]Warsnac",
+      "name": "[CHR] Warsnac",
       "time": "45.099",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -131,7 +131,7 @@
     },
     {
       "placing": 14,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "46.187",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -149,7 +149,7 @@
     },
     {
       "placing": 16,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "46.452",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -176,7 +176,7 @@
     },
     {
       "placing": 19,
-      "name": "[ZAGA]DBNULL",
+      "name": "[ZAGA] DBNULL",
       "time": "47.200",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -194,7 +194,7 @@
     },
     {
       "placing": 21,
-      "name": "[ZET]toast",
+      "name": "[ZET] toast",
       "time": "48.398",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -293,7 +293,7 @@
     },
     {
       "placing": 24,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

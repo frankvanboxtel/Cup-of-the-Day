@@ -4,7 +4,7 @@
   "eventLabel": "COTD 134",
   "nr": 134,
   "map": "COTD - Urbs Noctu",
-  "author": "[20x]K410K3N",
+  "author": "[20x] K410K3N",
   "description": null,
   "fastestTime": "42.509",
   "fastestTimeDriver": "ZOMAN",
@@ -50,7 +50,7 @@
     },
     {
       "placing": 5,
-      "name": "[CTR]Beans",
+      "name": "[CTR] Beans",
       "time": "DNF",
       "eliminationRound": "12",
       "rouletteMap": null,
@@ -68,7 +68,7 @@
     },
     {
       "placing": 7,
-      "name": "[FPV]PandaMane",
+      "name": "[FPV] PandaMane",
       "time": "43.778",
       "eliminationRound": "10",
       "rouletteMap": null,
@@ -95,7 +95,7 @@
     },
     {
       "placing": 10,
-      "name": "[CSC]Tommygaming",
+      "name": "[CSC] Tommygaming",
       "time": "43.683",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -113,7 +113,7 @@
     },
     {
       "placing": 12,
-      "name": "[CTR]agix",
+      "name": "[CTR] agix",
       "time": "DNF",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[GECK]R0nanC",
+      "name": "[GECK] R0nanC",
       "time": "43.975",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -149,7 +149,7 @@
     },
     {
       "placing": 16,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "44.335",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -194,7 +194,7 @@
     },
     {
       "placing": 21,
-      "name": "[BAP]Six",
+      "name": "[BAP] Six",
       "time": "44.865",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -212,7 +212,7 @@
     },
     {
       "placing": 23,
-      "name": "[GFHL]loganbradley714",
+      "name": "[GFHL] loganbradley714",
       "time": "46.132",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -230,7 +230,7 @@
     },
     {
       "placing": 24,
-      "name": "[Tame]stindt",
+      "name": "[Tame] stindt",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -257,7 +257,7 @@
     },
     {
       "placing": 28,
-      "name": "[fn]Form",
+      "name": "[fn] Form",
       "time": "46.121",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -266,7 +266,7 @@
     },
     {
       "placing": 29,
-      "name": "[DNFF]lucanakin",
+      "name": "[DNFF] lucanakin",
       "time": "46.195",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -275,7 +275,7 @@
     },
     {
       "placing": 30,
-      "name": "[ZET]Sword125",
+      "name": "[ZET] Sword125",
       "time": "46.442",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -392,7 +392,7 @@
     },
     {
       "placing": 39,
-      "name": "[NewB]Zeus",
+      "name": "[NewB] Zeus",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

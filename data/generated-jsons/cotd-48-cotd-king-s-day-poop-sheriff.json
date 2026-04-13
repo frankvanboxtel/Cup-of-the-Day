@@ -4,10 +4,10 @@
   "eventLabel": "COTD 48",
   "nr": 48,
   "map": "CotD-King's Day",
-  "author": "[Poop]Sheriff",
+  "author": "[Poop] Sheriff",
   "description": null,
   "fastestTime": "43.420",
-  "fastestTimeDriver": "[CTR]Hydro",
+  "fastestTimeDriver": "[CTR] Hydro",
   "fastestTimeRound": "Round 6",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 26-50 - COTD 46-50.csv",
@@ -41,7 +41,7 @@
     },
     {
       "placing": 4,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "43.860",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[ZET]rtyyyyb",
+      "name": "[ZET] rtyyyyb",
       "time": "DNF",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -68,7 +68,7 @@
     },
     {
       "placing": 7,
-      "name": "[RTR]GuAlexItar",
+      "name": "[RTR] GuAlexItar",
       "time": "44.541",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -86,7 +86,7 @@
     },
     {
       "placing": 9,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "44.938",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -95,7 +95,7 @@
     },
     {
       "placing": 10,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "45.188",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[ZET]toast",
+      "name": "[ZET] toast",
       "time": "DNF",
       "eliminationRound": "3",
       "rouletteMap": null,

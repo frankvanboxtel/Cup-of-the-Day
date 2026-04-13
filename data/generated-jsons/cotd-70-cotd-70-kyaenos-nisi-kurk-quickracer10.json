@@ -7,14 +7,14 @@
   "author": "[KURK] Quickracer10",
   "description": null,
   "fastestTime": "47.468",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 8",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 66-70.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "47.722",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "49.729",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -149,7 +149,7 @@
     },
     {
       "placing": 16,
-      "name": "[FPV]PandaMane",
+      "name": "[FPV] PandaMane",
       "time": "50.017",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -176,7 +176,7 @@
     },
     {
       "placing": 19,
-      "name": "[TOG]Lazy-Echidna",
+      "name": "[TOG] Lazy-Echidna",
       "time": "50.172",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -230,7 +230,7 @@
     },
     {
       "placing": 25,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "51.967",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -239,7 +239,7 @@
     },
     {
       "placing": 26,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "51.153",
       "eliminationRound": "3",
       "rouletteMap": null,

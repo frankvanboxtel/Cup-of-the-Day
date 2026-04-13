@@ -7,14 +7,14 @@
   "author": "[CTR] PoopSheriff",
   "description": null,
   "fastestTime": "43.196",
-  "fastestTimeDriver": "[CTR]Hydro",
+  "fastestTimeDriver": "[CTR] Hydro",
   "fastestTimeRound": "Round 12",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 76-100 - COTD 76-80.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "43.629",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -104,7 +104,7 @@
     },
     {
       "placing": 11,
-      "name": "[ZET]MackCheesy",
+      "name": "[ZET] MackCheesy",
       "time": "44.553",
       "eliminationRound": "11",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "44.740",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -149,7 +149,7 @@
     },
     {
       "placing": 16,
-      "name": "[TILT]Redstony",
+      "name": "[TILT] Redstony",
       "time": "44.759",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -176,7 +176,7 @@
     },
     {
       "placing": 19,
-      "name": "[ZET]Stick",
+      "name": "[ZET] Stick",
       "time": "45.224",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -212,7 +212,7 @@
     },
     {
       "placing": 23,
-      "name": "[FPV]PandaMane",
+      "name": "[FPV] PandaMane",
       "time": "45.337",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -257,7 +257,7 @@
     },
     {
       "placing": 28,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "46.473",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -338,7 +338,7 @@
     },
     {
       "placing": 37,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -347,7 +347,7 @@
     },
     {
       "placing": 37,
-      "name": "[ZET]frenchteost",
+      "name": "[ZET] frenchteost",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -410,7 +410,7 @@
     },
     {
       "placing": 45,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -437,7 +437,7 @@
     },
     {
       "placing": 47,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,
@@ -446,7 +446,7 @@
     },
     {
       "placing": 47,
-      "name": "[ZET]Sword125",
+      "name": "[ZET] Sword125",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

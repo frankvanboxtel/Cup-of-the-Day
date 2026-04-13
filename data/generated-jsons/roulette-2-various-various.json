@@ -32,7 +32,7 @@
     },
     {
       "placing": 3,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "42.723",
       "eliminationRound": "10",
       "rouletteMap": "Calamity of the Day",
@@ -104,7 +104,7 @@
     },
     {
       "placing": 11,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "45.384",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -171,7 +171,7 @@
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": "CotD-King's Day",
-      "rouletteMapper": "[Poop]Sheriff",
+      "rouletteMapper": "[Poop] Sheriff",
       "rouletteSourceEventNumber": 48
     },
     {
@@ -212,7 +212,7 @@
     },
     {
       "placing": 18,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,

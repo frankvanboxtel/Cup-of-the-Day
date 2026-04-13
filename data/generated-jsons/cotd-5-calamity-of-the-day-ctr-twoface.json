@@ -4,7 +4,7 @@
   "eventLabel": "COTD 5",
   "nr": 5,
   "map": "Calamity of the Day",
-  "author": "[CTR]TwoFace",
+  "author": "[CTR] TwoFace",
   "description": null,
   "fastestTime": "40.902",
   "fastestTimeDriver": "justMaki",
@@ -176,7 +176,7 @@
     },
     {
       "placing": 19,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "42.609",
       "eliminationRound": "5",
       "rouletteMap": null,

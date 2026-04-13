@@ -126,7 +126,9 @@ export function normalizePlayerName(value: string): string {
     return normalized;
   }
 
-  return normalizeWhitespace(`${rebuilt}${remaining}`);
+  const separator = remaining.length > 0 ? " " : "";
+
+  return normalizeWhitespace(`${rebuilt}${separator}${remaining}`);
 }
 
 export function resolveAlias(

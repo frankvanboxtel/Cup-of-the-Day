@@ -7,14 +7,14 @@
   "author": "justMaki",
   "description": null,
   "fastestTime": "42.781",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 10",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 76-100 - COTD 76-80.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "43.262",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -41,7 +41,7 @@
     },
     {
       "placing": 4,
-      "name": "[FPV]PandaMane",
+      "name": "[FPV] PandaMane",
       "time": "DNF",
       "eliminationRound": "12",
       "rouletteMap": null,
@@ -77,7 +77,7 @@
     },
     {
       "placing": 8,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "44.523",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[ZET]MackCheesy",
+      "name": "[ZET] MackCheesy",
       "time": "45.440",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -149,7 +149,7 @@
     },
     {
       "placing": 16,
-      "name": "[PTSD]Psycho No. 7",
+      "name": "[PTSD] Psycho No. 7",
       "time": "45.663",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -176,7 +176,7 @@
     },
     {
       "placing": 19,
-      "name": "[ZET]LILWOOLEY",
+      "name": "[ZET] LILWOOLEY",
       "time": "47.710",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -221,7 +221,7 @@
     },
     {
       "placing": 22,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "DNF",
       "eliminationRound": "4",
       "rouletteMap": null,
@@ -302,7 +302,7 @@
     },
     {
       "placing": 33,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -356,7 +356,7 @@
     },
     {
       "placing": 33,
-      "name": "[ZET]frenchteost",
+      "name": "[ZET] frenchteost",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,

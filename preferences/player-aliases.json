@@ -71,5 +71,14 @@
   "stindt": ["stindt", "[Lame}stindt"],
   "void": ["void", "//////void", "[VOID[//////void"],
   "Y'Rewik": ["Y'Rewik", "[dum[ Y'Rewik"],
-  "Ruckooe": ["Ruckooe", "[FOOL} Ruckooe"]
+  "Ruckooe": ["Ruckooe", "[FOOL} Ruckooe"],
+  "Fwogiie": [
+    "Fwogiie",
+    "[frog] Fwogiie",
+    "[POIN] Fwogiie",
+    "[RTR] Fwogiie",
+    "[Tran] Fwogiie",
+    "Fwogiie.Kawaii",
+    "[RTR] Fwogiie.Kawaii"
+  ]
 }

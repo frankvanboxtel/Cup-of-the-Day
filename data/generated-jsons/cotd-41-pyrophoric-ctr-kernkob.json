@@ -4,7 +4,7 @@
   "eventLabel": "COTD 41",
   "nr": 41,
   "map": "Pyrophoric",
-  "author": "[CTR]Kernkob",
+  "author": "[CTR] Kernkob",
   "description": null,
   "fastestTime": "42.152",
   "fastestTimeDriver": "Mark",
@@ -23,7 +23,7 @@
     },
     {
       "placing": 2,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "42.494",
       "eliminationRound": "14",
       "rouletteMap": null,
@@ -32,7 +32,7 @@
     },
     {
       "placing": 3,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "42.825",
       "eliminationRound": "13",
       "rouletteMap": null,
@@ -104,7 +104,7 @@
     },
     {
       "placing": 11,
-      "name": "[RTR]Fwogiie",
+      "name": "[RTR] Fwogiie",
       "time": "44.232",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -122,7 +122,7 @@
     },
     {
       "placing": 13,
-      "name": "[CTR]R0nanC",
+      "name": "[CTR] R0nanC",
       "time": "43.984",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[RTR]GuAlexItar",
+      "name": "[RTR] GuAlexItar",
       "time": "44.171",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -248,7 +248,7 @@
     },
     {
       "placing": 27,
-      "name": "[CTR]L3it3R",
+      "name": "[CTR] L3it3R",
       "time": "DNF",
       "eliminationRound": "3",
       "rouletteMap": null,

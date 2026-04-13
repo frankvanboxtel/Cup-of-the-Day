@@ -7,14 +7,14 @@
   "author": "GearworkDragon",
   "description": null,
   "fastestTime": "46.221",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 12",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 51-55.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "46.269",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -50,7 +50,7 @@
     },
     {
       "placing": 5,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "46.116",
       "eliminationRound": "10",
       "rouletteMap": null,
@@ -68,7 +68,7 @@
     },
     {
       "placing": 7,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "47.073",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -230,7 +230,7 @@
     },
     {
       "placing": 23,
-      "name": "[ZET]toast",
+      "name": "[ZET] toast",
       "time": "DNF",
       "eliminationRound": "2",
       "rouletteMap": null,
@@ -347,7 +347,7 @@
     },
     {
       "placing": 29,
-      "name": "[ZET]vectortrajector",
+      "name": "[ZET] vectortrajector",
       "time": "DNF",
       "eliminationRound": "1",
       "rouletteMap": null,

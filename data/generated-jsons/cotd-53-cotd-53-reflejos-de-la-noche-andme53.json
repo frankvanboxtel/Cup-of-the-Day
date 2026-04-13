@@ -7,14 +7,14 @@
   "author": "AndMe53",
   "description": null,
   "fastestTime": "43.468",
-  "fastestTimeDriver": "[CTR]Kernkob",
+  "fastestTimeDriver": "[CTR] Kernkob",
   "fastestTimeRound": "Round 5",
   "rouletteSourceLabel": null,
   "sourceFile": "COTDs 51-75 - COTD 51-55.csv",
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "43.567",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -23,7 +23,7 @@
     },
     {
       "placing": 2,
-      "name": "[CTR]Cbad Cruiser",
+      "name": "[CTR] Cbad Cruiser",
       "time": "43.932",
       "eliminationRound": "14",
       "rouletteMap": null,
@@ -50,7 +50,7 @@
     },
     {
       "placing": 5,
-      "name": "[CTR]GuAlexItar",
+      "name": "[CTR] GuAlexItar",
       "time": "44.381",
       "eliminationRound": "11",
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[8]St Nicholas",
+      "name": "[8] St Nicholas",
       "time": "44.326",
       "eliminationRound": "10",
       "rouletteMap": null,
@@ -68,7 +68,7 @@
     },
     {
       "placing": 7,
-      "name": "[vibe]3rdseyeview",
+      "name": "[vibe] 3rdseyeview",
       "time": "44.480",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -86,7 +86,7 @@
     },
     {
       "placing": 9,
-      "name": "[WAM]zivecef",
+      "name": "[WAM] zivecef",
       "time": "44.788",
       "eliminationRound": "8",
       "rouletteMap": null,
@@ -104,7 +104,7 @@
     },
     {
       "placing": 11,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "45.130",
       "eliminationRound": "7",
       "rouletteMap": null,
@@ -122,7 +122,7 @@
     },
     {
       "placing": 13,
-      "name": "[VOID]//////void",
+      "name": "[VOID] //////void",
       "time": "44.865",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -221,7 +221,7 @@
     },
     {
       "placing": 24,
-      "name": "[ZET]toast",
+      "name": "[ZET] toast",
       "time": "46.903",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -239,7 +239,7 @@
     },
     {
       "placing": 26,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "DNF",
       "eliminationRound": "3",
       "rouletteMap": null,
@@ -257,7 +257,7 @@
     },
     {
       "placing": 28,
-      "name": "[RB]Chinpokomon",
+      "name": "[RB] Chinpokomon",
       "time": "48.663",
       "eliminationRound": "2",
       "rouletteMap": null,

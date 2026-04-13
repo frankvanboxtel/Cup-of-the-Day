@@ -14,7 +14,7 @@
   "results": [
     {
       "placing": 1,
-      "name": "[CTR]Kernkob",
+      "name": "[CTR] Kernkob",
       "time": "44.016",
       "eliminationRound": null,
       "rouletteMap": null,
@@ -59,7 +59,7 @@
     },
     {
       "placing": 6,
-      "name": "[CTR]Hydro",
+      "name": "[CTR] Hydro",
       "time": "44.273",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -68,7 +68,7 @@
     },
     {
       "placing": 7,
-      "name": "[TOG]Lazy_Echidna",
+      "name": "[TOG] Lazy_Echidna",
       "time": "44.550",
       "eliminationRound": "9",
       "rouletteMap": null,
@@ -113,7 +113,7 @@
     },
     {
       "placing": 12,
-      "name": "[CTR]OwlPlague",
+      "name": "[CTR] OwlPlague",
       "time": "45.107",
       "eliminationRound": "6",
       "rouletteMap": null,
@@ -140,7 +140,7 @@
     },
     {
       "placing": 15,
-      "name": "[XTR]Hawk",
+      "name": "[XTR] Hawk",
       "time": "45.136",
       "eliminationRound": "5",
       "rouletteMap": null,
@@ -230,7 +230,7 @@
     },
     {
       "placing": 25,
-      "name": "[Poop]Sheriff",
+      "name": "[Poop] Sheriff",
       "time": "46.696",
       "eliminationRound": "3",
       "rouletteMap": null,
