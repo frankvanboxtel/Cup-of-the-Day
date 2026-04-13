@@ -10,6 +10,7 @@ import {
   renderDriverIndexPageContent,
   renderOverviewPageContent,
   renderPlacingsIndexPageContent,
+  renderRankingsPageContent,
   renderResultsGraphIndexPageContent,
 } from "./html/index-pages";
 import { escapeHtml, renderLayout, renderTableContainer } from "./html/shell";
@@ -39,6 +40,13 @@ import type {
   RatingParticipant,
   RatingSnapshot,
 } from "../lib/ratings";
+import { buildEventPaceScores, initialPaceScore } from "../lib/pace";
+import type {
+  DriverEventPace,
+  DriverPaceSummary,
+  PaceParticipant,
+  PaceSnapshot,
+} from "../lib/pace";
 
 type DriverRecord = {
   canonicalName: string;
@@ -112,8 +120,14 @@ type DriverStats = {
   bestFinish: number | null;
   fastestTimes: number;
   ratings: DriverRatingSummary;
+  pace: DriverPaceSummary;
   currentElo: number;
   peakElo: number;
+};
+
+type DriverSummary = {
+  ratings: DriverRatingSummary;
+  pace: DriverPaceSummary;
 };
 
 type AuthorStats = {
@@ -150,6 +164,7 @@ const outputStylesFilePath = path.join(outputDirectory, "styles.css");
 const eventsDirectory = path.join(outputDirectory, "events");
 const driversDirectory = path.join(outputDirectory, "drivers");
 const placingsDirectory = path.join(outputDirectory, "placings");
+const rankingsDirectory = path.join(outputDirectory, "rankings");
 const raceResultsGraphDirectory = path.join(
   outputDirectory,
   "race-results-graph",
@@ -158,6 +173,7 @@ const authorsDirectory = path.join(outputDirectory, "authors");
 const indexFilePath = path.join(outputDirectory, "index.html");
 const driverIndexFilePath = path.join(driversDirectory, "index.html");
 const placingsIndexFilePath = path.join(placingsDirectory, "index.html");
+const rankingsIndexFilePath = path.join(rankingsDirectory, "index.html");
 const raceResultsGraphIndexFilePath = path.join(
   raceResultsGraphDirectory,
   "index.html",
@@ -249,10 +265,33 @@ async function main(): Promise<void> {
   const eventRatings =
     eventRatingsByCompetition.get("cotd") ??
     buildEventRatings([], () => [] as RatingParticipant[]);
+  const eventPaceByCompetition = new Map(
+    competitionTypes.map((competitionType) => [
+      competitionType,
+      buildEventPaceScores(
+        getCompetitionEventRecords(eventRecords, competitionType),
+        (eventRecord) =>
+          buildCanonicalEventPaceResults(
+            eventRecord,
+            aliasResolver,
+            displayOnlyNames,
+          ),
+      ),
+    ]),
+  );
+  const eventPace =
+    eventPaceByCompetition.get("cotd") ??
+    buildEventPaceScores([], () => [] as PaceParticipant[]);
   const driverRatingHistoryByCompetition = new Map(
     competitionTypes.map((competitionType) => [
       competitionType,
       eventRatingsByCompetition.get(competitionType)?.history ?? new Map(),
+    ]),
+  );
+  const driverPaceHistoryByCompetition = new Map(
+    competitionTypes.map((competitionType) => [
+      competitionType,
+      eventPaceByCompetition.get(competitionType)?.history ?? new Map(),
     ]),
   );
   const driverRecords = buildDriverRecords(
@@ -276,6 +315,7 @@ async function main(): Promise<void> {
     rm(eventsDirectory, { recursive: true, force: true }),
     rm(driversDirectory, { recursive: true, force: true }),
     rm(placingsDirectory, { recursive: true, force: true }),
+    rm(rankingsDirectory, { recursive: true, force: true }),
     rm(raceResultsGraphDirectory, { recursive: true, force: true }),
     rm(authorsDirectory, { recursive: true, force: true }),
   ]);
@@ -284,6 +324,7 @@ async function main(): Promise<void> {
     mkdir(eventsDirectory, { recursive: true }),
     mkdir(driversDirectory, { recursive: true }),
     mkdir(placingsDirectory, { recursive: true }),
+    mkdir(rankingsDirectory, { recursive: true }),
     mkdir(raceResultsGraphDirectory, { recursive: true }),
     mkdir(authorsDirectory, { recursive: true }),
   ]);
@@ -291,6 +332,11 @@ async function main(): Promise<void> {
   const driverFileNames = new Map(
     driverRecords.flatMap((record) =>
       record.aliases.map((alias) => [alias, record.htmlFileName] as const),
+    ),
+  );
+  const driverCanonicalNames = new Map(
+    driverRecords.flatMap((record) =>
+      record.aliases.map((alias) => [alias, record.canonicalName] as const),
     ),
   );
   const authorFileNames = new Map(
@@ -307,12 +353,15 @@ async function main(): Promise<void> {
       authorRecordsByName,
       authorFileNames,
       eventRatings.summary,
+      eventPace.summary,
     ),
+    writeRankingsPage(),
     writePlacingsIndexPage(
       driverRecords,
       authorRecords,
       authorFileNames,
       eventRatings.summary,
+      eventPace.summary,
     ),
     writeRaceResultsGraphIndexPage(driverRecords, eventRecords),
     ...buildEventNavigationPairs(eventRecords).map(
@@ -321,8 +370,10 @@ async function main(): Promise<void> {
           eventRecord,
           eventRecords,
           driverFileNames,
+          driverCanonicalNames,
           authorFileNames,
           cotdEventRecordsByNumber,
+          driverPaceHistoryByCompetition,
           previousEventRecord,
           nextEventRecord,
         ),
@@ -336,6 +387,8 @@ async function main(): Promise<void> {
         authorFileNames,
         eventRatings.summary,
         driverRatingHistoryByCompetition,
+        eventPace.summary,
+        driverPaceHistoryByCompetition,
       ),
     ),
     ...authorRecords.map((authorRecord) =>
@@ -347,6 +400,7 @@ async function main(): Promise<void> {
         authorFileNames,
         eventRatings.summary,
         driverRatingHistoryByCompetition,
+        eventPace.summary,
       ),
     ),
   ]);
@@ -625,6 +679,56 @@ function buildCanonicalEventResults(
 
     return left.canonicalName.localeCompare(right.canonicalName);
   });
+}
+
+function buildCanonicalEventPaceResults(
+  eventRecord: EventRecord,
+  aliasResolver: AliasResolver,
+  displayOnlyNames: Set<string>,
+): PaceParticipant[] {
+  const byDriver = new Map<string, PaceParticipant>();
+
+  for (const result of eventRecord.results) {
+    if (isDisplayOnlyName(result.name, aliasResolver, displayOnlyNames)) {
+      continue;
+    }
+
+    const canonicalName = resolveAlias(result.name, aliasResolver);
+    const participant = {
+      canonicalName,
+      placing: result.placing,
+      timeMs: parseRaceTimeToMilliseconds(result.time),
+    } satisfies PaceParticipant;
+    const existing = byDriver.get(canonicalName);
+
+    if (!existing) {
+      byDriver.set(canonicalName, participant);
+      continue;
+    }
+
+    const currentPlacing = participant.placing ?? Number.MAX_SAFE_INTEGER;
+    const existingPlacing = existing.placing ?? Number.MAX_SAFE_INTEGER;
+
+    if (currentPlacing < existingPlacing) {
+      byDriver.set(canonicalName, participant);
+    }
+  }
+
+  return Array.from(byDriver.values()).sort(compareCanonicalPaceParticipants);
+}
+
+function compareCanonicalPaceParticipants(
+  left: PaceParticipant,
+  right: PaceParticipant,
+): number {
+  const leftPlacing = left.placing ?? Number.MAX_SAFE_INTEGER;
+  const rightPlacing = right.placing ?? Number.MAX_SAFE_INTEGER;
+
+  if (leftPlacing !== rightPlacing) {
+    return leftPlacing - rightPlacing;
+  }
+
+  return left.canonicalName.localeCompare(right.canonicalName);
 }
 
 function buildAuthorRecords(
@@ -998,10 +1102,15 @@ async function writeDriverIndexPage(
   authorRecordsByName: Map<string, AuthorRecord>,
   authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
 ): Promise<void> {
   const rows = driverRecords
     .map((driverRecord) => {
-      const stats = buildDriverStats(driverRecord, driverRatingSummary);
+      const stats = buildDriverStats(
+        driverRecord,
+        driverRatingSummary,
+        driverPaceSummary,
+      );
       const nameDetails = splitTaggedPlayerNames(
         driverRecord.canonicalName,
         driverRecord.aliases,
@@ -1012,7 +1121,12 @@ async function writeDriverIndexPage(
       const statsByCompetition = Object.fromEntries(
         competitionDefinitions.map(({ type }) => [
           type,
-          buildDriverStats(driverRecord, driverRatingSummary, [type]),
+          buildDriverStats(
+            driverRecord,
+            driverRatingSummary,
+            driverPaceSummary,
+            [type],
+          ),
         ]),
       ) as Record<CompetitionType, DriverStats>;
       const tracksCreated = Object.values(tracksByCompetition).reduce(
@@ -1035,6 +1149,12 @@ async function writeDriverIndexPage(
         "wins-rate": normalizeNumberSortValue(stats.winRate),
         elo: normalizeNumberSortValue(stats.currentElo),
         bayes: normalizeNumberSortValue(stats.ratings.bayes.current),
+        pace: normalizeNumberSortValue(stats.pace.index.current),
+        "pace-form": normalizeNumberSortValue(stats.pace.form.current),
+        "elo-peak": normalizeNumberSortValue(stats.ratings.elo.peak),
+        "bayes-peak": normalizeNumberSortValue(stats.ratings.bayes.peak),
+        "pace-peak": normalizeNumberSortValue(stats.pace.index.peak),
+        "pace-form-peak": normalizeNumberSortValue(stats.pace.form.peak),
       });
       const competitionAttributes = renderCompetitionMetricAttributes({
         tracks: tracksByCompetition,
@@ -1070,6 +1190,12 @@ async function writeDriverIndexPage(
           <td class="align-right">${formatPercentage(stats.winRate)}</td>
           <td class="align-right">${formatElo(stats.currentElo)}</td>
           <td class="align-right">${formatElo(stats.ratings.bayes.current)}</td>
+          <td class="align-right">${formatPaceScore(stats.pace.index.current)}</td>
+          <td class="align-right">${formatPaceScore(stats.pace.form.current)}</td>
+          <td class="align-right">${formatElo(stats.ratings.elo.peak)}</td>
+          <td class="align-right">${formatElo(stats.ratings.bayes.peak)}</td>
+          <td class="align-right">${formatPaceScore(stats.pace.index.peak)}</td>
+          <td class="align-right">${formatPaceScore(stats.pace.form.peak)}</td>
         </tr>`;
     })
     .join("\n");
@@ -1091,6 +1217,7 @@ async function writePlacingsIndexPage(
   authorRecords: AuthorRecord[],
   authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
 ): Promise<void> {
   const placingColumns = Array.from({ length: 10 }, (_, index) => index + 1);
   const authorFilterResultsByDriver = Object.fromEntries(
@@ -1101,14 +1228,23 @@ async function writePlacingsIndexPage(
   );
   const rows = driverRecords
     .map((driverRecord) => {
-      const stats = buildDriverStats(driverRecord, driverRatingSummary);
+      const stats = buildDriverStats(
+        driverRecord,
+        driverRatingSummary,
+        driverPaceSummary,
+      );
       const searchTerms = normalizeSearchText(
         [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
       );
       const statsByCompetition = Object.fromEntries(
         competitionDefinitions.map(({ type }) => [
           type,
-          buildDriverStats(driverRecord, driverRatingSummary, [type]),
+          buildDriverStats(
+            driverRecord,
+            driverRatingSummary,
+            driverPaceSummary,
+            [type],
+          ),
         ]),
       ) as Record<CompetitionType, DriverStats>;
       const placingCounts = buildPlacingCounts(driverRecord);
@@ -1269,12 +1405,26 @@ async function writeRaceResultsGraphIndexPage(
   await writeFile(raceResultsGraphIndexFilePath, content, "utf8");
 }
 
+async function writeRankingsPage(): Promise<void> {
+  const content = renderRankingsPageContent({
+    renderLayout: renderPageLayout,
+    competitionTypes,
+  });
+
+  await writeFile(rankingsIndexFilePath, content, "utf8");
+}
+
 async function writeEventPage(
   eventRecord: EventRecord,
   allEventRecords: EventRecord[],
   driverFileNames: Map<string, string>,
+  driverCanonicalNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   cotdEventRecordsByNumber: Map<number, EventRecord>,
+  driverPaceHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventPace>>
+  >,
   previousEventRecord: EventRecord | null,
   nextEventRecord: EventRecord | null,
 ): Promise<void> {
@@ -1290,16 +1440,26 @@ async function writeEventPage(
     competitionWinnerRecords,
     driverFileNames,
   );
+  const eventPaceHistory =
+    driverPaceHistoryByCompetition.get(eventRecord.competitionType) ?? new Map();
   const resultRows = eventRecord.results
     .map((result) => {
       const sourceEventRecord = result.rouletteSourceEventNumber
         ? (cotdEventRecordsByNumber.get(result.rouletteSourceEventNumber) ??
           null)
         : null;
+      const canonicalName = resolveKnownDriverName(
+        result.name,
+        driverCanonicalNames,
+      );
+      const paceAtEvent = canonicalName
+        ? eventPaceHistory.get(canonicalName)?.get(eventRecord.eventKey) ?? null
+        : null;
       const sortAttributes = renderSortDataAttributes({
         placing: normalizeNumberSortValue(result.placing),
         driver: normalizeTextSortValue(result.name),
         time: normalizeTimeSortValue(result.time),
+        pace: normalizeNumberSortValue(paceAtEvent?.eventScore),
         "elimination-round": normalizeTextSortValue(result.eliminationRound),
         "roulette-map": normalizeTextSortValue(result.rouletteMap),
         "roulette-mapper": normalizeTextSortValue(result.rouletteMapper),
@@ -1334,8 +1494,9 @@ async function writeEventPage(
             hasRouletteColumns
               ? `<td>${rouletteMapMarkup}</td>
           <td>${result.rouletteMapper ? renderAuthorLinks([result.rouletteMapper], authorFileNames, "..") : "-"}</td>
-          <td class="align-right number-cell">${rouletteSourceMarkup}</td>`
-              : ""
+          <td class="align-right number-cell">${rouletteSourceMarkup}</td>
+          <td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.eventScore) : "-"}</td>`
+              : `<td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.eventScore) : "-"}</td>`
           }
         </tr>`;
     })
@@ -1376,17 +1537,29 @@ async function writeDriverPage(
     CompetitionType,
     Map<string, Map<string, DriverEventRating>>
   >,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
+  driverPaceHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventPace>>
+  >,
 ): Promise<void> {
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
-  const driverStats = buildDriverStats(driverRecord, driverRatingSummary);
+  const driverStats = buildDriverStats(
+    driverRecord,
+    driverRatingSummary,
+    driverPaceSummary,
+  );
 
   const content = renderDriverPageContent({
     driverRecord,
     matchingAuthorRecord,
     driverFileNames,
     authorFileNames,
-    driverRatingSummary,
+    driverRatingSummary: combineDriverSummaries(
+      driverRatingSummary,
+      driverPaceSummary,
+    ),
     competitionTypes,
     renderLayout: renderPageLayout,
     renderPlayerProfileHeading,
@@ -1397,6 +1570,7 @@ async function writeDriverPage(
       eventRecords,
       authorFileNames,
       driverRatingHistoryByCompetition,
+      driverPaceHistoryByCompetition,
     ),
     graphMarkup: renderRaceResultsGraphSection(driverRecord, eventRecords),
     eloGraphMarkup: renderPlayerRatingGraphSection(
@@ -1410,6 +1584,18 @@ async function writeDriverPage(
       eventRecords,
       driverRatingHistoryByCompetition,
       "bayes",
+    ),
+    paceGraphMarkup: renderPlayerPaceGraphSection(
+      driverRecord,
+      eventRecords,
+      driverPaceHistoryByCompetition,
+      "pace",
+    ),
+    paceFormGraphMarkup: renderPlayerPaceGraphSection(
+      driverRecord,
+      eventRecords,
+      driverPaceHistoryByCompetition,
+      "paceForm",
     ),
     placingsMarkup: renderPlacingsSection(driverRecord),
     tracksMarkup: renderTracksSection(
@@ -1439,6 +1625,7 @@ async function writeAuthorPage(
     CompetitionType,
     Map<string, Map<string, DriverEventRating>>
   >,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
 ): Promise<void> {
   const matchingDriverRecord =
     driverRecordsByName.get(authorRecord.canonicalName) ?? null;
@@ -1448,7 +1635,10 @@ async function writeAuthorPage(
     matchingDriverRecord,
     driverFileNames,
     authorFileNames,
-    driverRatingSummary,
+    driverRatingSummary: combineDriverSummaries(
+      driverRatingSummary,
+      driverPaceSummary,
+    ),
     competitionTypes,
     renderLayout: renderPageLayout,
     renderProfileHeading,
@@ -1459,6 +1649,7 @@ async function writeAuthorPage(
       eventRecords,
       authorFileNames,
       driverRatingHistoryByCompetition,
+      new Map(),
     ),
     graphMarkup: renderRaceResultsGraphSection(
       matchingDriverRecord,
@@ -1490,6 +1681,7 @@ function getDriverResultRecords(
 function buildDriverStats(
   driverRecord: DriverRecord,
   driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
   competitionTypes = competitionDefinitions.map(
     (definition) => definition.type,
   ),
@@ -1506,6 +1698,9 @@ function buildDriverStats(
   const ratingSummary =
     driverRatingSummary.get(driverRecord.canonicalName) ??
     getDefaultDriverRatingSummary();
+  const paceSummary =
+    driverPaceSummary.get(driverRecord.canonicalName) ??
+    getDefaultDriverPaceSummary();
   const starts = driverResults.length;
   const wins = placingCounts[0] ?? 0;
   const finals = placingSummary.finals;
@@ -1548,6 +1743,7 @@ function buildDriverStats(
     bestFinish,
     fastestTimes: countDriverFastestTimes(driverRecord, competitionTypes),
     ratings: ratingSummary,
+    pace: paceSummary,
     currentElo: ratingSummary.elo.current,
     peakElo: ratingSummary.elo.peak,
   };
@@ -1598,6 +1794,42 @@ function getDefaultDriverRatingSummary(): DriverRatingSummary {
       volatility: null,
     },
   };
+}
+
+function getDefaultDriverPaceSummary(): DriverPaceSummary {
+  return {
+    index: {
+      current: initialPaceScore,
+      peak: initialPaceScore,
+      starts: 0,
+    },
+    form: {
+      current: initialPaceScore,
+      peak: initialPaceScore,
+      starts: 0,
+    },
+  };
+}
+
+function combineDriverSummaries(
+  driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
+): Map<string, DriverSummary> {
+  const names = new Set<string>([
+    ...driverRatingSummary.keys(),
+    ...driverPaceSummary.keys(),
+  ]);
+
+  return new Map(
+    Array.from(names).map((canonicalName) => [
+      canonicalName,
+      {
+        ratings:
+          driverRatingSummary.get(canonicalName) ?? getDefaultDriverRatingSummary(),
+        pace: driverPaceSummary.get(canonicalName) ?? getDefaultDriverPaceSummary(),
+      } satisfies DriverSummary,
+    ]),
+  );
 }
 
 function buildAuthorStats(authorRecord: AuthorRecord): AuthorStats {
@@ -1672,7 +1904,7 @@ function renderProfileMetadata(
   driverFileNames: Map<string, string>,
   authorFileNames: Map<string, string>,
   rootPrefix: string,
-  driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverSummary: Map<string, DriverSummary>,
 ): string {
   return `
     <div class="meta-grid">
@@ -1680,7 +1912,7 @@ function renderProfileMetadata(
         driverRecord,
         authorFileNames,
         rootPrefix,
-        driverRatingSummary,
+        driverSummary,
       )}
       ${renderAuthorMetadataTable(authorRecord, driverFileNames, rootPrefix)}
     </div>
@@ -1718,7 +1950,7 @@ function renderDriverMetadataTable(
   driverRecord: DriverRecord | null,
   authorFileNames: Map<string, string>,
   rootPrefix: string,
-  driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverSummary: Map<string, DriverSummary>,
 ): string {
   if (driverRecord === null) {
     return `
@@ -1729,7 +1961,21 @@ function renderDriverMetadataTable(
     `;
   }
 
-  const stats = buildDriverStats(driverRecord, driverRatingSummary);
+  const stats = buildDriverStats(
+    driverRecord,
+    new Map(
+      Array.from(driverSummary.entries()).map(([canonicalName, summary]) => [
+        canonicalName,
+        summary.ratings,
+      ]),
+    ),
+    new Map(
+      Array.from(driverSummary.entries()).map(([canonicalName, summary]) => [
+        canonicalName,
+        summary.pace,
+      ]),
+    ),
+  );
   const authorPage = authorFileNames.has(driverRecord.canonicalName)
     ? renderAuthorLinks(
         [driverRecord.canonicalName],
@@ -1755,6 +2001,8 @@ function renderDriverMetadataTable(
           <tr><th>Fastest Times</th>${renderColspanValueCell(stats.fastestTimes)}</tr>
           <tr><th>Elo</th>${renderPrimarySecondaryValueCells(formatElo(stats.ratings.elo.current), formatElo(stats.ratings.elo.peak))}</tr>
           <tr><th>Bayesian</th>${renderPrimarySecondaryValueCells(formatElo(stats.ratings.bayes.current), formatElo(stats.ratings.bayes.peak))}</tr>
+          <tr><th>Pace Index</th>${renderPrimarySecondaryValueCells(formatPaceScore(stats.pace.index.current), formatPaceScore(stats.pace.index.peak))}</tr>
+          <tr><th>Pace Form</th>${renderPrimarySecondaryValueCells(formatPaceScore(stats.pace.form.current), formatPaceScore(stats.pace.form.peak))}</tr>
         </tbody>
       </table>
       `)}
@@ -1805,6 +2053,8 @@ function renderPlayerProfileTabs(
   raceResultsGraphContent: string,
   eloGraphContent: string,
   bayesGraphContent: string,
+  paceGraphContent: string,
+  paceFormGraphContent: string,
   placingsContent: string,
   tracksContent: string,
   raceResultsCount: number,
@@ -1814,6 +2064,8 @@ function renderPlayerProfileTabs(
     | "race-results-graph"
     | "elo-graph"
     | "bayes-graph"
+    | "pace-graph"
+    | "pace-form-graph"
     | "placings"
     | "tracks",
 ): string {
@@ -1823,6 +2075,8 @@ function renderPlayerProfileTabs(
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Results Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="elo-graph">Elo Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="bayes-graph">Bayes Graph</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="pace-graph">Pace Index Graph</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="pace-form-graph">Pace Form Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks (${tracksCount})</button>
     </div>
@@ -1837,6 +2091,12 @@ function renderPlayerProfileTabs(
     </section>
     <section id="bayes-graph" class="tab-panel" role="tabpanel" hidden>
       ${bayesGraphContent}
+    </section>
+    <section id="pace-graph" class="tab-panel" role="tabpanel" hidden>
+      ${paceGraphContent}
+    </section>
+    <section id="pace-form-graph" class="tab-panel" role="tabpanel" hidden>
+      ${paceFormGraphContent}
     </section>
     <section id="placings" class="tab-panel" role="tabpanel" hidden>
       ${placingsContent}
@@ -1897,6 +2157,10 @@ function renderRaceResultsSection(
     CompetitionType,
     Map<string, Map<string, DriverEventRating>>
   >,
+  driverPaceHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventPace>>
+  >,
 ): string {
   if (driverRecord === null) {
     return `
@@ -1921,6 +2185,7 @@ function renderRaceResultsSection(
           getCompetitionEventRecords(eventRecords, definition.type),
           authorFileNames,
           driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
+          driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
         ),
       })),
       competitionDefinitions[0]?.type ?? "cotd",
@@ -1929,11 +2194,19 @@ function renderRaceResultsSection(
   `;
 }
 
+function resolveKnownDriverName(
+  name: string,
+  driverCanonicalNames: Map<string, string>,
+): string | null {
+  return driverCanonicalNames.get(name) ?? null;
+}
+
 function renderPlayerCompetitionRaceResultsSection(
   driverRecord: DriverRecord,
   eventRecords: EventRecord[],
   authorFileNames: Map<string, string>,
   competitionRatingHistory: Map<string, Map<string, DriverEventRating>>,
+  competitionPaceHistory: Map<string, Map<string, DriverEventPace>>,
 ): string {
   const competitionResults = eventRecords.filter((eventRecord) =>
     driverRecord.results.some(
@@ -1949,9 +2222,12 @@ function renderPlayerCompetitionRaceResultsSection(
     authorFileNames.get(driverRecord.canonicalName) ?? null;
   const ratingHistory =
     competitionRatingHistory.get(driverRecord.canonicalName) ?? new Map();
+  const paceHistory =
+    competitionPaceHistory.get(driverRecord.canonicalName) ?? new Map();
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
       const ratingAtEvent = ratingHistory.get(eventRecord.eventKey) ?? null;
+      const paceAtEvent = paceHistory.get(eventRecord.eventKey) ?? null;
       const isTrackAuthor =
         result === null &&
         driverAuthorFileName !== null &&
@@ -1974,6 +2250,9 @@ function renderPlayerCompetitionRaceResultsSection(
         "elimination-round": normalizeTextSortValue(result?.eliminationRound),
         elo: normalizeNumberSortValue(ratingAtEvent?.elo),
         bayes: normalizeNumberSortValue(ratingAtEvent?.bayes),
+        "pace-score": normalizeNumberSortValue(paceAtEvent?.eventScore),
+        "pace-index": normalizeNumberSortValue(paceAtEvent?.pace),
+        "pace-form": normalizeNumberSortValue(paceAtEvent?.paceForm),
       });
 
       return `
@@ -1987,6 +2266,9 @@ function renderPlayerCompetitionRaceResultsSection(
           <td class="align-right number-cell">${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
           <td class="align-right number-cell">${ratingAtEvent ? formatElo(ratingAtEvent.elo) : "-"}</td>
           <td class="align-right number-cell">${ratingAtEvent ? formatElo(ratingAtEvent.bayes) : "-"}</td>
+          <td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.eventScore) : "-"}</td>
+          <td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.pace) : "-"}</td>
+          <td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.paceForm) : "-"}</td>
         </tr>`;
     })
     .join("\n");
@@ -2012,6 +2294,9 @@ function renderPlayerCompetitionRaceResultsSection(
           ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
           ${renderSortableHeader("Elo", "elo", "number", "desc", false, "number-cell")}
           ${renderSortableHeader("Bayes", "bayes", "number", "desc", false, "number-cell")}
+          ${renderSortableHeader("Pace Score", "pace-score", "number", "desc", false, "number-cell")}
+          ${renderSortableHeader("Pace Index", "pace-index", "number", "desc", false, "number-cell")}
+          ${renderSortableHeader("Pace Form", "pace-form", "number", "desc", false, "number-cell")}
         </tr>
       </thead>
       <tbody>
@@ -2211,6 +2496,86 @@ function renderPlayerCompetitionRatingGraphSection(
 
   return `
     ${renderRatingGraphSvg(series, eventRecords, graphTitle)}
+  `;
+}
+
+function renderPlayerPaceGraphSection(
+  driverRecord: DriverRecord | null,
+  eventRecords: EventRecord[],
+  driverPaceHistoryByCompetition: Map<
+    CompetitionType,
+    Map<string, Map<string, DriverEventPace>>
+  >,
+  paceKey: "pace" | "paceForm",
+): string {
+  const graphTitle =
+    paceKey === "pace" ? "Pace Index Graph" : "Pace Form Graph";
+
+  if (driverRecord === null) {
+    return `
+      <h2>${graphTitle}</h2>
+      <p>No race results found for this name.</p>
+    `;
+  }
+
+  return `
+    <h2>${graphTitle}</h2>
+    ${renderTabPanels(
+      `player-${paceKey}-graph`,
+      competitionDefinitions.map((definition) => ({
+        suffix: definition.type,
+        label: formatCompetitionTabLabel(
+          definition.label,
+          getDriverResultRecordsForCompetition(driverRecord, definition.type)
+            .length,
+        ),
+        content: renderPlayerCompetitionPaceGraphSection(
+          driverRecord,
+          getCompetitionEventRecords(eventRecords, definition.type),
+          driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
+          paceKey,
+        ),
+      })),
+      competitionDefinitions[0]?.type ?? "cotd",
+      `${graphTitle} competitions`,
+    )}
+  `;
+}
+
+function renderPlayerCompetitionPaceGraphSection(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  competitionPaceHistory: Map<string, Map<string, DriverEventPace>>,
+  paceKey: "pace" | "paceForm",
+): string {
+  const competitionResults = getDriverResultRecordsForCompetition(
+    driverRecord,
+    eventRecords[0]?.competitionType ?? "cotd",
+  );
+
+  if (eventRecords.length === 0 || competitionResults.length === 0) {
+    return '<p class="graph-empty">No pace data in this competition.</p>';
+  }
+
+  const graphTitle = paceKey === "pace" ? "Pace Index" : "Pace Form";
+  const paceHistory =
+    competitionPaceHistory.get(driverRecord.canonicalName) ?? new Map();
+  const series = [
+    buildPaceGraphSeries(
+      driverRecord,
+      eventRecords,
+      paceHistory,
+      graphPalette[0] ?? "#0047ab",
+      paceKey,
+      null,
+    ),
+  ];
+
+  return `
+    ${renderRatingGraphSvg(series, eventRecords, graphTitle, formatPaceScore, {
+      min: 0,
+      max: 100,
+    })}
   `;
 }
 
@@ -2434,6 +2799,44 @@ function buildRatingGraphSeries(
   };
 }
 
+function buildPaceGraphSeries(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+  paceHistory: Map<string, DriverEventPace>,
+  color: string,
+  paceKey: "pace" | "paceForm",
+  href: string | null,
+): RatingGraphSeries {
+  const label = paceKey === "pace" ? "Pace Index" : "Pace Form";
+  const points = eventRecords.map((eventRecord) => {
+    const paceAtEvent = paceHistory.get(eventRecord.eventKey) ?? null;
+    const value =
+      paceAtEvent === null
+        ? null
+        : paceKey === "pace"
+          ? paceAtEvent.pace
+          : paceAtEvent.paceForm;
+
+    return {
+      eventNumber: eventRecord.nr,
+      value,
+      title:
+        value === null
+          ? `${eventRecord.eventLabel}: no ${label.toLowerCase()} value`
+          : `${label} ${formatPaceScore(value)} - ${eventRecord.eventLabel} ${eventRecord.map}`,
+      href: `../events/${eventRecord.htmlFileName}`,
+    } satisfies RatingGraphPoint;
+  });
+
+  return {
+    id: `${stableId(driverRecord.canonicalName)}-${paceKey}`,
+    label: `${driverRecord.canonicalName} ${label}`,
+    color,
+    href,
+    points,
+  };
+}
+
 function mapGraphPlacing(placing: number): number {
   const normalizedPlacing = Math.max(1, Math.floor(placing));
 
@@ -2576,6 +2979,8 @@ function renderRatingGraphSvg(
   series: RatingGraphSeries[],
   eventRecords: EventRecord[],
   metricLabel: string,
+  formatValue: (value: number) => string = formatElo,
+  fixedRange: { min: number; max: number } | null = null,
 ): string {
   if (series.length === 0 || eventRecords.length === 0) {
     return '<p class="graph-empty">No graph data available.</p>';
@@ -2602,7 +3007,10 @@ function renderRatingGraphSvg(
   const firstEvent = eventRecords[0]?.nr ?? 1;
   const lastEvent = eventRecords[eventRecords.length - 1]?.nr ?? firstEvent;
   const eventSpan = Math.max(1, lastEvent - firstEvent);
-  const { min: yMin, max: yMax, ticks: yTicks } = buildRatingGraphAxis(values);
+  const { min: yMin, max: yMax, ticks: yTicks } =
+    fixedRange === null
+      ? buildRatingGraphAxis(values)
+      : buildFixedRatingGraphAxis(fixedRange.min, fixedRange.max);
   const xTicks = buildGraphEventTicks(firstEvent, lastEvent);
   const xForEvent = (eventNumber: number): number =>
     marginLeft + ((eventNumber - firstEvent) / eventSpan) * plotWidth;
@@ -2615,7 +3023,7 @@ function renderRatingGraphSvg(
 
       return `
         <line class="graph-grid" x1="${marginLeft}" y1="${y}" x2="${width - marginRight}" y2="${y}"></line>
-        <text class="graph-label" x="${marginLeft - 10}" y="${y + 4}" text-anchor="end">${formatElo(value)}</text>`;
+        <text class="graph-label" x="${marginLeft - 10}" y="${y + 4}" text-anchor="end">${formatValue(value)}</text>`;
     })
     .join("\n");
 
@@ -2762,6 +3170,36 @@ function buildRatingGraphAxis(values: number[]): {
   return {
     min,
     max: ticks.at(-1) ?? max,
+    ticks,
+  };
+}
+
+function buildFixedRatingGraphAxis(min: number, max: number): {
+  min: number;
+  max: number;
+  ticks: number[];
+} {
+  const clampedMin = Math.min(min, max);
+  const clampedMax = Math.max(min, max);
+  const range = Math.max(1, clampedMax - clampedMin);
+  const step = selectRatingTickStep(range);
+  const ticks: number[] = [];
+
+  for (let value = clampedMin; value <= clampedMax; value += step) {
+    ticks.push(value);
+  }
+
+  if (ticks.at(-1) !== clampedMax) {
+    ticks.push(clampedMax);
+  }
+
+  if (ticks[0] !== clampedMin) {
+    ticks.unshift(clampedMin);
+  }
+
+  return {
+    min: clampedMin,
+    max: clampedMax,
     ticks,
   };
 }
@@ -3313,6 +3751,10 @@ function formatPlacingLabel(value: number): string {
 
 function formatElo(value: number): string {
   return Math.round(value).toString();
+}
+
+function formatPaceScore(value: number): string {
+  return value.toFixed(1);
 }
 
 function slugify(value: string): string {

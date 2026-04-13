@@ -65,6 +65,48 @@ export function renderOverviewPageContent(options: IndexPageOptions): string {
   );
 }
 
+type RankingsPageOptions = {
+  renderLayout: RenderLayout;
+  competitionTypes: CompetitionType[];
+};
+
+export function renderRankingsPageContent(
+  options: RankingsPageOptions,
+): string {
+  return options.renderLayout(
+    "Rankings Explained",
+    `
+      <h1>Rankings Explained</h1>
+      <p>The site shows four player metrics. Elo and Bayes rate results by placing. Pace Index and Pace Form focus on normalized event pace.</p>
+      <section>
+        <h2>Elo</h2>
+        <p>Elo treats each event as a multiplayer placement result. It is the simplest long-term ranking and is easy to compare across players.</p>
+      </section>
+      <section>
+        <h2>Bayes</h2>
+        <p>Bayes also rates event placings, but keeps track of uncertainty. Strong results with a small sample are treated more cautiously than the same results over a long span.</p>
+      </section>
+      <section>
+        <h2>Pace</h2>
+        <h3>Pace Index</h3>
+        <p>Pace Index estimates long-run event pace on a 0 to 100 scale. It normalizes times per event, corrects knockout-time inconsistencies, blends in placing when time information is weak, and softens extreme lows with lower-tail winsorization.</p>
+        <h3>Pace Form</h3>
+        <p>Pace Form measures recent pace using up to the latest 10 scored events. Players with fewer than 10 recent results are pulled back toward their Pace Index so the form score stays readable and less noisy.</p>
+        <h3>How Pace Scores Work</h3>
+        <p>Knockout events only record a player&apos;s final time, so later-advancing players can sometimes show a slower recorded time than earlier eliminations. The pace model fixes that by enforcing monotonic adjusted times by placing before scoring the event.</p>
+        <p>Non-DNF runs are scored from normalized pace, anchored so top finishers land near 100 and median finishers around 50. Late-round DNFs can still inherit a pace-based score from the field behind them, while true no-time failures fall back to a bounded placing-based score so one unlucky event does not dominate a season.</p>
+        <h2>How To Read Them</h2>
+        <p>Use Elo and Bayes to read overall competitive strength. Use Pace Index to compare sustained speed quality. Use Pace Form to see who is currently running hot.</p>
+      </section>
+    `,
+    {
+      pageTitle: "Rankings Explained",
+      rootPrefix: "..",
+      competitionTypes: options.competitionTypes,
+    },
+  );
+}
+
 type DriverIndexPageOptions = {
   driverCount: number;
   rowsHtml: string;
@@ -81,7 +123,7 @@ export function renderDriverIndexPageContent(
     "Players",
     `
       <h1>Players</h1>
-      <p>${options.driverCount} player profiles. Search by player name, alias, or tag. Ratings include Elo plus a Bayesian skill estimate.</p>
+      <p>${options.driverCount} player profiles. Search by player name, alias, or tag. Rankings include Elo, Bayes, Pace Index, and recent Pace Form.</p>
       <div class="search-panel">
         <label class="search-label" for="driver-search">Search players</label>
         <input
@@ -109,6 +151,12 @@ export function renderDriverIndexPageContent(
             ${options.renderSortableHeader("Win %", "wins-rate", "number", "desc")}
             ${options.renderSortableHeader("Elo", "elo", "number", "desc")}
             ${options.renderSortableHeader("Bayes", "bayes", "number", "desc")}
+            ${options.renderSortableHeader("Pace Index", "pace", "number", "desc")}
+            ${options.renderSortableHeader("Pace Form", "pace-form", "number", "desc")}
+            ${options.renderSortableHeader("Elo Peak", "elo-peak", "number", "desc")}
+            ${options.renderSortableHeader("Bayes Peak", "bayes-peak", "number", "desc")}
+            ${options.renderSortableHeader("Pace Index Peak", "pace-peak", "number", "desc")}
+            ${options.renderSortableHeader("Pace Form Peak", "pace-form-peak", "number", "desc")}
           </tr>
         </thead>
         <tbody>

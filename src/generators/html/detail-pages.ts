@@ -15,6 +15,8 @@ type RenderLayout = (
 type ProfileDefaultTab =
   | "bayes-graph"
   | "elo-graph"
+  | "pace-form-graph"
+  | "pace-graph"
   | "placings"
   | "race-results-graph"
   | "tracks"
@@ -116,8 +118,9 @@ export function renderEventPageContent(options: EventPageOptions): string {
               hasRouletteColumns
                 ? `${options.renderSortableHeader("Map", "roulette-map", "text", "asc")}
             ${options.renderSortableHeader("Mapper", "roulette-mapper", "text", "asc")}
-            ${options.renderSortableHeader(eventRecord.rouletteSourceLabel ?? "Source", "roulette-source", "number", "asc", false, "number-cell")}`
-                : ""
+            ${options.renderSortableHeader(eventRecord.rouletteSourceLabel ?? "Source", "roulette-source", "number", "asc", false, "number-cell")}
+            ${options.renderSortableHeader("Pace Score", "pace", "number", "desc", false, "number-cell")}`
+                : `${options.renderSortableHeader("Pace Score", "pace", "number", "desc", false, "number-cell")}`
             }
           </tr>
         </thead>
@@ -160,6 +163,8 @@ type DriverPageOptions<TDriverRecord, TAuthorRecord, TDriverRatingSummary> = {
     graphMarkup: string,
     eloGraphMarkup: string,
     bayesGraphMarkup: string,
+    paceGraphMarkup: string,
+    paceFormGraphMarkup: string,
     placingsMarkup: string,
     tracksMarkup: string,
     raceResultsCount: number,
@@ -170,6 +175,8 @@ type DriverPageOptions<TDriverRecord, TAuthorRecord, TDriverRatingSummary> = {
   graphMarkup: string;
   eloGraphMarkup: string;
   bayesGraphMarkup: string;
+  paceGraphMarkup: string;
+  paceFormGraphMarkup: string;
   placingsMarkup: string;
   tracksMarkup: string;
   raceResultsCount: number;
@@ -204,6 +211,8 @@ export function renderDriverPageContent<
         options.graphMarkup,
         options.eloGraphMarkup,
         options.bayesGraphMarkup,
+        options.paceGraphMarkup,
+        options.paceFormGraphMarkup,
         options.placingsMarkup,
         options.tracksMarkup,
         options.raceResultsCount,
