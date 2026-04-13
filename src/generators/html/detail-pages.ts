@@ -162,6 +162,8 @@ type DriverPageOptions<TDriverRecord, TAuthorRecord, TDriverRatingSummary> = {
     bayesGraphMarkup: string,
     placingsMarkup: string,
     tracksMarkup: string,
+    raceResultsCount: number,
+    tracksCount: number,
     defaultTab: ProfileDefaultTab,
   ) => string;
   raceResultsMarkup: string;
@@ -170,6 +172,8 @@ type DriverPageOptions<TDriverRecord, TAuthorRecord, TDriverRatingSummary> = {
   bayesGraphMarkup: string;
   placingsMarkup: string;
   tracksMarkup: string;
+  raceResultsCount: number;
+  tracksCount: number;
 };
 
 export function renderDriverPageContent<
@@ -202,6 +206,8 @@ export function renderDriverPageContent<
         options.bayesGraphMarkup,
         options.placingsMarkup,
         options.tracksMarkup,
+        options.raceResultsCount,
+        options.tracksCount,
         "race-results",
       )}
     `,

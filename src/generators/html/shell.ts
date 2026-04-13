@@ -172,18 +172,41 @@ export function renderLayout(
           }
         }
 
+        const authorFilterParam = new URLSearchParams(window.location.search).get("author") || "";
+        for (const authorFilterSelect of document.querySelectorAll("[data-author-filter-select]")) {
+          if (
+            authorFilterParam.length > 0 &&
+            Array.from(authorFilterSelect.querySelectorAll("option")).some(
+              (option) => option.value === authorFilterParam,
+            )
+          ) {
+            authorFilterSelect.value = authorFilterParam;
+          }
+        }
+
         const driverSearchInput = document.querySelector("[data-driver-search-input]");
         const driverSearchSummary = document.querySelector("[data-driver-search-summary]");
         const driverRows = Array.from(document.querySelectorAll("[data-driver-row]"));
+        const authorFilterSelect = document.querySelector("[data-author-filter-select]");
 
         if (driverSearchInput && driverSearchSummary && driverRows.length > 0) {
+          const driverTable = driverRows[0]?.closest("table");
           const updateDriverFilter = () => {
             const query = (driverSearchInput.value || "").trim().toLowerCase();
+            const selectedAuthor = authorFilterSelect?.value || "";
             let visibleCount = 0;
 
             for (const row of driverRows) {
               const haystack = (row.getAttribute("data-driver-search") || "").toLowerCase();
-              const isVisible = query.length === 0 || haystack.includes(query);
+              const matchesSearch = query.length === 0 || haystack.includes(query);
+              const currentStarts = Number(
+                row.getAttribute("data-current-starts") ||
+                  row.getAttribute("data-sort-starts") ||
+                  "0",
+              );
+              const matchesAuthor =
+                selectedAuthor.length === 0 || currentStarts > 0;
+              const isVisible = matchesSearch && matchesAuthor;
               row.hidden = !isVisible;
 
               if (isVisible) {
@@ -195,6 +218,15 @@ export function renderLayout(
           };
 
           driverSearchInput.addEventListener("input", updateDriverFilter);
+
+          if (authorFilterSelect instanceof HTMLSelectElement) {
+            authorFilterSelect.addEventListener("change", updateDriverFilter);
+          }
+
+          if (driverTable) {
+            driverTable.__refreshDriverVisibility = updateDriverFilter;
+          }
+
           updateDriverFilter();
         }
 
@@ -553,7 +585,105 @@ export function renderLayout(
             return sum + attributeValue;
           }, 0);
 
-        const getCompetitionMetricValue = (row, metricKey, selectedCompetitionTypes) => {
+        const summarizePlacingCounts = (placingCounts) => ({
+          finals: (placingCounts[0] || 0) + (placingCounts[1] || 0),
+          podiums: (placingCounts[0] || 0) + (placingCounts[1] || 0) + (placingCounts[2] || 0),
+          top6: placingCounts.slice(0, 6).reduce((sum, value) => sum + value, 0),
+          top10: placingCounts.slice(0, 10).reduce((sum, value) => sum + value, 0),
+          top25: placingCounts.slice(0, 25).reduce((sum, value) => sum + value, 0),
+        });
+
+        const buildAuthorMetricSummary = (
+          row,
+          selectedCompetitionTypes,
+          selectedAuthorKey,
+          authorFilterResultsByDriver,
+        ) => {
+          const driverKey = row.getAttribute("data-driver-key") || "";
+          const resultEntries = authorFilterResultsByDriver?.[driverKey] || [];
+          const selectedCompetitionSet = new Set(selectedCompetitionTypes);
+          const placingCounts = Array.from({ length: 50 }, () => 0);
+          let starts = 0;
+
+          for (const resultEntry of resultEntries) {
+            const [competitionType, placing, authorKeys] = resultEntry;
+
+            if (!selectedCompetitionSet.has(competitionType)) {
+              continue;
+            }
+
+            if (
+              selectedAuthorKey.length > 0 &&
+              !authorKeys.includes(selectedAuthorKey)
+            ) {
+              continue;
+            }
+
+            starts += 1;
+
+            if (
+              typeof placing === "number" &&
+              placing >= 1 &&
+              placing <= placingCounts.length
+            ) {
+              placingCounts[placing - 1] += 1;
+            }
+          }
+
+          return {
+            starts,
+            placingCounts,
+            placingSummary: summarizePlacingCounts(placingCounts),
+          };
+        };
+
+        const getAuthorMetricValue = (metricKey, authorMetricSummary) => {
+          switch (metricKey) {
+            case "starts":
+              return authorMetricSummary.starts;
+            case "wins":
+              return authorMetricSummary.placingCounts[0] || 0;
+            case "finals":
+              return authorMetricSummary.placingSummary.finals;
+            case "podiums":
+              return authorMetricSummary.placingSummary.podiums;
+            case "top-6":
+              return authorMetricSummary.placingSummary.top6;
+            case "top-10":
+              return authorMetricSummary.placingSummary.top10;
+            case "top-25":
+              return authorMetricSummary.placingSummary.top25;
+            default:
+              if (metricKey.startsWith("placing-")) {
+                const placing = Number(metricKey.slice("placing-".length));
+                return authorMetricSummary.placingCounts[placing - 1] || 0;
+              }
+
+              return 0;
+          }
+        };
+
+        const getCompetitionMetricValue = (
+          row,
+          metricKey,
+          selectedCompetitionTypes,
+          selectedAuthorKey = "",
+          authorFilterResultsByDriver = null,
+          authorMetricSummary = null,
+        ) => {
+          if (authorFilterResultsByDriver) {
+            return getAuthorMetricValue(
+              metricKey,
+              authorMetricSummary ||
+                buildAuthorMetricSummary(
+                  row,
+                  selectedCompetitionTypes,
+                  selectedAuthorKey,
+                  authorFilterResultsByDriver,
+                ),
+            );
+          }
+
           if (metricKey === "win-rate") {
             const starts = sumCompetitionMetric(row, "starts", selectedCompetitionTypes);
             const wins = sumCompetitionMetric(row, "wins", selectedCompetitionTypes);
@@ -574,6 +704,28 @@ export function renderLayout(
         for (const filterGroup of document.querySelectorAll("[data-competition-filter-group]")) {
           const filterTarget =
             filterGroup.getAttribute("data-competition-filter-target") || "";
+          const authorFilterSelect = document.querySelector(
+            '[data-author-filter-select][data-author-filter-target="' +
+              filterTarget +
+              '"]',
+          );
+          const authorFilterDataElement = document.querySelector(
+            '[data-author-filter-results][data-author-filter-target="' +
+              filterTarget +
+              '"]',
+          );
+          let authorFilterResultsByDriver = null;
+
+          if (authorFilterDataElement) {
+            try {
+              authorFilterResultsByDriver = JSON.parse(
+                authorFilterDataElement.textContent || "{}",
+              );
+            } catch {
+              authorFilterResultsByDriver = null;
+            }
+          }
+
           const toggles = Array.from(
             filterGroup.querySelectorAll("[data-competition-toggle]"),
           );
@@ -595,11 +747,21 @@ export function renderLayout(
                   toggle.checked,
               ),
             );
+            const selectedAuthorKey = authorFilterSelect?.value || "";
 
             for (const table of tables) {
               const rows = Array.from(table.querySelectorAll("tbody tr"));
 
               for (const row of rows) {
+                const authorMetricSummary = authorFilterResultsByDriver
+                  ? buildAuthorMetricSummary(
+                      row,
+                      selectedCompetitionTypes,
+                      selectedAuthorKey,
+                      authorFilterResultsByDriver,
+                    )
+                  : null;
+
                 for (const cell of row.querySelectorAll("[data-competition-cell]")) {
                   const metricKey = cell.getAttribute("data-competition-cell") || "";
 
@@ -611,22 +773,43 @@ export function renderLayout(
                     row,
                     metricKey,
                     selectedCompetitionTypes,
+                    selectedAuthorKey,
+                    authorFilterResultsByDriver,
+                    authorMetricSummary,
                   );
 
                   cell.classList.toggle("is-zero", metricValue === 0);
                   cell.innerHTML = formatCompetitionCellHtml(metricKey, metricValue);
                   row.setAttribute("data-sort-" + metricKey, String(metricValue));
                 }
+
+                const currentStarts = getCompetitionMetricValue(
+                  row,
+                  "starts",
+                  selectedCompetitionTypes,
+                  selectedAuthorKey,
+                  authorFilterResultsByDriver,
+                  authorMetricSummary,
+                );
+                row.setAttribute("data-current-starts", String(currentStarts));
               }
 
               if (typeof table.__refreshSort === "function") {
                 table.__refreshSort();
+              }
+
+               if (typeof table.__refreshDriverVisibility === "function") {
+                table.__refreshDriverVisibility();
               }
             }
           };
 
           for (const toggle of toggles) {
             toggle.addEventListener("change", updateCompetitionTotals);
+          }
+
+          if (authorFilterSelect instanceof HTMLSelectElement) {
+            authorFilterSelect.addEventListener("change", updateCompetitionTotals);
           }
 
           updateCompetitionTotals();

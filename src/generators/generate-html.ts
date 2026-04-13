@@ -130,6 +130,14 @@ type LatestResultsUpdate = {
   mapLabel: string;
 };
 
+type AuthorFilterResultEntry = [CompetitionType, number | null, string[]];
+
+type PlacingsAuthorOption = {
+  key: string;
+  label: string;
+  trackCount: number;
+};
+
 type SortDirection = "asc" | "desc";
 type SortType = "text" | "number";
 
@@ -300,7 +308,12 @@ async function main(): Promise<void> {
       authorFileNames,
       eventRatings.summary,
     ),
-    writePlacingsIndexPage(driverRecords, eventRatings.summary),
+    writePlacingsIndexPage(
+      driverRecords,
+      authorRecords,
+      authorFileNames,
+      eventRatings.summary,
+    ),
     writeRaceResultsGraphIndexPage(driverRecords, eventRecords),
     ...buildEventNavigationPairs(eventRecords).map(
       ({ eventRecord, previousEventRecord, nextEventRecord }) =>
@@ -1075,9 +1088,17 @@ async function writeDriverIndexPage(
 
 async function writePlacingsIndexPage(
   driverRecords: DriverRecord[],
+  authorRecords: AuthorRecord[],
+  authorFileNames: Map<string, string>,
   driverRatingSummary: Map<string, DriverRatingSummary>,
 ): Promise<void> {
   const placingColumns = Array.from({ length: 10 }, (_, index) => index + 1);
+  const authorFilterResultsByDriver = Object.fromEntries(
+    driverRecords.map((driverRecord) => [
+      driverRecord.htmlFileName,
+      buildDriverAuthorFilterResults(driverRecord, authorFileNames),
+    ]),
+  );
   const rows = driverRecords
     .map((driverRecord) => {
       const stats = buildDriverStats(driverRecord, driverRatingSummary);
@@ -1180,7 +1201,7 @@ async function writePlacingsIndexPage(
         .join("");
 
       return `
-        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
+        <tr data-driver-row data-driver-key="${escapeHtml(driverRecord.htmlFileName)}" data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
           <td class="player-name"><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
           ${renderDynamicCompetitionCountCell("starts", stats.starts)}
           ${renderDynamicCompetitionCountCell("wins", stats.wins)}
@@ -1210,6 +1231,8 @@ async function writePlacingsIndexPage(
     driverCount: driverRecords.length,
     rowsHtml: rows,
     placingHeadersHtml: placingHeaders,
+    authorFilterOptionsHtml: renderPlacingsAuthorFilterOptions(authorRecords),
+    authorFilterResultsJson: serializeInlineJson(authorFilterResultsByDriver),
     competitionTypes,
     renderLayout: renderPageLayout,
     renderCompetitionFilterPanel,
@@ -1356,6 +1379,7 @@ async function writeDriverPage(
 ): Promise<void> {
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
+  const driverStats = buildDriverStats(driverRecord, driverRatingSummary);
 
   const content = renderDriverPageContent({
     driverRecord,
@@ -1393,6 +1417,8 @@ async function writeDriverPage(
       driverFileNames,
       authorFileNames,
     ),
+    raceResultsCount: driverStats.starts,
+    tracksCount: matchingAuthorRecord?.tracks.length ?? 0,
   });
 
   await writeFile(
@@ -1589,6 +1615,57 @@ function buildAuthorStats(authorRecord: AuthorRecord): AuthorStats {
   };
 }
 
+function buildDriverAuthorFilterResults(
+  driverRecord: DriverRecord,
+  authorFileNames: Map<string, string>,
+): AuthorFilterResultEntry[] {
+  return getDriverResultRecords(driverRecord)
+    .map(({ eventRecord, result }) => {
+      const authorKeys = Array.from(
+        new Set(
+          eventRecord.authors
+            .map((author) => authorFileNames.get(author) ?? null)
+            .filter((authorKey): authorKey is string => authorKey !== null),
+        ),
+      );
+
+      return [
+        eventRecord.competitionType,
+        result.placing,
+        authorKeys,
+      ] as AuthorFilterResultEntry;
+    })
+    .filter(([, , authorKeys]) => authorKeys.length > 0);
+}
+
+function renderPlacingsAuthorFilterOptions(
+  authorRecords: AuthorRecord[],
+): string {
+  return [...authorRecords]
+    .filter((authorRecord) => authorRecord.tracks.length > 0)
+    .map(
+      (authorRecord): PlacingsAuthorOption => ({
+        key: authorRecord.htmlFileName,
+        label: authorRecord.canonicalName,
+        trackCount: authorRecord.tracks.length,
+      }),
+    )
+    .sort(
+      (left, right) =>
+        right.trackCount - left.trackCount ||
+        left.label.localeCompare(right.label),
+    )
+    .map(
+      (authorOption) =>
+        `<option value="${escapeHtml(authorOption.key)}">${escapeHtml(`${authorOption.label} (${authorOption.trackCount})`)}</option>`,
+    )
+    .join("\n");
+}
+
+function serializeInlineJson(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 function renderProfileMetadata(
   driverRecord: DriverRecord | null,
   authorRecord: AuthorRecord | null,
@@ -1715,6 +1792,7 @@ function renderAuthorMetadataTable(
           <tr><th>Co-Authored Tracks</th><td class="align-right" style="width: 50%">${stats.coAuthoredTracks}</td></tr>
           <tr><th>First Event</th><td class="align-right" style="width: 50%">${stats.firstEvent ?? "-"}</td></tr>
           <tr><th>Latest Event</th><td class="align-right" style="width: 50%">${stats.latestEvent ?? "-"}</td></tr>
+          <tr><th>Placings</th><td class="align-right" style="width: 50%"><a href="${escapeHtml(buildAuthorPlacingsHref(authorRecord, rootPrefix))}">View author track placings</a></td></tr>
         </tbody>
       </table>
       `)}
@@ -1729,6 +1807,8 @@ function renderPlayerProfileTabs(
   bayesGraphContent: string,
   placingsContent: string,
   tracksContent: string,
+  raceResultsCount: number,
+  tracksCount: number,
   defaultTab:
     | "race-results"
     | "race-results-graph"
@@ -1739,12 +1819,12 @@ function renderPlayerProfileTabs(
 ): string {
   return `
     <div class="tab-list nav tabs" role="tablist" aria-label="Profile sections" data-tabs data-default-tab="${defaultTab}">
-      <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="race-results">Race Results (${raceResultsCount})</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="race-results-graph">Results Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="elo-graph">Elo Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="bayes-graph">Bayes Graph</button>
       <button type="button" class="tab-button" role="tab" data-tab-target="placings">Placings</button>
-      <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks</button>
+      <button type="button" class="tab-button" role="tab" data-tab-target="tracks">Tracks (${tracksCount})</button>
     </div>
     <section id="race-results" class="tab-panel" role="tabpanel">
       ${raceResultsContent}
@@ -1765,6 +1845,13 @@ function renderPlayerProfileTabs(
       ${tracksContent}
     </section>
   `;
+}
+
+function buildAuthorPlacingsHref(
+  authorRecord: AuthorRecord,
+  rootPrefix: string,
+): string {
+  return `${rootPrefix}/placings/index.html?author=${encodeURIComponent(authorRecord.htmlFileName)}`;
 }
 
 function renderProfileTabs(

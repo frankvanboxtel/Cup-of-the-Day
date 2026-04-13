@@ -129,6 +129,8 @@ type PlacingsIndexPageOptions = {
   driverCount: number;
   rowsHtml: string;
   placingHeadersHtml: string;
+  authorFilterOptionsHtml: string;
+  authorFilterResultsJson: string;
   competitionTypes: CompetitionType[];
   renderLayout: RenderLayout;
   renderCompetitionFilterPanel: RenderCompetitionFilterPanel;
@@ -154,6 +156,19 @@ export function renderPlacingsIndexPageContent(
         >
         <p class="search-summary" data-driver-search-summary>${options.driverCount} players shown</p>
       </div>
+      <div class="search-panel">
+        <label class="search-label" for="placings-author-filter">Filter by author</label>
+        <select
+          id="placings-author-filter"
+          class="search-input"
+          data-author-filter-select
+          data-author-filter-target="placings-index"
+        >
+          <option value="">All</option>
+          ${options.authorFilterOptionsHtml}
+        </select>
+      </div>
+      <script type="application/json" data-author-filter-results data-author-filter-target="placings-index">${options.authorFilterResultsJson}</script>
       ${options.renderCompetitionFilterPanel("placings-index", "Include competitions in totals")}
       ${renderTableContainer(`
       <table data-sort-table data-competition-stats-table="placings" data-competition-filter-target="placings-index">
