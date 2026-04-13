@@ -1,10 +1,4 @@
 {
-  "[bob]void": [
-    "[bob]void",
-    "[poop]void",
-    "[popo]void",
-    "[ZET]void"
-  ],
   "[CRT]NathWalt": [
     "[CRT]NathWalt",
     "[CTR] NathWalt",
@@ -227,6 +221,7 @@
   ],
   "GuillaumePN": [
     "GuillaumePN",
+    "[PINK] GuillaumePN",
     "[Qc] GuillaumePN"
   ],
   "Heart-TGV": [
@@ -667,6 +662,13 @@
     "[gorp]//////void",
     "[SWDN]//////void"
   ],
+  "Void": [
+    "Void",
+    "[bob]void",
+    "[poop]void",
+    "[popo]void",
+    "[ZET]void"
+  ],
   "vortex": [
     "vortex",
     "[mib]vortex"
@@ -701,6 +703,7 @@
   ],
   "Zeus": [
     "Zeus",
+    "[NewB] Zeus",
     "[NewB]Zeus"
   ],
   "zivecef": [
