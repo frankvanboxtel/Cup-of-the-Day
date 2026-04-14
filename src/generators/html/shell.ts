@@ -840,10 +840,11 @@ export function renderLayout(
     </script>
     <nav class="nav nav-main">
       <a href="${options.rootPrefix}/index.html">Overview</a>
-      <a href="${options.rootPrefix}/drivers/index.html">Players</a>
+      <a href="${options.rootPrefix}/player/index.html">Players</a>
       <a href="${options.rootPrefix}/placings/index.html">Placings</a>
       <a href="${options.rootPrefix}/race-results-graph/index.html">Results Graph</a>
-      <a href="${options.rootPrefix}/rankings/index.html">Rankings Explained</a>
+      <a href="${options.rootPrefix}/rankings/index.html">Rankings</a>
+      <a href="${options.rootPrefix}/rankings-explained/index.html">Rankings Explained</a>
       ${
         options.latestResultsUpdate
           ? `<span class="nav-update">Updated: ${escapeHtml(options.latestResultsUpdate.relativeLabel)} (${escapeHtml(options.latestResultsUpdate.eventLabel)}, ${escapeHtml(options.latestResultsUpdate.mapLabel)})</span>`

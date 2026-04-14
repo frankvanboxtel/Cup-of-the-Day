@@ -65,13 +65,13 @@ export function renderOverviewPageContent(options: IndexPageOptions): string {
   );
 }
 
-type RankingsPageOptions = {
+type RankingsExplainedPageOptions = {
   renderLayout: RenderLayout;
   competitionTypes: CompetitionType[];
 };
 
-export function renderRankingsPageContent(
-  options: RankingsPageOptions,
+export function renderRankingsExplainedPageContent(
+  options: RankingsExplainedPageOptions,
 ): string {
   return options.renderLayout(
     "Rankings Explained",
@@ -123,7 +123,7 @@ export function renderDriverIndexPageContent(
     "Players",
     `
       <h1>Players</h1>
-      <p>${options.driverCount} player profiles. Search by player name, alias, or tag. Rankings include Elo, Bayes, Pace Index, and recent Pace Form.</p>
+      <p>${options.driverCount} player profiles. Search by player name, alias, or tag.</p>
       <div class="search-panel">
         <label class="search-label" for="driver-search">Search players</label>
         <input
@@ -141,10 +141,62 @@ export function renderDriverIndexPageContent(
       <table data-sort-table data-competition-stats-table="players" data-competition-filter-target="players-index">
         <thead>
           <tr>
-            ${options.renderSortableHeader("Player", "driver", "text", "asc")}
+            ${options.renderSortableHeader("Player", "driver", "text", "asc", true)}
             ${options.renderSortableHeader("Aliases", "aliases", "text", "asc")}
             ${options.renderSortableHeader("Tags", "tags", "text", "asc")}
             ${options.renderSortableHeader("Tracks", "tracks", "number", "desc")}
+            ${options.renderSortableHeader("Starts", "starts", "number", "desc")}
+          </tr>
+        </thead>
+        <tbody>
+          ${options.rowsHtml}
+        </tbody>
+      </table>
+      `)}
+    `,
+    {
+      pageTitle: "Players",
+      rootPrefix: "..",
+      competitionTypes: options.competitionTypes,
+    },
+  );
+}
+
+type RankingsIndexPageOptions = {
+  driverCount: number;
+  rowsHtml: string;
+  competitionTypes: CompetitionType[];
+  renderLayout: RenderLayout;
+  renderCompetitionFilterPanel: RenderCompetitionFilterPanel;
+  renderSortableHeader: RenderSortableHeader;
+};
+
+export function renderRankingsIndexPageContent(
+  options: RankingsIndexPageOptions,
+): string {
+  return options.renderLayout(
+    "Rankings",
+    `
+      <h1>Rankings</h1>
+      <p>${options.driverCount} player rankings. Search by player name, alias, or tag.</p>
+      <div class="search-panel">
+        <label class="search-label" for="driver-search">Search players</label>
+        <input
+          id="driver-search"
+          class="search-input"
+          type="search"
+          placeholder="Type a player name, alias, or tag"
+          autocomplete="off"
+          data-driver-search-input
+        >
+        <p class="search-summary" data-driver-search-summary>${options.driverCount} players shown</p>
+      </div>
+      ${options.renderCompetitionFilterPanel("rankings-index", "Include competitions in totals")}
+      ${renderTableContainer(`
+      <table data-sort-table data-competition-stats-table="rankings" data-competition-filter-target="rankings-index">
+        <thead>
+          <tr>
+            ${options.renderSortableHeader("Player", "driver", "text", "asc")}
             ${options.renderSortableHeader("Starts", "starts", "number", "desc")}
             ${options.renderSortableHeader("Fastest Times", "fastest-times", "number", "desc")}
             ${options.renderSortableHeader("Wins", "wins", "number", "desc", true, "align-right")}
@@ -166,7 +218,7 @@ export function renderDriverIndexPageContent(
       `)}
     `,
     {
-      pageTitle: "Players",
+      pageTitle: "Rankings",
       rootPrefix: "..",
       competitionTypes: options.competitionTypes,
     },

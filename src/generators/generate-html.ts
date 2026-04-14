@@ -10,7 +10,8 @@ import {
   renderDriverIndexPageContent,
   renderOverviewPageContent,
   renderPlacingsIndexPageContent,
-  renderRankingsPageContent,
+  renderRankingsExplainedPageContent,
+  renderRankingsIndexPageContent,
   renderResultsGraphIndexPageContent,
 } from "./html/index-pages";
 import { escapeHtml, renderLayout, renderTableContainer } from "./html/shell";
@@ -162,18 +163,24 @@ const sourceStylesDirectory = path.join(projectRoot, "styles");
 const sourceStylesFilePath = path.join(sourceStylesDirectory, "styles.css");
 const outputStylesFilePath = path.join(outputDirectory, "styles.css");
 const eventsDirectory = path.join(outputDirectory, "events");
-const driversDirectory = path.join(outputDirectory, "drivers");
+const legacyDriversDirectory = path.join(outputDirectory, "drivers");
+const playerDirectory = path.join(outputDirectory, "player");
 const placingsDirectory = path.join(outputDirectory, "placings");
 const rankingsDirectory = path.join(outputDirectory, "rankings");
+const rankingsExplainedDirectory = path.join(outputDirectory, "rankings-explained");
 const raceResultsGraphDirectory = path.join(
   outputDirectory,
   "race-results-graph",
 );
 const authorsDirectory = path.join(outputDirectory, "authors");
 const indexFilePath = path.join(outputDirectory, "index.html");
-const driverIndexFilePath = path.join(driversDirectory, "index.html");
+const playerIndexFilePath = path.join(playerDirectory, "index.html");
 const placingsIndexFilePath = path.join(placingsDirectory, "index.html");
 const rankingsIndexFilePath = path.join(rankingsDirectory, "index.html");
+const rankingsExplainedIndexFilePath = path.join(
+  rankingsExplainedDirectory,
+  "index.html",
+);
 const raceResultsGraphIndexFilePath = path.join(
   raceResultsGraphDirectory,
   "index.html",
@@ -313,18 +320,21 @@ async function main(): Promise<void> {
     rm(indexFilePath, { force: true }),
     rm(outputStylesFilePath, { force: true }),
     rm(eventsDirectory, { recursive: true, force: true }),
-    rm(driversDirectory, { recursive: true, force: true }),
+    rm(legacyDriversDirectory, { recursive: true, force: true }),
+    rm(playerDirectory, { recursive: true, force: true }),
     rm(placingsDirectory, { recursive: true, force: true }),
     rm(rankingsDirectory, { recursive: true, force: true }),
+    rm(rankingsExplainedDirectory, { recursive: true, force: true }),
     rm(raceResultsGraphDirectory, { recursive: true, force: true }),
     rm(authorsDirectory, { recursive: true, force: true }),
   ]);
 
   await Promise.all([
     mkdir(eventsDirectory, { recursive: true }),
-    mkdir(driversDirectory, { recursive: true }),
+    mkdir(playerDirectory, { recursive: true }),
     mkdir(placingsDirectory, { recursive: true }),
     mkdir(rankingsDirectory, { recursive: true }),
+    mkdir(rankingsExplainedDirectory, { recursive: true }),
     mkdir(raceResultsGraphDirectory, { recursive: true }),
     mkdir(authorsDirectory, { recursive: true }),
   ]);
@@ -355,7 +365,14 @@ async function main(): Promise<void> {
       eventRatings.summary,
       eventPace.summary,
     ),
-    writeRankingsPage(),
+    writeRankingsIndexPage(
+      driverRecords,
+      authorRecordsByName,
+      authorFileNames,
+      eventRatings.summary,
+      eventPace.summary,
+    ),
+    writeRankingsExplainedPage(),
     writePlacingsIndexPage(
       driverRecords,
       authorRecords,
@@ -1106,11 +1123,6 @@ async function writeDriverIndexPage(
 ): Promise<void> {
   const rows = driverRecords
     .map((driverRecord) => {
-      const stats = buildDriverStats(
-        driverRecord,
-        driverRatingSummary,
-        driverPaceSummary,
-      );
       const nameDetails = splitTaggedPlayerNames(
         driverRecord.canonicalName,
         driverRecord.aliases,
@@ -1133,6 +1145,10 @@ async function writeDriverIndexPage(
         (sum, count) => sum + count,
         0,
       );
+      const starts = Object.values(statsByCompetition).reduce(
+        (sum, entry) => sum + entry.starts,
+        0,
+      );
       const aliasSummary = renderInlineList(nameDetails.aliases);
       const tagSummary = renderInlineList(nameDetails.tags.map(formatTagLabel));
       const searchTerms = normalizeSearchText(
@@ -1143,18 +1159,7 @@ async function writeDriverIndexPage(
         aliases: normalizeTextSortValue(nameDetails.aliases.join(" ")),
         tags: normalizeTextSortValue(nameDetails.tags.join(" ")),
         tracks: normalizeNumberSortValue(tracksCreated),
-        starts: normalizeNumberSortValue(stats.starts),
-        "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
-        wins: normalizeNumberSortValue(stats.wins),
-        "wins-rate": normalizeNumberSortValue(stats.winRate),
-        elo: normalizeNumberSortValue(stats.currentElo),
-        bayes: normalizeNumberSortValue(stats.ratings.bayes.current),
-        pace: normalizeNumberSortValue(stats.pace.index.current),
-        "pace-form": normalizeNumberSortValue(stats.pace.form.current),
-        "elo-peak": normalizeNumberSortValue(stats.ratings.elo.peak),
-        "bayes-peak": normalizeNumberSortValue(stats.ratings.bayes.peak),
-        "pace-peak": normalizeNumberSortValue(stats.pace.index.peak),
-        "pace-form-peak": normalizeNumberSortValue(stats.pace.form.peak),
+        starts: normalizeNumberSortValue(starts),
       });
       const competitionAttributes = renderCompetitionMetricAttributes({
         tracks: tracksByCompetition,
@@ -1180,10 +1185,120 @@ async function writeDriverIndexPage(
 
       return `
         <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
-          <td class="player-name"><a href="${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(nameDetails.primaryName)}</a></td>
+          <td class="player-name"><a href="../player/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(nameDetails.primaryName)}</a></td>
           <td title="${escapeHtml(nameDetails.aliases.join(", "))}"><div class="single-line alias">${aliasSummary}</div></td>
           <td title="${escapeHtml(nameDetails.tags.map(formatTagLabel).join(", "))}"><div class="single-line alias">${tagSummary}</div></td>
           ${renderDynamicCompetitionCountCell("tracks", tracksCreated)}
+          ${renderDynamicCompetitionCountCell("starts", starts)}
+        </tr>`;
+    })
+    .join("\n");
+
+  const content = renderDriverIndexPageContent({
+    driverCount: driverRecords.length,
+    rowsHtml: rows,
+    competitionTypes,
+    renderLayout: renderPageLayout,
+    renderCompetitionFilterPanel,
+    renderSortableHeader,
+  });
+
+  await writeFile(playerIndexFilePath, content, "utf8");
+}
+
+async function writeRankingsIndexPage(
+  driverRecords: DriverRecord[],
+  authorRecordsByName: Map<string, AuthorRecord>,
+  authorFileNames: Map<string, string>,
+  driverRatingSummary: Map<string, DriverRatingSummary>,
+  driverPaceSummary: Map<string, DriverPaceSummary>,
+): Promise<void> {
+  const rows = [...driverRecords]
+    .sort((left, right) => {
+      const leftStats = buildDriverStats(
+        left,
+        driverRatingSummary,
+        driverPaceSummary,
+      );
+      const rightStats = buildDriverStats(
+        right,
+        driverRatingSummary,
+        driverPaceSummary,
+      );
+
+      if (rightStats.wins !== leftStats.wins) {
+        return rightStats.wins - leftStats.wins;
+      }
+
+      if (rightStats.pace.index.current !== leftStats.pace.index.current) {
+        return rightStats.pace.index.current - leftStats.pace.index.current;
+      }
+
+      return left.canonicalName.localeCompare(right.canonicalName);
+    })
+    .map((driverRecord) => {
+      const stats = buildDriverStats(
+        driverRecord,
+        driverRatingSummary,
+        driverPaceSummary,
+      );
+      const nameDetails = splitTaggedPlayerNames(
+        driverRecord.canonicalName,
+        driverRecord.aliases,
+      );
+      const statsByCompetition = Object.fromEntries(
+        competitionDefinitions.map(({ type }) => [
+          type,
+          buildDriverStats(
+            driverRecord,
+            driverRatingSummary,
+            driverPaceSummary,
+            [type],
+          ),
+        ]),
+      ) as Record<CompetitionType, DriverStats>;
+      const searchTerms = normalizeSearchText(
+        [driverRecord.canonicalName, ...driverRecord.aliases].join(" "),
+      );
+      const sortAttributes = renderSortDataAttributes({
+        driver: normalizeTextSortValue(nameDetails.primaryName),
+        starts: normalizeNumberSortValue(stats.starts),
+        "fastest-times": normalizeNumberSortValue(stats.fastestTimes),
+        wins: normalizeNumberSortValue(stats.wins),
+        "wins-rate": normalizeNumberSortValue(stats.winRate),
+        elo: normalizeNumberSortValue(stats.currentElo),
+        bayes: normalizeNumberSortValue(stats.ratings.bayes.current),
+        pace: normalizeNumberSortValue(stats.pace.index.current),
+        "pace-form": normalizeNumberSortValue(stats.pace.form.current),
+        "elo-peak": normalizeNumberSortValue(stats.ratings.elo.peak),
+        "bayes-peak": normalizeNumberSortValue(stats.ratings.bayes.peak),
+        "pace-peak": normalizeNumberSortValue(stats.pace.index.peak),
+        "pace-form-peak": normalizeNumberSortValue(stats.pace.form.peak),
+      });
+      const competitionAttributes = renderCompetitionMetricAttributes({
+        starts: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].starts,
+          ]),
+        ),
+        wins: Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].wins,
+          ]),
+        ),
+        "fastest-times": Object.fromEntries(
+          competitionDefinitions.map(({ type }) => [
+            type,
+            statsByCompetition[type].fastestTimes,
+          ]),
+        ),
+      });
+
+      return `
+        <tr data-driver-row data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
+          <td class="player-name"><a href="../player/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(nameDetails.primaryName)}</a></td>
           ${renderDynamicCompetitionCountCell("starts", stats.starts)}
           ${renderDynamicCompetitionCountCell("fastest-times", stats.fastestTimes)}
           ${renderDynamicCompetitionCountCell("wins", stats.wins)}
@@ -1200,7 +1315,7 @@ async function writeDriverIndexPage(
     })
     .join("\n");
 
-  const content = renderDriverIndexPageContent({
+  const content = renderRankingsIndexPageContent({
     driverCount: driverRecords.length,
     rowsHtml: rows,
     competitionTypes,
@@ -1209,7 +1324,7 @@ async function writeDriverIndexPage(
     renderSortableHeader,
   });
 
-  await writeFile(driverIndexFilePath, content, "utf8");
+  await writeFile(rankingsIndexFilePath, content, "utf8");
 }
 
 async function writePlacingsIndexPage(
@@ -1338,7 +1453,7 @@ async function writePlacingsIndexPage(
 
       return `
         <tr data-driver-row data-driver-key="${escapeHtml(driverRecord.htmlFileName)}" data-driver-search="${escapeHtml(searchTerms)}"${sortAttributes}${competitionAttributes}>
-          <td class="player-name"><a href="../drivers/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
+          <td class="player-name"><a href="../player/${escapeHtml(driverRecord.htmlFileName)}">${escapeHtml(driverRecord.canonicalName)}</a></td>
           ${renderDynamicCompetitionCountCell("starts", stats.starts)}
           ${renderDynamicCompetitionCountCell("wins", stats.wins)}
           ${renderDynamicCompetitionCountCell("finals", placingSummary.finals)}
@@ -1405,13 +1520,13 @@ async function writeRaceResultsGraphIndexPage(
   await writeFile(raceResultsGraphIndexFilePath, content, "utf8");
 }
 
-async function writeRankingsPage(): Promise<void> {
-  const content = renderRankingsPageContent({
+async function writeRankingsExplainedPage(): Promise<void> {
+  const content = renderRankingsExplainedPageContent({
     renderLayout: renderPageLayout,
     competitionTypes,
   });
 
-  await writeFile(rankingsIndexFilePath, content, "utf8");
+  await writeFile(rankingsExplainedIndexFilePath, content, "utf8");
 }
 
 async function writeEventPage(
@@ -1608,7 +1723,7 @@ async function writeDriverPage(
   });
 
   await writeFile(
-    path.join(driversDirectory, driverRecord.htmlFileName),
+    path.join(playerDirectory, driverRecord.htmlFileName),
     content,
     "utf8",
   );
@@ -2364,7 +2479,7 @@ function renderCompetitionResultsGraphSection(
       driverRecord,
       eventRecords,
       graphPalette[index % graphPalette.length] ?? "#0047ab",
-      `${rootPrefix}/drivers/${driverRecord.htmlFileName}`,
+      `${rootPrefix}/player/${driverRecord.htmlFileName}`,
     ),
   );
   const defaultVisibleIds = series
@@ -3657,7 +3772,7 @@ function renderDriverLink(
     return escapeHtml(name);
   }
 
-  return `<a href="${rootPrefix}/drivers/${fileName}">${escapeHtml(name)}</a>`;
+  return `<a href="${rootPrefix}/player/${fileName}">${escapeHtml(name)}</a>`;
 }
 
 function renderAuthorLinks(
