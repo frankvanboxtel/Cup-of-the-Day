@@ -31,10 +31,6 @@
     "[GFHL] loganbradley714",
     "[GLHF] loganbradley714"
   ],
-  "[GGG] Victor": [
-    "[GGG] Victor",
-    "[MMM] Victor"
-  ],
   "[IRS] tws20so": [
     "[IRS] tws20so",
     "[DRFT] tws20so"
@@ -43,6 +39,10 @@
     "[MMM] LKat",
     "[GGG] Lkat",
     "[GGG] LKat"
+  ],
+  "[MMM] Victor": [
+    "[MMM] Victor",
+    "[GGG] Victor"
   ],
   "[OR] Pigbuy": [
     "[OR] Pigbuy",
@@ -483,6 +483,7 @@
     "Renergy",
     "[just] Renergy",
     "[meh] Renergy",
+    "[SLOW] Renergy",
     "[TBD] Renergy",
     "[TOOB] Renergy",
     "[UP] Renergy",
