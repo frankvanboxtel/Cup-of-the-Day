@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-26T09:24:59.789Z",
+  "generatedAt": "2026-05-07T13:04:47.545Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "preferences/player-aliases.json",
   "generatedAliasFile": "preferences/player-aliases.generated.json",
@@ -768,9 +768,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 38,
+          "appearances": 39,
           "firstSeenEvent": 84,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             84,
             87,
@@ -1016,9 +1016,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 10,
+          "appearances": 11,
           "firstSeenEvent": 98,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             98,
             99,
@@ -1204,9 +1204,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 119,
+          "appearances": 120,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             1,
             2,
@@ -1284,13 +1284,14 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 3,
+          "appearances": 4,
           "firstSeenEvent": 139,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             139,
             140,
-            141
+            141,
+            142
           ]
         },
         {
@@ -1375,9 +1376,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 12,
+          "appearances": 13,
           "firstSeenEvent": 104,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             104,
             105,
@@ -1441,6 +1442,24 @@
           ]
         },
         {
+          "name": "[ERR] ferinine",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 7,
+          "firstSeenEvent": 116,
+          "lastSeenEvent": 142,
+          "exampleEvents": [
+            116,
+            123,
+            138,
+            139,
+            140,
+            141,
+            142
+          ]
+        },
+        {
           "name": "[Err] ferinine",
           "reasons": [
             "shared base name after removing tags/casing"
@@ -1455,23 +1474,6 @@
             91,
             100,
             110
-          ]
-        },
-        {
-          "name": "[ERR] ferinine",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 6,
-          "firstSeenEvent": 116,
-          "lastSeenEvent": 141,
-          "exampleEvents": [
-            116,
-            123,
-            138,
-            139,
-            140,
-            141
           ]
         },
         {
@@ -1563,9 +1565,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 91,
+          "appearances": 92,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             1,
             2,
@@ -1626,9 +1628,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 14,
+          "appearances": 15,
           "firstSeenEvent": 116,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             116,
             120,
@@ -2707,9 +2709,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 85,
+          "appearances": 86,
           "firstSeenEvent": 2,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             2,
             7,
@@ -3112,9 +3114,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 101,
+          "appearances": 102,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 140,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             1,
             2,
@@ -3324,9 +3326,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 33,
+          "appearances": 34,
           "firstSeenEvent": 3,
-          "lastSeenEvent": 139,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             3,
             35,
@@ -3791,6 +3793,57 @@
       ]
     },
     {
+      "canonicalSuggestion": "Zeus",
+      "names": [
+        {
+          "name": "[NewB] Zeus",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 10,
+          "firstSeenEvent": 128,
+          "lastSeenEvent": 141,
+          "exampleEvents": [
+            128,
+            129,
+            130,
+            134,
+            135,
+            136,
+            137,
+            139
+          ]
+        },
+        {
+          "name": "Zeus",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 138,
+          "lastSeenEvent": 138,
+          "exampleEvents": [
+            138
+          ]
+        },
+        {
+          "name": "[SLOW] Zeus",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 142,
+          "lastSeenEvent": 142,
+          "exampleEvents": [
+            142
+          ]
+        }
+      ],
+      "groupReasons": [
+        "shared base name after removing tags/casing"
+      ]
+    },
+    {
       "canonicalSuggestion": "Zodiak",
       "names": [
         {
@@ -3963,13 +4016,14 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 3,
+          "appearances": 4,
           "firstSeenEvent": 138,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             138,
             140,
-            141
+            141,
+            142
           ]
         },
         {
@@ -5350,9 +5404,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 146,
+          "appearances": 147,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             1,
             2,
@@ -5784,9 +5838,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 15,
+          "appearances": 16,
           "firstSeenEvent": 9,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             9,
             10,
@@ -6216,9 +6270,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 97,
+          "appearances": 98,
           "firstSeenEvent": 1,
-          "lastSeenEvent": 140,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             1,
             2,
@@ -6288,14 +6342,15 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 4,
+          "appearances": 5,
           "firstSeenEvent": 136,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             136,
             137,
             139,
-            141
+            141,
+            142
           ]
         },
         {
@@ -6676,9 +6731,9 @@
           "reasons": [
             "shared base name after removing tags/casing"
           ],
-          "appearances": 69,
+          "appearances": 70,
           "firstSeenEvent": 2,
-          "lastSeenEvent": 141,
+          "lastSeenEvent": 142,
           "exampleEvents": [
             2,
             7,
@@ -6800,45 +6855,6 @@
           "lastSeenEvent": 77,
           "exampleEvents": [
             77
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "Zeus",
-      "names": [
-        {
-          "name": "[NewB] Zeus",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 10,
-          "firstSeenEvent": 128,
-          "lastSeenEvent": 141,
-          "exampleEvents": [
-            128,
-            129,
-            130,
-            134,
-            135,
-            136,
-            137,
-            139
-          ]
-        },
-        {
-          "name": "Zeus",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 138,
-          "lastSeenEvent": 138,
-          "exampleEvents": [
-            138
           ]
         }
       ],
