@@ -2,6 +2,10 @@
 
 The project generates Zeepkist statistics pages from CSV exports of [Google Sheets](https://docs.google.com/spreadsheets/d/1rqtVPKeDxEaBfbNl7whL5HjmzeqIDk8mj3xOtfACyeE/edit?gid=1536349458#gid=1536349458) maintained by Lexer. It's built with Node.js and TypeScript.
 
+## App
+
+Link to the live app: [zcotd.netlify.app](https://zcotd.netlify.app/)
+
 ## Requirements
 
 - Node.js 20+
