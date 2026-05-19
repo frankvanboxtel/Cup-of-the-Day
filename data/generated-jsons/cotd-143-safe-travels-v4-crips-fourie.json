@@ -1,0 +1,520 @@
+{
+  "competitionType": "cotd",
+  "competitionLabel": "Cup of the Day",
+  "eventLabel": "COTD 143",
+  "nr": 143,
+  "map": "safe travels v4",
+  "author": "crips.fourie",
+  "description": null,
+  "fastestTime": "41.988",
+  "fastestTimeDriver": "Kernkob",
+  "fastestTimeRound": "Round 13",
+  "rouletteSourceLabel": null,
+  "sourceFile": "COTDs 126-150 - COTD 141-145.csv",
+  "results": [
+    {
+      "placing": 1,
+      "name": "Kernkob",
+      "time": "42.172",
+      "eliminationRound": "SWEEP",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 2,
+      "name": "Lexer",
+      "time": "42.482",
+      "eliminationRound": "16",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 2,
+      "name": "brrryy",
+      "time": "DNF",
+      "eliminationRound": "15",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 4,
+      "name": "RoundNzt",
+      "time": "43.251",
+      "eliminationRound": "14",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 5,
+      "name": "Shattersmith",
+      "time": "43.132",
+      "eliminationRound": "13",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 6,
+      "name": "[CSC] Tommygaming",
+      "time": "44.253",
+      "eliminationRound": "12",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 7,
+      "name": "[KURK] Quickracer10",
+      "time": "45.503",
+      "eliminationRound": "11",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 8,
+      "name": "Hydro",
+      "time": "45.961",
+      "eliminationRound": "11",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 9,
+      "name": "Mμ",
+      "time": "43.311",
+      "eliminationRound": "10",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 10,
+      "name": "Minkus",
+      "time": "43.493",
+      "eliminationRound": "10",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 11,
+      "name": "JakeAdjacent",
+      "time": "43.643",
+      "eliminationRound": "9",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 12,
+      "name": "[CTR] GuAlexItar",
+      "time": "DNF",
+      "eliminationRound": "9",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 13,
+      "name": "[MMM] Victor",
+      "time": "43.489",
+      "eliminationRound": "8",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 14,
+      "name": "[CTR] agix",
+      "time": "43.738",
+      "eliminationRound": "8",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 15,
+      "name": "[FPV] PandaMane",
+      "time": "43.893",
+      "eliminationRound": "8",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 16,
+      "name": "MackCheesy",
+      "time": "43.691",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 17,
+      "name": "Six",
+      "time": "43.902",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "[Quac] microways",
+      "time": "DNF",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 18,
+      "name": "PlusMicron",
+      "time": "DNF",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 20,
+      "name": "[CSC] Shadynook",
+      "time": "44.051",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 21,
+      "name": "Hi Im Yolo",
+      "time": "44.192",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 22,
+      "name": "St Nicholas",
+      "time": "44.248",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 23,
+      "name": "Tudge Boat",
+      "time": "44.336",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 24,
+      "name": "[CSC] IronDragon111000",
+      "time": "45.238",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 25,
+      "name": "Kiprosa",
+      "time": "45.345",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 26,
+      "name": "rtube",
+      "time": "DNF",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 26,
+      "name": "DeiRex",
+      "time": "DNF",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 28,
+      "name": "Noxitu",
+      "time": "45.661",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 29,
+      "name": "[TTR] Heart-TGV",
+      "time": "46.208",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "Fly8oy",
+      "time": "46.347",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 31,
+      "name": "Reamerad",
+      "time": "46.418",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 32,
+      "name": "[ERR] ferinine",
+      "time": "46.447",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 33,
+      "name": "[TOG] Lazy_Echidna",
+      "time": "DNF",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 34,
+      "name": "timesprout",
+      "time": "59.384",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "[MMM] LKat",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "Dartho Mas",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "aizpun",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "[SLOW] Zeus",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "BrickEdwards",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 40,
+      "name": "𝒱V𝑜o𝒾i𝒹d𝒱",
+      "time": "43.433",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 41,
+      "name": "[ZET] Wheelie",
+      "time": "47.436",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 42,
+      "name": "[Burp] Weak_Knees",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 42,
+      "name": "[20x] K410K3N",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 42,
+      "name": "MAGS3",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 42,
+      "name": "sailingman",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 42,
+      "name": "[ZET] Sword125",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "[RB] Chinpokomon",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "zodiak",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "CaptainD54321 (they/she)",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "[Slow] frenchteost",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "ArrrT",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "nova_lead",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "just_cody",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "K1ngON3",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "Valco",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 46,
+      "name": "kleinkriel",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    }
+  ]
+}

@@ -845,19 +845,36 @@ export function renderLayout(
       <a href="${options.rootPrefix}/race-results-graph/index.html">Results Graph</a>
       <a href="${options.rootPrefix}/rankings/index.html">Rankings</a>
       <a href="${options.rootPrefix}/rankings-explained/index.html">Rankings Explained</a>
-      ${
-        options.latestResultsUpdate
-          ? `<span class="nav-update">Updated: ${escapeHtml(options.latestResultsUpdate.relativeLabel)} (${escapeHtml(options.latestResultsUpdate.eventLabel)}, ${escapeHtml(options.latestResultsUpdate.mapLabel)})</span>`
-          : ""
-      }
-      <button
-        type="button"
-        data-theme-toggle
-        aria-pressed="false"
-        aria-label="Switch to dark mode"
-      >
-        ☀️
-      </button>
+      <div class="nav-main-actions">
+        ${
+          options.latestResultsUpdate
+            ? `<span class="nav-update">Updated: ${escapeHtml(options.latestResultsUpdate.relativeLabel)} (${escapeHtml(options.latestResultsUpdate.eventLabel)}, ${escapeHtml(options.latestResultsUpdate.mapLabel)})</span>`
+            : ""
+        }
+        <a
+          class="nav-icon-link"
+          href="https://github.com/frankvanboxtel/Cup-of-the-Day"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open Cup of the Day on GitHub"
+          title="GitHub repository"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M12 1.5C6.201 1.5 1.5 6.201 1.5 12c0 4.64 3.01 8.577 7.186 9.965.525.097.714-.228.714-.506 0-.25-.009-.912-.014-1.79-2.922.635-3.538-1.409-3.538-1.409-.478-1.213-1.167-1.536-1.167-1.536-.954-.652.072-.639.072-.639 1.055.074 1.61 1.083 1.61 1.083.938 1.608 2.46 1.144 3.06.875.095-.679.367-1.144.667-1.407-2.333-.266-4.785-1.166-4.785-5.19 0-1.146.41-2.083 1.082-2.817-.108-.267-.469-1.34.103-2.794 0 0 .882-.282 2.89 1.076A10.07 10.07 0 0 1 12 6.61c.892.004 1.79.12 2.628.352 2.006-1.358 2.886-1.076 2.886-1.076.574 1.454.213 2.527.105 2.794.674.734 1.08 1.67 1.08 2.817 0 4.034-2.456 4.921-4.796 5.182.377.325.713.965.713 1.945 0 1.405-.013 2.538-.013 2.883 0 .281.187.608.72.505C19.493 20.573 22.5 16.638 22.5 12c0-5.799-4.701-10.5-10.5-10.5Z"
+            ></path>
+          </svg>
+        </a>
+        <button
+          type="button"
+          data-theme-toggle
+          aria-pressed="false"
+          aria-label="Switch to dark mode"
+        >
+          ☀️
+        </button>
+      </div>
     </nav>
     ${bodyContent}
   </body>

@@ -572,6 +572,7 @@
   "stindt": [
     "stindt",
     "[KAAS] stindt",
+    "[Same] stindt",
     "[Slow] stindt",
     "[Tame] stindt"
   ],
@@ -602,6 +603,10 @@
     "[CTR] Twoface",
     "[CTR] TwoFace",
     "[IMP] TwoFace"
+  ],
+  "Valco": [
+    "Valco",
+    "[BORK] Valco"
   ],
   "variableferret": [
     "variableferret",
