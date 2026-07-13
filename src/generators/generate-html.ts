@@ -104,6 +104,25 @@ type RatingGraphSeries = {
   points: RatingGraphPoint[];
 };
 
+type IdentityTimelinePoint = {
+  eventNumber: number;
+  key: string;
+  label: string;
+};
+
+type IdentityGraphSegment = {
+  startEventNumber: number;
+  endEventNumber: number;
+  label: string;
+  color: string;
+  title: string;
+};
+
+type IdentityGraphBars = {
+  nameSegments: IdentityGraphSegment[];
+  tagSegments: IdentityGraphSegment[];
+};
+
 type DriverStats = {
   starts: number;
   wins: number;
@@ -547,11 +566,11 @@ function renderTabPanels(
   return `
     <div class="tab-list nav tabs" role="tablist" aria-label="${escapeHtml(ariaLabel)}" data-tabs data-default-tab="${escapeHtml(`${tabPrefix}-${defaultSuffix}`)}">
       ${tabs
-        .map(
-          (tab) =>
-            `<button type="button" class="tab-button" role="tab" data-tab-target="${escapeHtml(`${tabPrefix}-${tab.suffix}`)}">${escapeHtml(tab.label)}</button>`,
-        )
-        .join("\n")}
+      .map(
+        (tab) =>
+          `<button type="button" class="tab-button" role="tab" data-tab-target="${escapeHtml(`${tabPrefix}-${tab.suffix}`)}">${escapeHtml(tab.label)}</button>`,
+      )
+      .join("\n")}
     </div>
     ${tabs
       .map(
@@ -1050,14 +1069,14 @@ function renderCompetitionFilterPanel(
       <legend>${escapeHtml(legend)}</legend>
       <div class="competition-filter-options">
         ${competitionDefinitions
-          .map(
-            (definition) => `
+      .map(
+        (definition) => `
               <label class="competition-filter-option">
                 <input type="checkbox" data-competition-toggle value="${escapeHtml(definition.type)}" checked>
                 <span>${escapeHtml(definition.label)}</span>
               </label>`,
-          )
-          .join("\n")}
+      )
+      .join("\n")}
       </div>
     </fieldset>
   `;
@@ -1590,10 +1609,10 @@ async function writeEventPage(
       const rouletteSourceMarkup = result.rouletteSourceEventNumber
         ? sourceEventRecord
           ? renderEventLink(
-              sourceEventRecord,
-              "..",
-              String(result.rouletteSourceEventNumber),
-            )
+            sourceEventRecord,
+            "..",
+            String(result.rouletteSourceEventNumber),
+          )
           : String(result.rouletteSourceEventNumber)
         : "-";
 
@@ -1605,14 +1624,13 @@ async function writeEventPage(
           <td>${renderDriverLink(result.name, driverFileNames, "..")}</td>
           <td class="align-right number-cell">${formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
-          ${
-            hasRouletteColumns
-              ? `<td>${rouletteMapMarkup}</td>
+          ${hasRouletteColumns
+          ? `<td>${rouletteMapMarkup}</td>
           <td>${result.rouletteMapper ? renderAuthorLinks([result.rouletteMapper], authorFileNames, "..") : "-"}</td>
           <td class="align-right number-cell">${rouletteSourceMarkup}</td>
           <td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.eventScore) : "-"}</td>`
-              : `<td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.eventScore) : "-"}</td>`
-          }
+          : `<td class="align-right number-cell">${paceAtEvent ? formatPaceScore(paceAtEvent.eventScore) : "-"}</td>`
+        }
         </tr>`;
     })
     .join("\n");
@@ -2024,11 +2042,11 @@ function renderProfileMetadata(
   return `
     <div class="meta-grid">
       ${renderDriverMetadataTable(
-        driverRecord,
-        authorFileNames,
-        rootPrefix,
-        driverSummary,
-      )}
+    driverRecord,
+    authorFileNames,
+    rootPrefix,
+    driverSummary,
+  )}
       ${renderAuthorMetadataTable(authorRecord, driverFileNames, rootPrefix)}
     </div>
   `;
@@ -2093,10 +2111,10 @@ function renderDriverMetadataTable(
   );
   const authorPage = authorFileNames.has(driverRecord.canonicalName)
     ? renderAuthorLinks(
-        [driverRecord.canonicalName],
-        authorFileNames,
-        rootPrefix,
-      )
+      [driverRecord.canonicalName],
+      authorFileNames,
+      rootPrefix,
+    )
     : "-";
 
   return `
@@ -2287,25 +2305,25 @@ function renderRaceResultsSection(
   return `
     <h2>Race Results</h2>
     ${renderTabPanels(
-      "player-race-results",
-      competitionDefinitions.map((definition) => ({
-        suffix: definition.type,
-        label: formatCompetitionTabLabel(
-          definition.label,
-          getDriverResultRecordsForCompetition(driverRecord, definition.type)
-            .length,
-        ),
-        content: renderPlayerCompetitionRaceResultsSection(
-          driverRecord,
-          getCompetitionEventRecords(eventRecords, definition.type),
-          authorFileNames,
-          driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
-          driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
-        ),
-      })),
-      competitionDefinitions[0]?.type ?? "cotd",
-      "Player race results competitions",
-    )}
+    "player-race-results",
+    competitionDefinitions.map((definition) => ({
+      suffix: definition.type,
+      label: formatCompetitionTabLabel(
+        definition.label,
+        getDriverResultRecordsForCompetition(driverRecord, definition.type)
+          .length,
+      ),
+      content: renderPlayerCompetitionRaceResultsSection(
+        driverRecord,
+        getCompetitionEventRecords(eventRecords, definition.type),
+        authorFileNames,
+        driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
+        driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
+      ),
+    })),
+    competitionDefinitions[0]?.type ?? "cotd",
+    "Player race results competitions",
+  )}
   `;
 }
 
@@ -2469,9 +2487,9 @@ function renderCompetitionResultsGraphSection(
     .sort(
       (left, right) =>
         getDriverWinCount(right, competitionType) -
-          getDriverWinCount(left, competitionType) ||
+        getDriverWinCount(left, competitionType) ||
         getDriverResultRecordsForCompetition(right, competitionType).length -
-          getDriverResultRecordsForCompetition(left, competitionType).length ||
+        getDriverResultRecordsForCompetition(left, competitionType).length ||
         left.canonicalName.localeCompare(right.canonicalName),
     );
   const series = sortedDriverRecords.map((driverRecord, index) =>
@@ -2518,23 +2536,23 @@ function renderRaceResultsGraphSection(
   return `
     <h2>Results Graph</h2>
     ${renderTabPanels(
-      "player-results-graph",
-      competitionDefinitions.map((definition) => ({
-        suffix: definition.type,
-        label: formatCompetitionTabLabel(
-          definition.label,
-          getDriverResultRecordsForCompetition(driverRecord, definition.type)
-            .length,
-        ),
-        content: renderPlayerCompetitionGraphSection(
-          driverRecord,
-          getCompetitionEventRecords(eventRecords, definition.type),
-          definition.type,
-        ),
-      })),
-      competitionDefinitions[0]?.type ?? "cotd",
-      "Player results graph competitions",
-    )}
+    "player-results-graph",
+    competitionDefinitions.map((definition) => ({
+      suffix: definition.type,
+      label: formatCompetitionTabLabel(
+        definition.label,
+        getDriverResultRecordsForCompetition(driverRecord, definition.type)
+          .length,
+      ),
+      content: renderPlayerCompetitionGraphSection(
+        driverRecord,
+        getCompetitionEventRecords(eventRecords, definition.type),
+        definition.type,
+      ),
+    })),
+    competitionDefinitions[0]?.type ?? "cotd",
+    "Player results graph competitions",
+  )}
   `;
 }
 
@@ -2559,24 +2577,24 @@ function renderPlayerRatingGraphSection(
   return `
     <h2>${graphTitle}</h2>
     ${renderTabPanels(
-      `player-${ratingKey}-graph`,
-      competitionDefinitions.map((definition) => ({
-        suffix: definition.type,
-        label: formatCompetitionTabLabel(
-          definition.label,
-          getDriverResultRecordsForCompetition(driverRecord, definition.type)
-            .length,
-        ),
-        content: renderPlayerCompetitionRatingGraphSection(
-          driverRecord,
-          getCompetitionEventRecords(eventRecords, definition.type),
-          driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
-          ratingKey,
-        ),
-      })),
-      competitionDefinitions[0]?.type ?? "cotd",
-      `${graphTitle} competitions`,
-    )}
+    `player-${ratingKey}-graph`,
+    competitionDefinitions.map((definition) => ({
+      suffix: definition.type,
+      label: formatCompetitionTabLabel(
+        definition.label,
+        getDriverResultRecordsForCompetition(driverRecord, definition.type)
+          .length,
+      ),
+      content: renderPlayerCompetitionRatingGraphSection(
+        driverRecord,
+        getCompetitionEventRecords(eventRecords, definition.type),
+        driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
+        ratingKey,
+      ),
+    })),
+    competitionDefinitions[0]?.type ?? "cotd",
+    `${graphTitle} competitions`,
+  )}
   `;
 }
 
@@ -2598,6 +2616,7 @@ function renderPlayerCompetitionRatingGraphSection(
   const graphTitle = ratingKey === "elo" ? "Elo" : "Bayes";
   const ratingHistory =
     competitionRatingHistory.get(driverRecord.canonicalName) ?? new Map();
+  const identityBars = buildDriverIdentityGraphBars(driverRecord, eventRecords);
   const series = [
     buildRatingGraphSeries(
       driverRecord,
@@ -2610,7 +2629,7 @@ function renderPlayerCompetitionRatingGraphSection(
   ];
 
   return `
-    ${renderRatingGraphSvg(series, eventRecords, graphTitle)}
+    ${renderRatingGraphSvg(series, eventRecords, graphTitle, formatElo, null, identityBars)}
   `;
 }
 
@@ -2636,24 +2655,24 @@ function renderPlayerPaceGraphSection(
   return `
     <h2>${graphTitle}</h2>
     ${renderTabPanels(
-      `player-${paceKey}-graph`,
-      competitionDefinitions.map((definition) => ({
-        suffix: definition.type,
-        label: formatCompetitionTabLabel(
-          definition.label,
-          getDriverResultRecordsForCompetition(driverRecord, definition.type)
-            .length,
-        ),
-        content: renderPlayerCompetitionPaceGraphSection(
-          driverRecord,
-          getCompetitionEventRecords(eventRecords, definition.type),
-          driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
-          paceKey,
-        ),
-      })),
-      competitionDefinitions[0]?.type ?? "cotd",
-      `${graphTitle} competitions`,
-    )}
+    `player-${paceKey}-graph`,
+    competitionDefinitions.map((definition) => ({
+      suffix: definition.type,
+      label: formatCompetitionTabLabel(
+        definition.label,
+        getDriverResultRecordsForCompetition(driverRecord, definition.type)
+          .length,
+      ),
+      content: renderPlayerCompetitionPaceGraphSection(
+        driverRecord,
+        getCompetitionEventRecords(eventRecords, definition.type),
+        driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
+        paceKey,
+      ),
+    })),
+    competitionDefinitions[0]?.type ?? "cotd",
+    `${graphTitle} competitions`,
+  )}
   `;
 }
 
@@ -2675,6 +2694,7 @@ function renderPlayerCompetitionPaceGraphSection(
   const graphTitle = paceKey === "pace" ? "Pace Index" : "Pace Form";
   const paceHistory =
     competitionPaceHistory.get(driverRecord.canonicalName) ?? new Map();
+  const identityBars = buildDriverIdentityGraphBars(driverRecord, eventRecords);
   const series = [
     buildPaceGraphSeries(
       driverRecord,
@@ -2687,10 +2707,17 @@ function renderPlayerCompetitionPaceGraphSection(
   ];
 
   return `
-    ${renderRatingGraphSvg(series, eventRecords, graphTitle, formatPaceScore, {
+    ${renderRatingGraphSvg(
+    series,
+    eventRecords,
+    graphTitle,
+    formatPaceScore,
+    {
       min: 0,
       max: 100,
-    })}
+    },
+    identityBars,
+  )}
   `;
 }
 
@@ -2716,18 +2743,20 @@ function renderPlayerCompetitionGraphSection(
       null,
     ),
   ];
+  const identityBars = buildDriverIdentityGraphBars(driverRecord, eventRecords);
   const compareHref = `../race-results-graph/index.html?competition=${encodeURIComponent(competitionType)}&compare=${encodeURIComponent(series[0]?.id ?? stableId(driverRecord.canonicalName))}#results-graph-${competitionType}`;
 
   return `
     <p class="graph-note">Placings 1 through ${graphDirectMaxPlacing} are shown directly; lower results are grouped into ${graphOverflowBuckets.map((threshold) => `${threshold}+`).join(", ")}. Breaks indicate no participation.</p>
     ${renderRaceResultsGraphSvg(
-      series,
-      eventRecords,
-      false,
-      true,
-      series.map((entry) => entry.id),
-      null,
-    )}
+    series,
+    eventRecords,
+    false,
+    true,
+    series.map((entry) => entry.id),
+    null,
+    identityBars,
+  )}
     <p class="graph-actions"><a class="graph-compare-link" href="${compareHref}">Compare Results</a></p>
   `;
 }
@@ -2763,10 +2792,10 @@ function renderPlacingsSection(driverRecord: DriverRecord | null): string {
         <tr${competitionAttributes}>
           <th class="align-right">${placing}</th>
           ${renderDynamicCompetitionCountCell(
-            "placing-count",
-            count,
-            `placingNo bold${placing >= 1 && placing <= 25 ? ` placing-${placing}` : ""}`,
-          )}
+        "placing-count",
+        count,
+        `placingNo bold${placing >= 1 && placing <= 25 ? ` placing-${placing}` : ""}`,
+      )}
         </tr>`;
     })
     .join("\n");
@@ -2882,6 +2911,127 @@ function buildRaceResultsGraphSeries(
   };
 }
 
+function buildDriverIdentityGraphBars(
+  driverRecord: DriverRecord,
+  eventRecords: EventRecord[],
+): IdentityGraphBars | null {
+  const timeline = buildDriverTimeline(driverRecord, eventRecords);
+  const namePoints: IdentityTimelinePoint[] = [];
+  const tagPoints: IdentityTimelinePoint[] = [];
+
+  for (const { eventRecord, result } of timeline) {
+    if (result === null) {
+      continue;
+    }
+
+    const { name, tags } = splitGraphIdentityTags(result.name);
+    const cleanedName = normalizeIdentityGraphName(name || result.name);
+    const normalizedName = normalizeIdentityGraphNameKey(cleanedName);
+
+    namePoints.push({
+      eventNumber: eventRecord.nr,
+      key: normalizedName,
+      label: cleanedName,
+    });
+
+    const uniqueTags = new Map<string, string>();
+
+    for (const tag of tags) {
+      const normalizedTag = normalizeIdentityGraphTagKey(tag);
+
+      if (!normalizedTag || uniqueTags.has(normalizedTag)) {
+        continue;
+      }
+
+      uniqueTags.set(normalizedTag, formatTagLabel(normalizeWhitespace(tag)));
+    }
+
+    if (uniqueTags.size > 0) {
+      const orderedTags = Array.from(uniqueTags.entries()).sort((left, right) =>
+        left[0].localeCompare(right[0]),
+      );
+
+      tagPoints.push({
+        eventNumber: eventRecord.nr,
+        key: orderedTags.map(([key]) => key).join("|"),
+        label: orderedTags.map(([, label]) => label).join(" "),
+      });
+    }
+  }
+
+  if (namePoints.length === 0) {
+    return null;
+  }
+
+  return {
+    nameSegments: buildIdentityGraphSegments(namePoints, "Name"),
+    tagSegments: buildIdentityGraphSegments(tagPoints, "Tag"),
+  };
+}
+
+function buildIdentityGraphSegments(
+  points: IdentityTimelinePoint[],
+  laneLabel: string,
+): IdentityGraphSegment[] {
+  if (points.length === 0) {
+    return [];
+  }
+
+  const segments: IdentityGraphSegment[] = [];
+  let currentKey = points[0]?.key ?? "";
+  let currentValue = points[0]?.label ?? "";
+  let startEventNumber = points[0]?.eventNumber ?? 0;
+  let endEventNumber = startEventNumber;
+
+  for (let index = 1; index < points.length; index += 1) {
+    const point = points[index];
+
+    if (!point) {
+      continue;
+    }
+
+    if (point.key === currentKey) {
+      endEventNumber = point.eventNumber;
+      continue;
+    }
+
+    segments.push({
+      startEventNumber,
+      endEventNumber,
+      label: currentValue,
+      color: buildIdentitySegmentColor(`${laneLabel}:${currentKey}`),
+      title: `${laneLabel}: ${currentValue} (${startEventNumber}-${endEventNumber})`,
+    });
+    currentKey = point.key;
+    currentValue = point.label;
+    startEventNumber = point.eventNumber;
+    endEventNumber = point.eventNumber;
+  }
+
+  segments.push({
+    startEventNumber,
+    endEventNumber,
+    label: currentValue,
+    color: buildIdentitySegmentColor(`${laneLabel}:${currentKey}`),
+    title: `${laneLabel}: ${currentValue} (${startEventNumber}-${endEventNumber})`,
+  });
+
+  return segments;
+}
+
+function buildIdentitySegmentColor(seed: string): string {
+  let hash = 0;
+
+  for (const character of seed) {
+    hash = Math.imul(hash, 31) + character.charCodeAt(0);
+    hash |= 0;
+  }
+
+  const hue = Math.abs(hash) % 360;
+
+  return `hsl(${hue}, 55%, 74%)`;
+}
+
 function buildRatingGraphSeries(
   driverRecord: DriverRecord,
   eventRecords: EventRecord[],
@@ -2981,6 +3131,7 @@ function renderRaceResultsGraphSvg(
   showPoints: boolean,
   visibleSeriesIds: string[],
   graphId: string | null,
+  identityBars: IdentityGraphBars | null = null,
 ): string {
   if (series.length === 0 || eventRecords.length === 0) {
     return '<p class="graph-empty">No graph data available.</p>';
@@ -2988,7 +3139,14 @@ function renderRaceResultsGraphSvg(
 
   const width = 960;
   const height = 380;
-  const marginTop = 20;
+  const identityBarsTop = 12;
+  const identityLaneHeight = 18;
+  const identityLaneGap = 8;
+  const identityBarsHeight =
+    identityBars !== null
+      ? identityLaneHeight * 2 + identityLaneGap + 14
+      : 0;
+  const marginTop = 20 + identityBarsHeight;
   const marginRight = 20;
   const marginBottom = 42;
   const marginLeft = 48;
@@ -3006,6 +3164,21 @@ function renderRaceResultsGraphSvg(
     marginLeft + ((eventNumber - firstEvent) / eventSpan) * plotWidth;
   const yForPlacing = (placing: number): number =>
     marginTop + ((placing - 1) / (graphMaxBucketValue - 1)) * plotHeight;
+  const identityLaneMarkup =
+    identityBars === null
+      ? ""
+      : renderIdentityGraphLanes(
+        identityBars,
+        xForEvent,
+        {
+          width,
+          marginLeft,
+          marginRight,
+          laneTop: identityBarsTop,
+          laneHeight: identityLaneHeight,
+          laneGap: identityLaneGap,
+        },
+      );
 
   const yGrid = yTicks
     .map((placing) => {
@@ -3034,39 +3207,39 @@ function renderRaceResultsGraphSvg(
       const segments = buildGraphSegments(entry.points);
       const pathMarkup = showLines
         ? segments
-            .map((segment) => {
-              const pathData = segment
-                .map((point, index) => {
-                  const x = xForEvent(point.eventNumber);
-                  const y = yForPlacing(point.placing);
+          .map((segment) => {
+            const pathData = segment
+              .map((point, index) => {
+                const x = xForEvent(point.eventNumber);
+                const y = yForPlacing(point.placing);
 
-                  return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
-                })
-                .join(" ");
+                return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+              })
+              .join(" ");
 
-              return `<path class="graph-line graph-series-${seriesIndex}" d="${pathData}" stroke="${entry.color}"></path>`;
-            })
-            .join("\n")
+            return `<path class="graph-line graph-series-${seriesIndex}" d="${pathData}" stroke="${entry.color}"></path>`;
+          })
+          .join("\n")
         : "";
       const pointMarkup = showPoints
         ? entry.points
-            .filter(
-              (point): point is RaceResultsGraphPoint & { placing: number } =>
-                point.placing !== null,
-            )
-            .map((point) => {
-              const x = xForEvent(point.eventNumber);
-              const y = yForPlacing(point.placing);
-              const title = escapeHtml(`${entry.label} - ${point.title}`);
-              const circleMarkup = `<circle class="graph-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3" fill="${entry.color}"><title>${title}</title></circle>`;
+          .filter(
+            (point): point is RaceResultsGraphPoint & { placing: number } =>
+              point.placing !== null,
+          )
+          .map((point) => {
+            const x = xForEvent(point.eventNumber);
+            const y = yForPlacing(point.placing);
+            const title = escapeHtml(`${entry.label} - ${point.title}`);
+            const circleMarkup = `<circle class="graph-point" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="3" fill="${entry.color}"><title>${title}</title></circle>`;
 
-              if (!point.href) {
-                return circleMarkup;
-              }
+            if (!point.href) {
+              return circleMarkup;
+            }
 
-              return `<a href="${escapeHtml(point.href)}" aria-label="${title}">${circleMarkup}</a>`;
-            })
-            .join("\n")
+            return `<a href="${escapeHtml(point.href)}" aria-label="${title}">${circleMarkup}</a>`;
+          })
+          .join("\n")
         : "";
 
       return `<g class="graph-series${isVisible ? "" : " is-hidden"}" data-graph-series="${escapeHtml(entry.id)}">${pathMarkup}\n${pointMarkup}</g>`;
@@ -3078,6 +3251,7 @@ function renderRaceResultsGraphSvg(
   return `
     <div class="graph-container">
       <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Results graph"${graphRootAttribute}>
+        ${identityLaneMarkup}
         ${yGrid}
         ${xGrid}
         <line class="graph-axis" x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${height - marginBottom}"></line>
@@ -3096,6 +3270,7 @@ function renderRatingGraphSvg(
   metricLabel: string,
   formatValue: (value: number) => string = formatElo,
   fixedRange: { min: number; max: number } | null = null,
+  identityBars: IdentityGraphBars | null = null,
 ): string {
   if (series.length === 0 || eventRecords.length === 0) {
     return '<p class="graph-empty">No graph data available.</p>';
@@ -3113,7 +3288,14 @@ function renderRatingGraphSvg(
 
   const width = 960;
   const height = 380;
-  const marginTop = 20;
+  const identityBarsTop = 12;
+  const identityLaneHeight = 18;
+  const identityLaneGap = 8;
+  const identityBarsHeight =
+    identityBars !== null
+      ? identityLaneHeight * 2 + identityLaneGap + 14
+      : 0;
+  const marginTop = 20 + identityBarsHeight;
   const marginRight = 20;
   const marginBottom = 42;
   const marginLeft = 56;
@@ -3131,6 +3313,21 @@ function renderRatingGraphSvg(
     marginLeft + ((eventNumber - firstEvent) / eventSpan) * plotWidth;
   const yForValue = (value: number): number =>
     marginTop + ((yMax - value) / Math.max(1, yMax - yMin)) * plotHeight;
+  const identityLaneMarkup =
+    identityBars === null
+      ? ""
+      : renderIdentityGraphLanes(
+        identityBars,
+        xForEvent,
+        {
+          width,
+          marginLeft,
+          marginRight,
+          laneTop: identityBarsTop,
+          laneHeight: identityLaneHeight,
+          laneGap: identityLaneGap,
+        },
+      );
 
   const yGrid = yTicks
     .map((value) => {
@@ -3159,13 +3356,13 @@ function renderRatingGraphSvg(
         linePoints.length === 0
           ? ""
           : `<path class="graph-line graph-series-${seriesIndex}" d="${linePoints
-              .map((point, index) => {
-                const x = xForEvent(point.eventNumber);
-                const y = yForValue(point.value);
+            .map((point, index) => {
+              const x = xForEvent(point.eventNumber);
+              const y = yForValue(point.value);
 
-                return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
-              })
-              .join(" ")}" stroke="${entry.color}"></path>`;
+              return `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
+            })
+            .join(" ")}" stroke="${entry.color}"></path>`;
       const pointMarkup = entry.points
         .filter(
           (point): point is RatingGraphPoint & { value: number } =>
@@ -3192,6 +3389,7 @@ function renderRatingGraphSvg(
   return `
     <div class="graph-container">
       <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(metricLabel)} graph">
+        ${identityLaneMarkup}
         ${yGrid}
         ${xGrid}
         <line class="graph-axis" x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${height - marginBottom}"></line>
@@ -3229,6 +3427,72 @@ function buildGraphSegments(
   }
 
   return segments;
+}
+
+function renderIdentityGraphLanes(
+  identityBars: IdentityGraphBars,
+  xForEvent: (eventNumber: number) => number,
+  options: {
+    width: number;
+    marginLeft: number;
+    marginRight: number;
+    laneTop: number;
+    laneHeight: number;
+    laneGap: number;
+  },
+): string {
+  const { width, marginLeft, marginRight, laneTop, laneHeight, laneGap } =
+    options;
+  const laneWidth = width - marginLeft - marginRight;
+  const renderLane = (
+    y: number,
+    segments: IdentityGraphSegment[],
+  ): string => {
+    const segmentMarkup = segments
+      .map((segment) => {
+        const rawStart = xForEvent(segment.startEventNumber);
+        const rawEnd = xForEvent(segment.endEventNumber);
+        const paddedStart = Math.max(marginLeft, rawStart - 4);
+        const paddedEnd = Math.min(width - marginRight, rawEnd + 4);
+        const start = Math.min(paddedStart, paddedEnd);
+        const visibleWidth = Math.max(6, Math.abs(paddedEnd - paddedStart));
+        const hitboxWidth = Math.max(14, visibleWidth);
+        const hitboxStart = Math.max(
+          marginLeft,
+          Math.min(width - marginRight - hitboxWidth, start - (hitboxWidth - visibleWidth) / 2),
+        );
+        const showLabel = visibleWidth >= 36;
+
+        return `
+          <g class="graph-identity-segment-group">
+            <rect class="graph-identity-segment-hitbox" x="${hitboxStart.toFixed(2)}" y="${y.toFixed(2)}" width="${hitboxWidth.toFixed(2)}" height="${laneHeight.toFixed(2)}" rx="4">
+              <title>${escapeHtml(segment.title)}</title>
+            </rect>
+            <rect class="graph-identity-segment" x="${start.toFixed(2)}" y="${(y + 2).toFixed(2)}" width="${visibleWidth.toFixed(2)}" height="${(laneHeight - 4).toFixed(2)}" rx="4" fill="${segment.color}">
+              <title>${escapeHtml(segment.title)}</title>
+            </rect>
+            ${showLabel
+            ? `<text class="graph-identity-segment-label" x="${(start + 4).toFixed(2)}" y="${(y + laneHeight / 2 + 4).toFixed(2)}" text-anchor="start">${escapeHtml(segment.label)}</text>`
+            : ""
+          }
+          </g>`;
+      })
+      .join("\n");
+
+    return `
+      <g class="graph-identity-lane">
+        <line class="graph-identity-lane-line" x1="${marginLeft}" y1="${(y + laneHeight / 2).toFixed(2)}" x2="${(marginLeft + laneWidth).toFixed(2)}" y2="${(y + laneHeight / 2).toFixed(2)}"></line>
+        ${segmentMarkup}
+      </g>`;
+  };
+
+  return [
+    renderLane(laneTop, identityBars.tagSegments),
+    renderLane(
+      laneTop + laneHeight + laneGap,
+      identityBars.nameSegments,
+    ),
+  ].join("\n");
 }
 
 function buildRatingGraphSegments(
@@ -3360,9 +3624,9 @@ function renderRaceResultsGraphSelector(
         selectedId.length === 0
           ? quickPickOptions
           : quickPickOptions.replace(
-              `value="${escapeHtml(selectedId)}"`,
-              `value="${escapeHtml(selectedId)}" selected`,
-            );
+            `value="${escapeHtml(selectedId)}"`,
+            `value="${escapeHtml(selectedId)}" selected`,
+          );
 
       return `
         <label class="graph-select-item">
@@ -3612,7 +3876,7 @@ function stripRedundantCanonicalParenthetical(
   if (
     baseName &&
     normalizeTextSortValue(parentheticalName) ===
-      normalizeTextSortValue(normalizedCanonicalName)
+    normalizeTextSortValue(normalizedCanonicalName)
   ) {
     return baseName;
   }
@@ -3652,6 +3916,97 @@ function splitLeadingBracketTags(value: string): {
     name: remainder || normalized,
     tags,
   };
+}
+
+function splitGraphIdentityTags(value: string): {
+  name: string;
+  tags: string[];
+} {
+  const normalized = normalizeWhitespace(value);
+  const tags: string[] = [];
+  let remainder = normalized;
+
+  while (true) {
+    const match = remainder.match(/^([\[(<{])([^\])}>]+)([\])}>])\s*/);
+
+    if (!match) {
+      break;
+    }
+
+    const opening = match[1] ?? "";
+    const tag = normalizeWhitespace(match[2] ?? "");
+    const closing = match[3] ?? "";
+
+    if (!isMatchingBracketPair(opening, closing) || /\s/.test(tag)) {
+      break;
+    }
+
+    if (tag) {
+      tags.push(tag);
+    }
+
+    remainder = remainder.slice(match[0].length);
+  }
+
+  return {
+    name: remainder || normalized,
+    tags,
+  };
+}
+
+function isMatchingBracketPair(opening: string, closing: string): boolean {
+  return (
+    (opening === "[" && closing === "]") ||
+    (opening === "(" && closing === ")") ||
+    (opening === "{" && closing === "}") ||
+    (opening === "<" && closing === ">")
+  );
+}
+
+function normalizeIdentityGraphName(value: string): string {
+  let normalized = normalizeWhitespace(value);
+
+  while (true) {
+    const unwrapped = unwrapSurroundingBracketPair(normalized);
+
+    if (unwrapped === normalized) {
+      break;
+    }
+
+    normalized = unwrapped;
+  }
+
+  return normalized;
+}
+
+function unwrapSurroundingBracketPair(value: string): string {
+  const normalized = normalizeWhitespace(value);
+  const pairs: Array<[string, string]> = [
+    ["[", "]"],
+    ["(", ")"],
+    ["{", "}"],
+    ["<", ">"],
+  ];
+
+  for (const [opening, closing] of pairs) {
+    if (
+      normalized.startsWith(opening) &&
+      normalized.endsWith(closing) &&
+      normalized.length > 2
+    ) {
+      return normalizeWhitespace(normalized.slice(1, -1));
+    }
+  }
+
+  return normalized;
+}
+
+function normalizeIdentityGraphNameKey(value: string): string {
+  return normalizeTextSortValue(normalizeIdentityGraphName(value));
+}
+
+function normalizeIdentityGraphTagKey(value: string): string {
+  return normalizeTextSortValue(value).replace(/[^a-z0-9]+/g, "");
 }
 
 function formatTagLabel(tag: string): string {
