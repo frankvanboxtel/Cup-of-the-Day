@@ -1,16 +1,38 @@
 {
-  "Kernkob": ["Kernkob", "[CTR[Kernkob"],
-  "rtm_lover2007": ["rtm_lover2007", "rtm_lover2007 (Kernkob)"],
+  "Kernkob": [
+    "Kernkob",
+    "[CTR[Kernkob"
+  ],
+  "rtm_lover2007": [
+    "rtm_lover2007",
+    "rtm_lover2007 (Kernkob)"
+  ],
   "Quickracer10": [
     "Quickracer10",
     "[KURK] Quickracer10",
     "[KURK[ Quickracer10",
     "[AJSE] Quickracer10"
   ],
-  "lil_zwimpie": ["lil_zwimpie", "[KURK] lil_zwimpie", "[KURK[ lil_zwimpie"],
-  "JakeAdjacent": ["Jake", "JakeAdjacent", "[SWMG]JakeAdjacent", "SadD0ge"],
-  "Hydro": ["Hydro", "[CTR[Hydro", "k2blue"],
-  "Sterben": ["Sterben", "del gaming (Sterben)"],
+  "lil_zwimpie": [
+    "lil_zwimpie",
+    "[KURK] lil_zwimpie",
+    "[KURK[ lil_zwimpie"
+  ],
+  "Jake": [
+    "Jake",
+    "JakeAdjacent",
+    "[SWMG]JakeAdjacent",
+    "SadD0ge"
+  ],
+  "Hydro": [
+    "Hydro",
+    "[CTR[Hydro",
+    "k2blue"
+  ],
+  "Sterben": [
+    "Sterben",
+    "del gaming (Sterben)"
+  ],
   "ZOMAN": [
     "ZOMAN",
     "[BAP] ZOMAN",
@@ -19,8 +41,17 @@
     "DNF artist (ZOMAN)",
     "[kob] ZOMAN"
   ],
-  "Joking": ["Joking", ":Z_::E_::E_::P_: Joking", ":Z_::E_::E_:P_: Joking"],
-  "AndMe17": ["AndMe17", "AndMe14", "AndMe15", "AndMe16"],
+  "Joking": [
+    "Joking",
+    ":Z_::E_::E_::P_: Joking",
+    ":Z_::E_::E_:P_: Joking"
+  ],
+  "AndMe17": [
+    "AndMe17",
+    "AndMe14",
+    "AndMe15",
+    "AndMe16"
+  ],
   "Warsnac": [
     "Warsnac",
     "[CHR[Warsnac",
@@ -53,7 +84,10 @@
     "IStaySideway",
     "[RTR] I stay sideway"
   ],
-  "Orthros": ["Orthros", "Orthtros"],
+  "Orthros": [
+    "Orthros",
+    "Orthtros"
+  ],
   "Mortishade": [
     "Mortishade",
     "[bam]Mortishade",
@@ -65,13 +99,37 @@
     "[NIL]Lazy_Echidna",
     "[TOG[Lazy_Echidna",
     "[TOG]Lazy_Echidna",
-    "Lazy_Ecidna"
+    "Lazy_Ecidna",
+    "Lazy-Echidna"
   ],
-  "LILWOOLEY": ["LILWOOLEY", "[ZET}LILWOOLEY", "LOLWOOLEY"],
-  "stindt": ["stindt", "[Lame}stindt"],
-  "void": ["void", "//////void", "[VOID[//////void"],
-  "Y'Rewik": ["Y'Rewik", "[dum[ Y'Rewik"],
-  "Ruckooe": ["Ruckooe", "[FOOL} Ruckooe"],
+  "LILWOOLEY": [
+    "LILWOOLEY",
+    "[ZET}LILWOOLEY",
+    "LOLWOOLEY"
+  ],
+  "stindt": [
+    "stindt",
+    "[Lame}stindt"
+  ],
+  "void": [
+    "void",
+    "Void",
+    "MysticVoid",
+    "Vigilant Void",
+    "//////void",
+    "[VOID[//////void",
+    "timeless void",
+    "Voidsix",
+    "𝒱V𝑜o𝒾i𝒹d𝒱"
+  ],
+  "Y'Rewik": [
+    "Y'Rewik",
+    "[dum[ Y'Rewik"
+  ],
+  "Ruckooe": [
+    "Ruckooe",
+    "[FOOL} Ruckooe"
+  ],
   "Fwogiie": [
     "Fwogiie",
     "[frog] Fwogiie",
@@ -80,5 +138,103 @@
     "[Tran] Fwogiie",
     "Fwogiie.Kawaii",
     "[RTR] Fwogiie.Kawaii"
+  ],
+  ":3pacalypse :TheD": [
+    ":3pacalypse :TheD",
+    ":3pocalypse :TheD"
+  ],
+  "alpha": [
+    "alpha",
+    "alpa",
+    "alpa\\"
+  ],
+  "BootyMcShooty88": [
+    "BootyMcShooty88",
+    "BootyMcShooty888"
+  ],
+  "Butter": [
+    "Butter",
+    "ButterZK"
+  ],
+  "Chinpokomon": [
+    "Chinpokomon",
+    "Chinpkomon"
+  ],
+  "DgGames": [
+    "DgGames",
+    "DgGamez"
+  ],
+  "dirtyboy58": [
+    "dirtyboy58",
+    "dirtyboy8"
+  ],
+  "Eclipse135": [
+    "Eclipse135",
+    "Ecl1pseRL"
+  ],
+  "ferinine": [
+    "ferinine",
+    "ferninine"
+  ],
+  "GuillaumePN": [
+    "GuillaumePN",
+    "GuillaumePM"
+  ],
+  "imagineaclevernamehere": [
+    "imagineaclevernamehere",
+    "imagineclevernamehere"
+  ],
+  "ITz_WillleeMan": [
+    "ITz_WillleeMan",
+    "ITz Willleeman"
+  ],
+  "MackCheesy": [
+    "MackCheesy",
+    "MachCheesy"
+  ],
+  "MadTomato": [
+    "MadTomato",
+    "MadTomato10"
+  ],
+  "masterofpi": [
+    "masterofpi",
+    "masterofpi11436",
+    "masterofpi31415926535..."
+  ],
+  "md_PL_": [
+    "md_PL_",
+    "md_PL"
+  ],
+  "PlusMicron": [
+    "PlusMicron",
+    "PlustMicron"
+  ],
+  "readfreak7": [
+    "readfreak7",
+    "readffreak7"
+  ],
+  "Revenger_19": [
+    "Revenger_19",
+    "Revernger_19"
+  ],
+  "rtube": [
+    "rtube",
+    "robert tube"
+  ],
+  "Six": [
+    "Six",
+    "SixSixSevenSeven"
+  ],
+  "Jakie": [
+    "Jakie",
+    "somesortofjakie"
+  ],
+  "wokonbike": [
+    "wokonbike",
+    "wokonmike"
+  ],
+  "λlex | QuiZzeL": [
+    "λlex | QuiZzeL",
+    "λ SwiftEvolta"
   ]
 }

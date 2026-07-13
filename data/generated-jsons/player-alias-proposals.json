@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T10:43:07.525Z",
+  "generatedAt": "2026-07-13T11:30:07.234Z",
   "sourceDirectory": "data/generated-jsons",
   "knownAliasFile": "preferences/player-aliases.json",
   "generatedAliasFile": "preferences/player-aliases.generated.json",
@@ -143,6 +143,142 @@
       ]
     },
     {
+      "canonicalName": "BootyMcShooty88",
+      "knownAliases": [
+        "BootyMcShooty88",
+        "BootyMcShooty888"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[SBOI] BootyMcShooty88",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 33,
+          "lastSeenEvent": 33,
+          "exampleEvents": [
+            33
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "Butter",
+      "knownAliases": [
+        "Butter",
+        "ButterZK"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[ZST] Butter",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 3,
+          "firstSeenEvent": 30,
+          "lastSeenEvent": 35,
+          "exampleEvents": [
+            30,
+            34,
+            35
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "ferinine",
+      "knownAliases": [
+        "ferinine",
+        "ferninine"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[ERR] ferinine",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 13,
+          "firstSeenEvent": 116,
+          "lastSeenEvent": 151,
+          "exampleEvents": [
+            116,
+            123,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143
+          ]
+        },
+        {
+          "name": "[Err] ferinine",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 6,
+          "firstSeenEvent": 83,
+          "lastSeenEvent": 110,
+          "exampleEvents": [
+            83,
+            84,
+            88,
+            91,
+            100,
+            110
+          ]
+        },
+        {
+          "name": "[Pain] ferinine",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 80,
+          "lastSeenEvent": 80,
+          "exampleEvents": [
+            80
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "GuillaumePN",
+      "knownAliases": [
+        "GuillaumePM",
+        "GuillaumePN"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[Qc] GuillaumePN",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 3,
+          "firstSeenEvent": 28,
+          "lastSeenEvent": 32,
+          "exampleEvents": [
+            28,
+            29,
+            32
+          ]
+        },
+        {
+          "name": "[PINK] GuillaumePN",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 139,
+          "lastSeenEvent": 139,
+          "exampleEvents": [
+            139
+          ]
+        }
+      ]
+    },
+    {
       "canonicalName": "Hydro",
       "knownAliases": [
         "[CTR] Hydro",
@@ -218,7 +354,40 @@
       ]
     },
     {
-      "canonicalName": "JakeAdjacent",
+      "canonicalName": "ITz_WillleeMan",
+      "knownAliases": [
+        "ITz Willleeman",
+        "ITz_WillleeMan"
+      ],
+      "proposedAliases": [
+        {
+          "name": "Itz_WillleeMan",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 1,
+          "lastSeenEvent": 1,
+          "exampleEvents": [
+            1
+          ]
+        },
+        {
+          "name": "ITz_Willleeman",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 22,
+          "lastSeenEvent": 22,
+          "exampleEvents": [
+            22
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "Jake",
       "knownAliases": [
         "[SWMG] JakeAdjacent",
         "Jake",
@@ -285,6 +454,42 @@
       ]
     },
     {
+      "canonicalName": "Jakie",
+      "knownAliases": [
+        "Jakie",
+        "somesortofjakie"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[ZET] Jakie",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 4,
+          "firstSeenEvent": 84,
+          "lastSeenEvent": 90,
+          "exampleEvents": [
+            84,
+            85,
+            86,
+            90
+          ]
+        },
+        {
+          "name": "[CD] Jakie",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 122,
+          "lastSeenEvent": 122,
+          "exampleEvents": [
+            122
+          ]
+        }
+      ]
+    },
+    {
       "canonicalName": "Joking",
       "knownAliases": [
         ":Z_::E_::E_::P_: Joking",
@@ -339,7 +544,8 @@
         "[NIL] Lazy_Echidna",
         "[TOG] Lazy_Echidna",
         "Lazy_Echidna",
-        "Lazy_Ecidna"
+        "Lazy_Ecidna",
+        "Lazy-Echidna"
       ],
       "proposedAliases": [
         {
@@ -374,6 +580,61 @@
           "lastSeenEvent": 64,
           "exampleEvents": [
             64
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "MackCheesy",
+      "knownAliases": [
+        "MachCheesy",
+        "MackCheesy"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[ZET] MackCheesy",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 14,
+          "firstSeenEvent": 10,
+          "lastSeenEvent": 87,
+          "exampleEvents": [
+            10,
+            67,
+            71,
+            76,
+            77,
+            78,
+            79,
+            80
+          ]
+        },
+        {
+          "name": "[CHEZ] MackCheesy",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 4,
+          "firstSeenEvent": 91,
+          "lastSeenEvent": 94,
+          "exampleEvents": [
+            91,
+            92,
+            93,
+            94
+          ]
+        },
+        {
+          "name": "[OOPS] MackCheesy",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 122,
+          "lastSeenEvent": 122,
+          "exampleEvents": [
+            122
           ]
         }
       ]
@@ -421,6 +682,188 @@
           "lastSeenEvent": 64,
           "exampleEvents": [
             64
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "readfreak7",
+      "knownAliases": [
+        "readffreak7",
+        "readfreak7"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[HRR] readfreak7",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 11,
+          "firstSeenEvent": 6,
+          "lastSeenEvent": 69,
+          "exampleEvents": [
+            6,
+            7,
+            8,
+            26,
+            29,
+            30,
+            31,
+            32
+          ]
+        },
+        {
+          "name": "[PFE] readfreak7",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 3,
+          "firstSeenEvent": 2,
+          "lastSeenEvent": 4,
+          "exampleEvents": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "rtube",
+      "knownAliases": [
+        "robert tube",
+        "rtube"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[TBD] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 7,
+          "firstSeenEvent": 11,
+          "lastSeenEvent": 87,
+          "exampleEvents": [
+            11,
+            78,
+            80,
+            81,
+            84,
+            87
+          ]
+        },
+        {
+          "name": "[Toob] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 107,
+          "lastSeenEvent": 108,
+          "exampleEvents": [
+            107,
+            108
+          ]
+        },
+        {
+          "name": "[SUCK] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 91,
+          "lastSeenEvent": 91,
+          "exampleEvents": [
+            91
+          ]
+        },
+        {
+          "name": "[sad] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 105,
+          "lastSeenEvent": 105,
+          "exampleEvents": [
+            105
+          ]
+        },
+        {
+          "name": "[dumb] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 110,
+          "lastSeenEvent": 110,
+          "exampleEvents": [
+            110
+          ]
+        },
+        {
+          "name": "[BAP] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 118,
+          "lastSeenEvent": 118,
+          "exampleEvents": [
+            118
+          ]
+        },
+        {
+          "name": "[pink] rtube",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 149,
+          "lastSeenEvent": 149,
+          "exampleEvents": [
+            149
+          ]
+        }
+      ]
+    },
+    {
+      "canonicalName": "Six",
+      "knownAliases": [
+        "Six",
+        "SixSixSevenSeven"
+      ],
+      "proposedAliases": [
+        {
+          "name": "[BAP] SixSixSevenSeven",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 13,
+          "firstSeenEvent": 118,
+          "lastSeenEvent": 133,
+          "exampleEvents": [
+            118,
+            120,
+            121,
+            122,
+            124,
+            125,
+            126,
+            127
+          ]
+        },
+        {
+          "name": "[BAP] Six",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 134,
+          "lastSeenEvent": 135,
+          "exampleEvents": [
+            134,
+            135
           ]
         }
       ]
@@ -520,7 +963,13 @@
       "knownAliases": [
         "[VOID] //////void",
         "//////void",
-        "void"
+        "MysticVoid",
+        "timeless void",
+        "Vigilant Void",
+        "void",
+        "Void",
+        "Voidsix",
+        "𝒱V𝑜o𝒾i𝒹d𝒱"
       ],
       "proposedAliases": [
         {
@@ -537,6 +986,32 @@
           ]
         },
         {
+          "name": "[ZET] void",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 89,
+          "lastSeenEvent": 93,
+          "exampleEvents": [
+            89,
+            93
+          ]
+        },
+        {
+          "name": "[bob] void",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 2,
+          "firstSeenEvent": 110,
+          "lastSeenEvent": 111,
+          "exampleEvents": [
+            110,
+            111
+          ]
+        },
+        {
           "name": "[SWDN] //////void",
           "reasons": [
             "shared base name after removing tags/casing"
@@ -546,6 +1021,30 @@
           "lastSeenEvent": 56,
           "exampleEvents": [
             56
+          ]
+        },
+        {
+          "name": "[poop] void",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 116,
+          "lastSeenEvent": 116,
+          "exampleEvents": [
+            116
+          ]
+        },
+        {
+          "name": "[popo] void",
+          "reasons": [
+            "shared base name after removing tags/casing"
+          ],
+          "appearances": 1,
+          "firstSeenEvent": 121,
+          "lastSeenEvent": 121,
+          "exampleEvents": [
+            121
           ]
         }
       ]
@@ -1063,123 +1562,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "rtube",
-      "names": [
-        {
-          "name": "rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 15,
-          "firstSeenEvent": 98,
-          "lastSeenEvent": 150,
-          "exampleEvents": [
-            98,
-            99,
-            100,
-            101,
-            113,
-            114,
-            127,
-            128
-          ]
-        },
-        {
-          "name": "[TBD] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 7,
-          "firstSeenEvent": 11,
-          "lastSeenEvent": 87,
-          "exampleEvents": [
-            11,
-            78,
-            80,
-            81,
-            84,
-            87
-          ]
-        },
-        {
-          "name": "[Toob] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 107,
-          "lastSeenEvent": 108,
-          "exampleEvents": [
-            107,
-            108
-          ]
-        },
-        {
-          "name": "[SUCK] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 91,
-          "lastSeenEvent": 91,
-          "exampleEvents": [
-            91
-          ]
-        },
-        {
-          "name": "[sad] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 105,
-          "lastSeenEvent": 105,
-          "exampleEvents": [
-            105
-          ]
-        },
-        {
-          "name": "[dumb] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 110,
-          "lastSeenEvent": 110,
-          "exampleEvents": [
-            110
-          ]
-        },
-        {
-          "name": "[BAP] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 118,
-          "lastSeenEvent": 118,
-          "exampleEvents": [
-            118
-          ]
-        },
-        {
-          "name": "[pink] rtube",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 149,
-          "lastSeenEvent": 149,
-          "exampleEvents": [
-            149
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "St Nicholas",
       "names": [
         {
@@ -1436,79 +1818,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "Void",
-      "names": [
-        {
-          "name": "Void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 4,
-          "firstSeenEvent": 139,
-          "lastSeenEvent": 142,
-          "exampleEvents": [
-            139,
-            140,
-            141,
-            142
-          ]
-        },
-        {
-          "name": "[ZET] void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 89,
-          "lastSeenEvent": 93,
-          "exampleEvents": [
-            89,
-            93
-          ]
-        },
-        {
-          "name": "[bob] void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 110,
-          "lastSeenEvent": 111,
-          "exampleEvents": [
-            110,
-            111
-          ]
-        },
-        {
-          "name": "[poop] void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 116,
-          "lastSeenEvent": 116,
-          "exampleEvents": [
-            116
-          ]
-        },
-        {
-          "name": "[popo] void",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 121,
-          "lastSeenEvent": 121,
-          "exampleEvents": [
-            121
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "agix",
       "names": [
         {
@@ -1571,81 +1880,6 @@
           "lastSeenEvent": 88,
           "exampleEvents": [
             88
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "ferinine",
-      "names": [
-        {
-          "name": "ferinine",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 22,
-          "firstSeenEvent": 2,
-          "lastSeenEvent": 79,
-          "exampleEvents": [
-            2,
-            9,
-            58,
-            60,
-            61,
-            62,
-            63,
-            64
-          ]
-        },
-        {
-          "name": "[ERR] ferinine",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 13,
-          "firstSeenEvent": 116,
-          "lastSeenEvent": 151,
-          "exampleEvents": [
-            116,
-            123,
-            138,
-            139,
-            140,
-            141,
-            142,
-            143
-          ]
-        },
-        {
-          "name": "[Err] ferinine",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 6,
-          "firstSeenEvent": 83,
-          "lastSeenEvent": 110,
-          "exampleEvents": [
-            83,
-            84,
-            88,
-            91,
-            100,
-            110
-          ]
-        },
-        {
-          "name": "[Pain] ferinine",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 80,
-          "lastSeenEvent": 80,
-          "exampleEvents": [
-            80
           ]
         }
       ],
@@ -1845,79 +2079,6 @@
           "lastSeenEvent": 93,
           "exampleEvents": [
             93
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "MackCheesy",
-      "names": [
-        {
-          "name": "MackCheesy",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 40,
-          "firstSeenEvent": 95,
-          "lastSeenEvent": 147,
-          "exampleEvents": [
-            95,
-            96,
-            97,
-            98,
-            99,
-            100,
-            101,
-            102
-          ]
-        },
-        {
-          "name": "[ZET] MackCheesy",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 14,
-          "firstSeenEvent": 10,
-          "lastSeenEvent": 87,
-          "exampleEvents": [
-            10,
-            67,
-            71,
-            76,
-            77,
-            78,
-            79,
-            80
-          ]
-        },
-        {
-          "name": "[CHEZ] MackCheesy",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 4,
-          "firstSeenEvent": 91,
-          "lastSeenEvent": 94,
-          "exampleEvents": [
-            91,
-            92,
-            93,
-            94
-          ]
-        },
-        {
-          "name": "[OOPS] MackCheesy",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 122,
-          "lastSeenEvent": 122,
-          "exampleEvents": [
-            122
           ]
         }
       ],
@@ -2865,53 +3026,6 @@
       ]
     },
     {
-      "canonicalSuggestion": "GuillaumePN",
-      "names": [
-        {
-          "name": "[Qc] GuillaumePN",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 28,
-          "lastSeenEvent": 32,
-          "exampleEvents": [
-            28,
-            29,
-            32
-          ]
-        },
-        {
-          "name": "GuillaumePN",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 116,
-          "lastSeenEvent": 136,
-          "exampleEvents": [
-            116,
-            136
-          ]
-        },
-        {
-          "name": "[PINK] GuillaumePN",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 139,
-          "lastSeenEvent": 139,
-          "exampleEvents": [
-            139
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
       "canonicalSuggestion": "Hellmet",
       "names": [
         {
@@ -3048,100 +3162,6 @@
           "lastSeenEvent": 10,
           "exampleEvents": [
             10
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "ITz_WillleeMan",
-      "names": [
-        {
-          "name": "ITz_WillleeMan",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 12,
-          "lastSeenEvent": 42,
-          "exampleEvents": [
-            12,
-            42
-          ]
-        },
-        {
-          "name": "Itz_WillleeMan",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 1,
-          "lastSeenEvent": 1,
-          "exampleEvents": [
-            1
-          ]
-        },
-        {
-          "name": "ITz_Willleeman",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 22,
-          "lastSeenEvent": 22,
-          "exampleEvents": [
-            22
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "Jakie",
-      "names": [
-        {
-          "name": "[ZET] Jakie",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 4,
-          "firstSeenEvent": 84,
-          "lastSeenEvent": 90,
-          "exampleEvents": [
-            84,
-            85,
-            86,
-            90
-          ]
-        },
-        {
-          "name": "Jakie",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 123,
-          "lastSeenEvent": 125,
-          "exampleEvents": [
-            123,
-            124,
-            125
-          ]
-        },
-        {
-          "name": "[CD] Jakie",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 122,
-          "lastSeenEvent": 122,
-          "exampleEvents": [
-            122
           ]
         }
       ],
@@ -3463,65 +3483,6 @@
           "lastSeenEvent": 38,
           "exampleEvents": [
             38
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "readfreak7",
-      "names": [
-        {
-          "name": "[HRR] readfreak7",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 11,
-          "firstSeenEvent": 6,
-          "lastSeenEvent": 69,
-          "exampleEvents": [
-            6,
-            7,
-            8,
-            26,
-            29,
-            30,
-            31,
-            32
-          ]
-        },
-        {
-          "name": "readfreak7",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 7,
-          "firstSeenEvent": 6,
-          "lastSeenEvent": 137,
-          "exampleEvents": [
-            6,
-            8,
-            11,
-            13,
-            14,
-            120,
-            137
-          ]
-        },
-        {
-          "name": "[PFE] readfreak7",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 2,
-          "lastSeenEvent": 4,
-          "exampleEvents": [
-            2,
-            3,
-            4
           ]
         }
       ],
@@ -4782,79 +4743,6 @@
           "exampleEvents": [
             1,
             24
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "BootyMcShooty88",
-      "names": [
-        {
-          "name": "BootyMcShooty88",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 31,
-          "lastSeenEvent": 31,
-          "exampleEvents": [
-            31
-          ]
-        },
-        {
-          "name": "[SBOI] BootyMcShooty88",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 1,
-          "firstSeenEvent": 33,
-          "lastSeenEvent": 33,
-          "exampleEvents": [
-            33
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "Butter",
-      "names": [
-        {
-          "name": "Butter",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 29,
-          "firstSeenEvent": 3,
-          "lastSeenEvent": 150,
-          "exampleEvents": [
-            3,
-            20,
-            21,
-            22,
-            23,
-            26,
-            38,
-            42
-          ]
-        },
-        {
-          "name": "[ZST] Butter",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 3,
-          "firstSeenEvent": 30,
-          "lastSeenEvent": 35,
-          "exampleEvents": [
-            30,
-            34,
-            35
           ]
         }
       ],
@@ -6497,88 +6385,6 @@
           "lastSeenEvent": 42,
           "exampleEvents": [
             42
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "Six",
-      "names": [
-        {
-          "name": "Six",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 14,
-          "firstSeenEvent": 136,
-          "lastSeenEvent": 152,
-          "exampleEvents": [
-            136,
-            137,
-            139,
-            141,
-            142,
-            143,
-            144,
-            145
-          ]
-        },
-        {
-          "name": "[BAP] Six",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 2,
-          "firstSeenEvent": 134,
-          "lastSeenEvent": 135,
-          "exampleEvents": [
-            134,
-            135
-          ]
-        }
-      ],
-      "groupReasons": [
-        "shared base name after removing tags/casing"
-      ]
-    },
-    {
-      "canonicalSuggestion": "SixSixSevenSeven",
-      "names": [
-        {
-          "name": "[BAP] SixSixSevenSeven",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 13,
-          "firstSeenEvent": 118,
-          "lastSeenEvent": 133,
-          "exampleEvents": [
-            118,
-            120,
-            121,
-            122,
-            124,
-            125,
-            126,
-            127
-          ]
-        },
-        {
-          "name": "SixSixSevenSeven",
-          "reasons": [
-            "shared base name after removing tags/casing"
-          ],
-          "appearances": 4,
-          "firstSeenEvent": 111,
-          "lastSeenEvent": 117,
-          "exampleEvents": [
-            111,
-            112,
-            113,
-            117
           ]
         }
       ],
