@@ -1,0 +1,484 @@
+{
+  "competitionType": "cotd",
+  "competitionLabel": "Cup of the Day",
+  "eventLabel": "COTD 146",
+  "nr": 146,
+  "map": "Shambly COTD",
+  "author": "[CRT] Codewalt",
+  "description": null,
+  "fastestTime": "45.625",
+  "fastestTimeDriver": "justMaki",
+  "fastestTimeRound": "Round 13",
+  "rouletteSourceLabel": null,
+  "sourceFile": "COTDs 126-150 - COTD 146-150.csv",
+  "results": [
+    {
+      "placing": 1,
+      "name": "Hydro",
+      "time": "45.782",
+      "eliminationRound": null,
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 2,
+      "name": "justMaki",
+      "time": "45.944",
+      "eliminationRound": "16",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 3,
+      "name": "ZOMAN",
+      "time": "46.061",
+      "eliminationRound": "15",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 4,
+      "name": "MALIYO",
+      "time": "DNF",
+      "eliminationRound": "14",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 5,
+      "name": "Minkus",
+      "time": "46.756",
+      "eliminationRound": "13",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 6,
+      "name": "Lexer",
+      "time": "DNF",
+      "eliminationRound": "12",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 7,
+      "name": "RoundNzt",
+      "time": "46.684",
+      "eliminationRound": "11",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 8,
+      "name": "[ZET] Stick",
+      "time": "DNF",
+      "eliminationRound": "11",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 9,
+      "name": "MackCheesy",
+      "time": "DNF",
+      "eliminationRound": "10",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 9,
+      "name": "[FPV] PandaMane",
+      "time": "DNF",
+      "eliminationRound": "10",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 11,
+      "name": "[CSC] Tommygaming",
+      "time": "46.825",
+      "eliminationRound": "9",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 12,
+      "name": "brrryy",
+      "time": "47.004",
+      "eliminationRound": "9",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 13,
+      "name": "[CTR] Sandals",
+      "time": "DNF",
+      "eliminationRound": "8",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 13,
+      "name": "[ERR] ferinine",
+      "time": "DNF",
+      "eliminationRound": "8",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 15,
+      "name": "[KURK] Quickracer10",
+      "time": "47.573",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 16,
+      "name": "Noxitu",
+      "time": "47.923",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 17,
+      "name": "Noweki",
+      "time": "DNF",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 17,
+      "name": "Hi Im Yolo",
+      "time": "DNF",
+      "eliminationRound": "7",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 19,
+      "name": "PlusMicron",
+      "time": "47.902",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 20,
+      "name": "[CTR] agix",
+      "time": "48.209",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 21,
+      "name": "[Burp] Weak_Knees",
+      "time": "48.320",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 22,
+      "name": "Matic_D",
+      "time": "48.883",
+      "eliminationRound": "6",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 23,
+      "name": "[RB] Chinpokomon",
+      "time": "48.512",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 24,
+      "name": "Savage Package",
+      "time": "48.817",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 25,
+      "name": "[ZET] Wheelie",
+      "time": "49.003",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 26,
+      "name": "Kiprosa",
+      "time": "DNF",
+      "eliminationRound": "5",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 27,
+      "name": "Six",
+      "time": "49.279",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 28,
+      "name": "wokonbike",
+      "time": "49.681",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 29,
+      "name": "Trapdoor",
+      "time": "49.746",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "[fn] Form",
+      "time": "DNF",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "aizpun",
+      "time": "DNF",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 30,
+      "name": "ping",
+      "time": "DNF",
+      "eliminationRound": "4",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 33,
+      "name": "timesprout",
+      "time": "49.883",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 34,
+      "name": "Fly8oy",
+      "time": "50.188",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "JakeAdjacent",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "Waaksaam",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "BrickEdwards",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 35,
+      "name": "[ZET] Sword125",
+      "time": "DNF",
+      "eliminationRound": "3",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 39,
+      "name": "[SLOW] Zeus",
+      "time": "50.530",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 40,
+      "name": "FINSTER83",
+      "time": "50.554",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 41,
+      "name": "Orb Bee Bob",
+      "time": "51.210",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 42,
+      "name": "SuperHeavy",
+      "time": "51.228",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 43,
+      "name": "[EEN] Hang Chang-Pang",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 43,
+      "name": "[CTR] GuAlexItar",
+      "time": "DNF",
+      "eliminationRound": "2",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "[Same] stindt",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "[20x] K410K3N",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "pannekoekbijter",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "[Buny] Lunarbunny",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "Samueras",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "imagineaclevernamehere",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "Squarefish",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    },
+    {
+      "placing": 45,
+      "name": "[ZET] zeriv",
+      "time": "DNF",
+      "eliminationRound": "1",
+      "rouletteMap": null,
+      "rouletteMapper": null,
+      "rouletteSourceEventNumber": null
+    }
+  ]
+}

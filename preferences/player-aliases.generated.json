@@ -40,10 +40,6 @@
     "[GGG] Lkat",
     "[GGG] LKat"
   ],
-  "[MMM] Victor": [
-    "[MMM] Victor",
-    "[GGG] Victor"
-  ],
   "[OR] Pigbuy": [
     "[OR] Pigbuy",
     "[OREO] Pigbuy"
@@ -245,6 +241,8 @@
   "JakeAdjacent": [
     "JakeAdjacent",
     "[CD] SadD0ge",
+    "[DNF] Jake",
+    "[DNF] JakeAdjacent",
     "[SWMG] SadD0ge"
   ],
   "Jakie": [
@@ -274,7 +272,8 @@
     "K410K3N",
     "[20x] K410K3N",
     "[20X] K410K3N",
-    "[Gwen] K410K3N"
+    "[Gwen] K410K3N",
+    "[oiia] K410K3N"
   ],
   "Kaiser64": [
     "Kaiser64",
@@ -314,6 +313,10 @@
   "lucanakin": [
     "lucanakin",
     "[DNFF] lucanakin"
+  ],
+  "LupensCruor": [
+    "LupensCruor",
+    "[CTR] LupensCruor"
   ],
   "Lynhardt": [
     "Lynhardt",
@@ -502,6 +505,7 @@
     "rtube",
     "[BAP] rtube",
     "[dumb] rtube",
+    "[pink] rtube",
     "[sad] rtube",
     "[SUCK] rtube",
     "[TBD] rtube",
@@ -558,6 +562,7 @@
     "St Nicholas",
     "[8] St Nicholas",
     "[cozy] St Nicholas",
+    "[ItIs] St Nicholas",
     "[OR] St Nicholas",
     "St NIcholas"
   ],
@@ -615,6 +620,11 @@
   "vectortrajector": [
     "vectortrajector",
     "[ZET] vectortrajector"
+  ],
+  "Victor": [
+    "Victor",
+    "[GGG] Victor",
+    "[MMM] Victor"
   ],
   "void": [
     "void",
@@ -684,6 +694,7 @@
     "[Blub] ZOMAN",
     "[BLUE] ZOMAN",
     "[Choo] ZOMAN",
+    "[eepy] ZOMAN",
     "[HDRO] ZOMAN",
     "[Its] ZOMAN",
     "[Kung] ZOMAN",
