@@ -120,6 +120,7 @@ body {
   a {
     color: #2781ff;
   }
+
   a:hover {
     color: #fff;
   }
@@ -152,6 +153,7 @@ body {
   }
 
   table {
+
     tbody th,
     thead th {
       background: #353535;
@@ -501,9 +503,7 @@ table td:nth-child(1) {
   font: inherit;
   margin-left: calc(var(--graph-select-swatch-width) + var(--graph-select-gap));
   padding: 6px 8px;
-  width: calc(
-    100% - var(--graph-select-swatch-width) - var(--graph-select-gap)
-  );
+  width: calc(100% - var(--graph-select-swatch-width) - var(--graph-select-gap));
 }
 
 .graph-select-swatch {
@@ -583,6 +583,26 @@ table td:nth-child(1) {
   stroke-width: 1.5;
 }
 
+.graph-identity-lane-line {
+  stroke: #d4d8de;
+  stroke-width: 1;
+}
+
+.graph-identity-segment-hitbox {
+  fill: transparent;
+}
+
+.graph-identity-segment {
+  stroke: #8f98a3;
+  stroke-width: 1;
+}
+
+.graph-identity-segment-label {
+  fill: #2f3742;
+  font-size: 10px;
+  pointer-events: none;
+}
+
 .graph-note,
 .graph-empty {
   color: #555;
@@ -611,9 +631,11 @@ table td:nth-child(1) {
 .result.result-1 .placings-column {
   background: #ffffbf;
 }
+
 .result.result-2 .placings-column {
   background: #dfdfdf;
 }
+
 .result.result-3 .placings-column {
   background: #ffdf9f;
 }
