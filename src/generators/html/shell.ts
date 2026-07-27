@@ -15,6 +15,10 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+export function renderExternalLink(label: string, url: string): string {
+  return `<a class="external-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(label)}</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3Z"></path><path fill="currentColor" d="M5 5h6v2H5v12h12v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path></svg></a>`;
+}
+
 export function renderTableContainer(content: string): string {
   return `<div class="table-container">${content}</div>`;
 }
@@ -846,11 +850,10 @@ export function renderLayout(
       <a href="${options.rootPrefix}/rankings/index.html">Rankings</a>
       <a href="${options.rootPrefix}/rankings-explained/index.html">Rankings Explained</a>
       <div class="nav-main-actions">
-        ${
-          options.latestResultsUpdate
-            ? `<span class="nav-update">Updated: ${escapeHtml(options.latestResultsUpdate.relativeLabel)} (${escapeHtml(options.latestResultsUpdate.eventLabel)}, ${escapeHtml(options.latestResultsUpdate.mapLabel)})</span>`
-            : ""
-        }
+        ${options.latestResultsUpdate
+      ? `<span class="nav-update">Updated: ${escapeHtml(options.latestResultsUpdate.relativeLabel)} (${escapeHtml(options.latestResultsUpdate.eventLabel)}, ${escapeHtml(options.latestResultsUpdate.mapLabel)})</span>`
+      : ""
+    }
         <a
           class="nav-icon-link"
           href="https://github.com/frankvanboxtel/Cup-of-the-Day"

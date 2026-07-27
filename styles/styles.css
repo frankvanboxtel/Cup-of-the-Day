@@ -265,6 +265,19 @@ a {
   }
 }
 
+.external-link {
+  align-items: baseline;
+  display: inline-flex;
+  gap: 0.25em;
+  white-space: nowrap;
+}
+
+.external-link svg {
+  flex: 0 0 auto;
+  height: 0.85em;
+  width: 0.85em;
+}
+
 .name {
   margin-bottom: 0;
 }

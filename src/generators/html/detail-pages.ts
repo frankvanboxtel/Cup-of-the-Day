@@ -1,6 +1,6 @@
 import type { CompetitionType, EventRecord } from "../../lib/event-data";
 
-import { escapeHtml, renderTableContainer } from "./shell";
+import { escapeHtml, renderExternalLink, renderTableContainer } from "./shell";
 
 type RenderLayout = (
   title: string,
@@ -108,7 +108,7 @@ export function renderEventPageContent(options: EventPageOptions): string {
           ${eventRecord.description ? `<tr><th>${eventRecord.competitionType === "roulette" ? "Pool" : "Description"}</th><td>${escapeHtml(eventRecord.description)}</td></tr>` : ""}
           <tr><th>Fastest Time</th><td>${options.renderFastestTimeSummary(eventRecord, options.driverFileNames, "..")}</td></tr>
           <tr><th>Podium</th><td>${options.renderPodium(eventRecord, options.driverFileNames, "..")}</td></tr>
-          ${options.videoLinks.length > 0 ? `<tr><th>YouTube videos</th><td>${options.videoLinks.map((video) => `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.channel)}</a>`).join(", ")}</td></tr>` : ""}
+          ${options.videoLinks.length > 0 ? `<tr><th>YouTube videos</th><td>${options.videoLinks.map((video) => renderExternalLink(video.channel, video.url)).join(", ")}</td></tr>` : ""}
         </tbody>
       </table>
       `)}

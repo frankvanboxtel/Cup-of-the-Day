@@ -14,7 +14,12 @@ import {
   renderRankingsIndexPageContent,
   renderResultsGraphIndexPageContent,
 } from "./html/index-pages";
-import { escapeHtml, renderLayout, renderTableContainer } from "./html/shell";
+import {
+  escapeHtml,
+  renderExternalLink,
+  renderLayout,
+  renderTableContainer,
+} from "./html/shell";
 import {
   compareEventRecords,
   competitionDefinitions,
@@ -446,6 +451,7 @@ async function main(): Promise<void> {
         driverRatingHistoryByCompetition,
         eventPace.summary,
         driverPaceHistoryByCompetition,
+        eventVideoLinks,
       ),
     ),
     ...authorRecords.map((authorRecord) =>
@@ -458,6 +464,7 @@ async function main(): Promise<void> {
         eventRatings.summary,
         driverRatingHistoryByCompetition,
         eventPace.summary,
+        eventVideoLinks,
       ),
     ),
   ]);
@@ -1718,6 +1725,7 @@ async function writeDriverPage(
     CompetitionType,
     Map<string, Map<string, DriverEventPace>>
   >,
+  eventVideoLinks: Map<string, EventVideoLink[]>,
 ): Promise<void> {
   const matchingAuthorRecord =
     authorRecordsByName.get(driverRecord.canonicalName) ?? null;
@@ -1747,6 +1755,7 @@ async function writeDriverPage(
       authorFileNames,
       driverRatingHistoryByCompetition,
       driverPaceHistoryByCompetition,
+      eventVideoLinks,
     ),
     graphMarkup: renderRaceResultsGraphSection(driverRecord, eventRecords),
     eloGraphMarkup: renderPlayerRatingGraphSection(
@@ -1802,6 +1811,7 @@ async function writeAuthorPage(
     Map<string, Map<string, DriverEventRating>>
   >,
   driverPaceSummary: Map<string, DriverPaceSummary>,
+  eventVideoLinks: Map<string, EventVideoLink[]>,
 ): Promise<void> {
   const matchingDriverRecord =
     driverRecordsByName.get(authorRecord.canonicalName) ?? null;
@@ -1826,6 +1836,7 @@ async function writeAuthorPage(
       authorFileNames,
       driverRatingHistoryByCompetition,
       new Map(),
+      eventVideoLinks,
     ),
     graphMarkup: renderRaceResultsGraphSection(
       matchingDriverRecord,
@@ -2337,6 +2348,7 @@ function renderRaceResultsSection(
     CompetitionType,
     Map<string, Map<string, DriverEventPace>>
   >,
+  eventVideoLinks: Map<string, EventVideoLink[]>,
 ): string {
   if (driverRecord === null) {
     return `
@@ -2362,6 +2374,7 @@ function renderRaceResultsSection(
         authorFileNames,
         driverRatingHistoryByCompetition.get(definition.type) ?? new Map(),
         driverPaceHistoryByCompetition.get(definition.type) ?? new Map(),
+        eventVideoLinks,
       ),
     })),
     competitionDefinitions[0]?.type ?? "cotd",
@@ -2383,6 +2396,7 @@ function renderPlayerCompetitionRaceResultsSection(
   authorFileNames: Map<string, string>,
   competitionRatingHistory: Map<string, Map<string, DriverEventRating>>,
   competitionPaceHistory: Map<string, Map<string, DriverEventPace>>,
+  eventVideoLinks: Map<string, EventVideoLink[]>,
 ): string {
   const competitionResults = eventRecords.filter((eventRecord) =>
     driverRecord.results.some(
@@ -2400,10 +2414,14 @@ function renderPlayerCompetitionRaceResultsSection(
     competitionRatingHistory.get(driverRecord.canonicalName) ?? new Map();
   const paceHistory =
     competitionPaceHistory.get(driverRecord.canonicalName) ?? new Map();
+  const showVideoColumn = eventRecords.some(
+    (eventRecord) => (eventVideoLinks.get(eventRecord.eventKey)?.length ?? 0) > 0,
+  );
   const rows = buildDriverTimeline(driverRecord, eventRecords)
     .map(({ eventRecord, result }) => {
       const ratingAtEvent = ratingHistory.get(eventRecord.eventKey) ?? null;
       const paceAtEvent = paceHistory.get(eventRecord.eventKey) ?? null;
+      const videoLinks = eventVideoLinks.get(eventRecord.eventKey) ?? [];
       const isTrackAuthor =
         result === null &&
         driverAuthorFileName !== null &&
@@ -2437,6 +2455,7 @@ function renderPlayerCompetitionRaceResultsSection(
           <td class="bold">${renderEventMapLink(eventRecord, "..")}</td>
           <td>${renderAuthorLinks(eventRecord.authors, authorFileNames, "..")}</td>
           <td>${result === null ? (isTrackAuthor ? "Track author" : "Did not race") : "Raced"}</td>
+          ${showVideoColumn ? `<td>${videoLinks.length > 0 ? videoLinks.map((video) => renderExternalLink(video.channel, video.url)).join(", ") : "-"}</td>` : ""}
           <td class="placings-column align-right number-cell">${result?.placing ?? "-"}</td>
           <td class="align-right number-cell">${result === null ? "-" : formatRaceTimeHtml(result.time)}</td>
           <td class="align-right number-cell">${result?.eliminationRound ? escapeHtml(result.eliminationRound) : "-"}</td>
@@ -2465,6 +2484,7 @@ function renderPlayerCompetitionRaceResultsSection(
           ${renderSortableHeader("Track", "map", "text", "asc")}
           ${renderSortableHeader("Author", "author", "text", "asc")}
           <th>Status</th>
+          ${showVideoColumn ? "<th>Video</th>" : ""}
           ${renderSortableHeader("Placing", "placing", "number", "asc", false, "placings-column number-cell")}
           ${renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
           ${renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
