@@ -139,7 +139,7 @@ function detectCupBlocks(rows: string[][]): CupBlock[] {
   return cupBlocks.sort(
     (left, right) =>
       getCompetitionOrder(left.competitionType) -
-        getCompetitionOrder(right.competitionType) || left.nr - right.nr,
+      getCompetitionOrder(right.competitionType) || left.nr - right.nr,
   );
 }
 
@@ -168,7 +168,9 @@ function parseCompetitionHeader(
     };
   }
 
-  const trollMatch = normalizedValue.match(/^Troll COT[DW]\s+(\d+)\b/i);
+  const trollMatch = normalizedValue.match(
+    /^Troll (?:COT[DW]|Cup)\s+(\d+)\b/i,
+  );
 
   if (trollMatch) {
     return {
@@ -338,7 +340,7 @@ function normalizeAllDnfRoundPlacings(results: ResultEntry[]): ResultEntry[] {
 
   propagateMissingRoundWithinTiedDnfGroups(normalizedResults);
 
-  for (let startIndex = 0; startIndex < normalizedResults.length; ) {
+  for (let startIndex = 0; startIndex < normalizedResults.length;) {
     const eliminationRound = normalizedResults[startIndex]?.eliminationRound;
 
     if (!eliminationRound) {
@@ -407,7 +409,7 @@ function countPlayersLeftInRound(
 function propagateMissingRoundWithinTiedDnfGroups(
   results: ResultEntry[],
 ): void {
-  for (let startIndex = 0; startIndex < results.length; ) {
+  for (let startIndex = 0; startIndex < results.length;) {
     const placing = results[startIndex]?.placing;
 
     let endIndex = startIndex + 1;

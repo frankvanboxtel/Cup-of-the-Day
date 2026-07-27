@@ -9,8 +9,10 @@
     "build": "node \"$npm_execpath\" run generate:all",
     "dev": "node \"$npm_execpath\" run generate:all",
     "generate": "tsx src/generate-results.ts",
-    "generate:all": "node \"$npm_execpath\" run generate && node \"$npm_execpath\" run validate:results && node \"$npm_execpath\" run generate:aliases && node \"$npm_execpath\" run generate:html",
+    "generate:all": "node \"$npm_execpath\" run generate && node \"$npm_execpath\" run validate:results && node \"$npm_execpath\" run generate:aliases && node \"$npm_execpath\" run generate:video-matches && node \"$npm_execpath\" run generate:html",
     "generate:aliases": "tsx src/generators/generate-alias-proposals.ts",
+    "generate:video-matches": "tsx src/generators/generate-video-matches.ts",
+    "video-match": "tsx src/manage-video-match.ts",
     "generate:html": "tsx src/generators/generate-html.ts",
     "validate:results": "tsx src/validation/validate-results.ts",
     "start": "node \"$npm_execpath\" run generate:all"

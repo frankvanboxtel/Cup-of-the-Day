@@ -39,6 +39,8 @@ To view the pages open `./dist/index.html` in your browser.
 - `npm run validate:results` / `pnpm run validate:results` checks that the generated result files contain a complete event-number sequence with no gaps
 - `npm run generate:all` / `pnpm run generate:all` runs the full generation pipeline: results JSON, result validation, alias proposals/generated aliases, and static site output
 - `npm run generate:aliases` / `pnpm run generate:aliases` reads the generated JSON files, proposes player alias additions in `data/generated-jsons/player-alias-proposals.json`, and writes generated alias groups to `preferences/player-aliases.generated.json`
+- `npm run generate:video-matches` / `pnpm run generate:video-matches` combines scraper metadata, transcript mentions, upload dates, and overlapping playlist order to write `data/generated-integrations/cotd-video-matches.json`
+- `npm run video-match -- ...` / `pnpm run video-match -- ...` records a manual video decision and immediately regenerates the match index
 - `npm run generate:html` / `pnpm run generate:html` reads the JSON files in `data/generated-jsons/`, combines `preferences/player-aliases.json` with `preferences/player-aliases.generated.json`, applies `preferences/display-only-names.json`, and builds a static site in `dist/`
 
 ## Current Behavior
@@ -54,6 +56,46 @@ Result generation detects event blocks dynamically from the CSV headers, which m
 - `preferences/display-only-names.json` is for result labels that should stay visible as text but should not get player pages or links
 - Static site generation merges the manual and generated alias files into shared driver and author pages
 - The TypeScript configuration includes `src/**/*.ts`
+- Video matching keeps regular, Troll, and Roulette numbering separate. Only manually confirmed matches are anchors. The resolver fills a playlist streak only when two manual anchors surround exactly the expected number of videos; videos outside those anchors remain unknown.
+- The default scraper source is `../zcotd scraper/output`. Set `ZCOTD_SCRAPER_OUTPUT_DIR` or pass `--scraper-output=<path>` to override it.
+
+## Reviewing Video Matches
+
+Start the interactive workflow:
+
+```bash
+pnpm run video-match -- review
+```
+
+The command retains the current video ID. When all suggestions have the same type, enter the event number directly, such as `8`. You can also enter `cotd 105`, `troll 4`, or `roulette 2`; select a displayed suggestion with `#1`; or use `exclude`, `skip`, and `quit`. After each decision it regenerates the matches and reports how many of all scraper videos are accounted for.
+
+Ask the script for the most useful video to identify next:
+
+```bash
+pnpm run video-match -- next
+```
+
+Candidates are ranked by the number of matches that one confirmation could unlock after rerunning the complete chronology inference. Every decision command automatically regenerates the output and prints the newly ranked next question. The same queue is stored in `data/generated-integrations/cotd-video-matches.json` as `reviewQueue`.
+
+Confirm a match using either a YouTube URL or video ID:
+
+```bash
+pnpm run video-match -- match SlAqUOR5P84 cotd 33
+```
+
+Overrule the matcher by excluding a video from all events:
+
+```bash
+pnpm run video-match -- exclude SlAqUOR5P84
+```
+
+Remove either kind of manual decision and return that video to automatic matching:
+
+```bash
+pnpm run video-match -- remove SlAqUOR5P84
+```
+
+Manual decisions are stored in `preferences/video-match-overrides.json`. Confirmed matches are authoritative chronology anchors; excluded videos cannot be restored by scoring or gap inference.
 
 ## Rating Systems
 
