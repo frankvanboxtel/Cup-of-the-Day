@@ -1,4 +1,4 @@
-import { copyFile, mkdir, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -164,6 +164,19 @@ type LatestResultsUpdate = {
   mapLabel: string;
 };
 
+type EventVideoLink = {
+  channel: string;
+  url: string;
+};
+
+type VideoMatchIndex = {
+  matchesByEvent?: Array<{
+    eventType: CompetitionType;
+    eventNumber: number;
+    videos: EventVideoLink[];
+  }>;
+};
+
 type AuthorFilterResultEntry = [CompetitionType, number | null, string[]];
 
 type PlacingsAuthorOption = {
@@ -177,6 +190,12 @@ type SortType = "text" | "number";
 
 const projectRoot = path.resolve(__dirname, "../..");
 const resultsDirectory = path.join(projectRoot, "data", "generated-jsons");
+const videoMatchesPath = path.join(
+  projectRoot,
+  "data",
+  "generated-integrations",
+  "cotd-video-matches.json",
+);
 const outputDirectory = path.join(projectRoot, "dist");
 const sourceStylesDirectory = path.join(projectRoot, "styles");
 const sourceStylesFilePath = path.join(sourceStylesDirectory, "styles.css");
@@ -268,6 +287,7 @@ async function main(): Promise<void> {
   );
   const displayOnlyNames = await loadDisplayOnlyNames(displayOnlyNameListPath);
   const eventRecords = await loadEventRecords(resultsDirectory);
+  const eventVideoLinks = await loadEventVideoLinks();
   const cotdEventRecordsByNumber = new Map(
     getCompetitionEventRecords(eventRecords, "cotd").map((eventRecord) => [
       eventRecord.nr,
@@ -410,6 +430,7 @@ async function main(): Promise<void> {
           authorFileNames,
           cotdEventRecordsByNumber,
           driverPaceHistoryByCompetition,
+          eventVideoLinks.get(eventRecord.eventKey) ?? [],
           previousEventRecord,
           nextEventRecord,
         ),
@@ -444,6 +465,26 @@ async function main(): Promise<void> {
   console.log(
     `Generated HTML pages in ${path.relative(projectRoot, outputDirectory)} for ${eventRecords.length} events, ${driverRecords.length} players, and ${authorRecords.length} authors.`,
   );
+}
+
+async function loadEventVideoLinks(): Promise<Map<string, EventVideoLink[]>> {
+  try {
+    const parsed = JSON.parse(
+      await readFile(videoMatchesPath, "utf8"),
+    ) as VideoMatchIndex;
+
+    return new Map(
+      (parsed.matchesByEvent ?? []).map((eventMatch) => [
+        `${eventMatch.eventType}:${eventMatch.eventNumber}`,
+        eventMatch.videos.map((video) => ({
+          channel: video.channel,
+          url: video.url,
+        })),
+      ]),
+    );
+  } catch {
+    return new Map();
+  }
 }
 
 function buildEventNavigationPairs(eventRecords: EventRecord[]): Array<{
@@ -1559,6 +1600,7 @@ async function writeEventPage(
     CompetitionType,
     Map<string, Map<string, DriverEventPace>>
   >,
+  videoLinks: EventVideoLink[],
   previousEventRecord: EventRecord | null,
   nextEventRecord: EventRecord | null,
 ): Promise<void> {
@@ -1648,6 +1690,7 @@ async function writeEventPage(
     renderEventAuthors,
     renderFastestTimeSummary,
     renderPodium,
+    videoLinks,
     driverFileNames,
     authorFileNames,
   });

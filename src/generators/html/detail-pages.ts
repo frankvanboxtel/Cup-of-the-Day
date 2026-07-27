@@ -38,6 +38,11 @@ type EventStats = {
   winsAllTime: number;
 };
 
+type EventVideoLink = {
+  channel: string;
+  url: string;
+};
+
 type EventPageOptions = {
   eventRecord: EventRecord;
   eventStats: EventStats;
@@ -64,6 +69,7 @@ type EventPageOptions = {
     driverFileNames: Map<string, string>,
     rootPrefix: string,
   ) => string;
+  videoLinks: EventVideoLink[];
   driverFileNames: Map<string, string>;
   authorFileNames: Map<string, string>;
 };
@@ -102,6 +108,7 @@ export function renderEventPageContent(options: EventPageOptions): string {
           ${eventRecord.description ? `<tr><th>${eventRecord.competitionType === "roulette" ? "Pool" : "Description"}</th><td>${escapeHtml(eventRecord.description)}</td></tr>` : ""}
           <tr><th>Fastest Time</th><td>${options.renderFastestTimeSummary(eventRecord, options.driverFileNames, "..")}</td></tr>
           <tr><th>Podium</th><td>${options.renderPodium(eventRecord, options.driverFileNames, "..")}</td></tr>
+          ${options.videoLinks.length > 0 ? `<tr><th>YouTube videos</th><td>${options.videoLinks.map((video) => `<a href="${escapeHtml(video.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(video.channel)}</a>`).join(", ")}</td></tr>` : ""}
         </tbody>
       </table>
       `)}
@@ -114,14 +121,13 @@ export function renderEventPageContent(options: EventPageOptions): string {
             ${options.renderSortableHeader("Player", "driver", "text", "asc")}
             ${options.renderSortableHeader("Time", "time", "number", "asc", false, "number-cell")}
             ${options.renderSortableHeader("Elimination Round", "elimination-round", "text", "asc", false, "number-cell")}
-            ${
-              hasRouletteColumns
-                ? `${options.renderSortableHeader("Map", "roulette-map", "text", "asc")}
+            ${hasRouletteColumns
+        ? `${options.renderSortableHeader("Map", "roulette-map", "text", "asc")}
             ${options.renderSortableHeader("Mapper", "roulette-mapper", "text", "asc")}
             ${options.renderSortableHeader(eventRecord.rouletteSourceLabel ?? "Source", "roulette-source", "number", "asc", false, "number-cell")}
             ${options.renderSortableHeader("Pace Score", "pace", "number", "desc", false, "number-cell")}`
-                : `${options.renderSortableHeader("Pace Score", "pace", "number", "desc", false, "number-cell")}`
-            }
+        : `${options.renderSortableHeader("Pace Score", "pace", "number", "desc", false, "number-cell")}`
+      }
           </tr>
         </thead>
         <tbody>
@@ -199,26 +205,26 @@ export function renderDriverPageContent<
     `
       ${options.renderPlayerProfileHeading(options.driverRecord.canonicalName, options.driverRecord.aliases)}
       ${options.renderProfileMetadata(
-        options.driverRecord,
-        options.matchingAuthorRecord,
-        options.driverFileNames,
-        options.authorFileNames,
-        "..",
-        options.driverRatingSummary,
-      )}
+      options.driverRecord,
+      options.matchingAuthorRecord,
+      options.driverFileNames,
+      options.authorFileNames,
+      "..",
+      options.driverRatingSummary,
+    )}
       ${options.renderPlayerProfileTabs(
-        options.raceResultsMarkup,
-        options.graphMarkup,
-        options.eloGraphMarkup,
-        options.bayesGraphMarkup,
-        options.paceGraphMarkup,
-        options.paceFormGraphMarkup,
-        options.placingsMarkup,
-        options.tracksMarkup,
-        options.raceResultsCount,
-        options.tracksCount,
-        "race-results",
-      )}
+      options.raceResultsMarkup,
+      options.graphMarkup,
+      options.eloGraphMarkup,
+      options.bayesGraphMarkup,
+      options.paceGraphMarkup,
+      options.paceFormGraphMarkup,
+      options.placingsMarkup,
+      options.tracksMarkup,
+      options.raceResultsCount,
+      options.tracksCount,
+      "race-results",
+    )}
     `,
     {
       pageTitle: options.driverRecord.canonicalName,
@@ -274,20 +280,20 @@ export function renderAuthorPageContent<
     `
       ${options.renderProfileHeading(options.authorRecord.canonicalName, options.authorRecord.aliases)}
       ${options.renderProfileMetadata(
-        options.matchingDriverRecord,
-        options.authorRecord,
-        options.driverFileNames,
-        options.authorFileNames,
-        "..",
-        options.driverRatingSummary,
-      )}
+      options.matchingDriverRecord,
+      options.authorRecord,
+      options.driverFileNames,
+      options.authorFileNames,
+      "..",
+      options.driverRatingSummary,
+    )}
       ${options.renderProfileTabs(
-        options.raceResultsMarkup,
-        options.graphMarkup,
-        options.placingsMarkup,
-        options.tracksMarkup,
-        "tracks",
-      )}
+      options.raceResultsMarkup,
+      options.graphMarkup,
+      options.placingsMarkup,
+      options.tracksMarkup,
+      "tracks",
+    )}
     `,
     {
       pageTitle: options.authorRecord.canonicalName,

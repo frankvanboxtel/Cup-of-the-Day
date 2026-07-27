@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T15:13:10.816Z",
+  "generatedAt": "2026-07-27T15:57:30.070Z",
   "sources": {
     "cupDataDirectory": "data/generated-jsons",
     "scraperOutputDirectory": "/Users/frank.van.boxtel/Prive/apps/zcotd scraper/output",
@@ -19,17 +19,17 @@
     ]
   },
   "stats": {
-    "videosScanned": 211,
-    "accountedVideos": 211,
-    "matchedVideos": 209,
+    "videosScanned": 217,
+    "accountedVideos": 217,
+    "matchedVideos": 215,
     "manuallyExcludedVideos": 2,
     "ambiguousVideos": 0,
     "unmatchedVideos": 2,
-    "highConfidenceMatches": 76,
-    "mediumConfidenceMatches": 133,
+    "highConfidenceMatches": 79,
+    "mediumConfidenceMatches": 136,
     "lowConfidenceMatches": 0,
-    "inferredFromGaps": 133,
-    "anchorsUsed": 76
+    "inferredFromGaps": 136,
+    "anchorsUsed": 79
   },
   "gapInferences": [
     {
@@ -1044,6 +1044,45 @@
       "toAnchor": {
         "videoId": "oOT7dpJsO58",
         "eventNumber": 117
+      }
+    },
+    {
+      "videoId": "8BuIB8C3-5g",
+      "inferredType": "cotd",
+      "inferredNumber": 151,
+      "fromAnchor": {
+        "videoId": "AtdQ6Al-Iq4",
+        "eventNumber": 150
+      },
+      "toAnchor": {
+        "videoId": "QzWK888ZemA",
+        "eventNumber": 154
+      }
+    },
+    {
+      "videoId": "AlyGjJ_yAco",
+      "inferredType": "cotd",
+      "inferredNumber": 152,
+      "fromAnchor": {
+        "videoId": "AtdQ6Al-Iq4",
+        "eventNumber": 150
+      },
+      "toAnchor": {
+        "videoId": "QzWK888ZemA",
+        "eventNumber": 154
+      }
+    },
+    {
+      "videoId": "DBzaHGpU0vU",
+      "inferredType": "cotd",
+      "inferredNumber": 153,
+      "fromAnchor": {
+        "videoId": "AtdQ6Al-Iq4",
+        "eventNumber": 150
+      },
+      "toAnchor": {
+        "videoId": "QzWK888ZemA",
+        "eventNumber": 154
       }
     },
     {
@@ -6412,6 +6451,154 @@
           "channel": "justMaki",
           "uploadDate": "2026-06-20T16:00:33-07:00",
           "timelineIndex": 210,
+          "score": 100,
+          "confidence": "high",
+          "reasons": [
+            "Confirmed by manual override"
+          ],
+          "matchedEventPlayers": [],
+          "inferredFromGap": false
+        }
+      ]
+    },
+    {
+      "eventType": "cotd",
+      "eventNumber": 150,
+      "eventLabel": "COTD 150",
+      "map": "COTD #150 - Sink into Madness",
+      "author": "Form",
+      "jsonFileName": "cotd-150-cotd-150-sink-into-madness-form.json",
+      "htmlFileName": "cotd-150-cotd-150-sink-into-madness-form.html",
+      "videos": [
+        {
+          "videoId": "AtdQ6Al-Iq4",
+          "url": "https://www.youtube.com/watch?v=AtdQ6Al-Iq4",
+          "title": "Sinking Into Madness in This Zeepkist Cup of the Day!",
+          "channel": "Lexer",
+          "uploadDate": "2026-06-27T14:02:59-07:00",
+          "timelineIndex": 211,
+          "score": 100,
+          "confidence": "high",
+          "reasons": [
+            "Confirmed by manual override"
+          ],
+          "matchedEventPlayers": [],
+          "inferredFromGap": false
+        }
+      ]
+    },
+    {
+      "eventType": "cotd",
+      "eventNumber": 151,
+      "eventLabel": "COTD 151",
+      "map": "Cotd - greenslide",
+      "author": "Void & Zodiak",
+      "jsonFileName": "cotd-151-cotd-greenslide-void-zodiak.json",
+      "htmlFileName": "cotd-151-cotd-greenslide-void-zodiak.html",
+      "videos": [
+        {
+          "videoId": "8BuIB8C3-5g",
+          "url": "https://www.youtube.com/watch?v=8BuIB8C3-5g",
+          "title": "The Track is Extra Slippery in This Zeepkist Cup of the Day!",
+          "channel": "Lexer",
+          "uploadDate": "2026-07-04T13:36:51-07:00",
+          "timelineIndex": 212,
+          "score": 70,
+          "confidence": "medium",
+          "reasons": [
+            "Inferred by chronology gap-fill between two anchored events",
+            "COTD 151 sits between anchored event numbers"
+          ],
+          "matchedEventPlayers": [],
+          "inferredFromGap": true
+        }
+      ]
+    },
+    {
+      "eventType": "cotd",
+      "eventNumber": 152,
+      "eventLabel": "COTD 152",
+      "map": "COTD - Blue Blitz",
+      "author": "[MMM] Victor",
+      "jsonFileName": "cotd-152-cotd-blue-blitz-mmm-victor.json",
+      "htmlFileName": "cotd-152-cotd-blue-blitz-mmm-victor.html",
+      "videos": [
+        {
+          "videoId": "AlyGjJ_yAco",
+          "url": "https://www.youtube.com/watch?v=AlyGjJ_yAco",
+          "title": "It's My Kind of Track in This Zeepkist Cup of the Day!",
+          "channel": "Lexer",
+          "uploadDate": "2026-07-11T13:50:36-07:00",
+          "timelineIndex": 213,
+          "score": 70,
+          "confidence": "medium",
+          "reasons": [
+            "Inferred by chronology gap-fill between two anchored events",
+            "COTD 152 sits between anchored event numbers"
+          ],
+          "matchedEventPlayers": [],
+          "inferredFromGap": true
+        }
+      ]
+    },
+    {
+      "eventType": "cotd",
+      "eventNumber": 153,
+      "eventLabel": "COTD 153",
+      "map": "COTD - Crimson Touch",
+      "author": "justMaki",
+      "jsonFileName": "cotd-153-cotd-crimson-touch-justmaki.json",
+      "htmlFileName": "cotd-153-cotd-crimson-touch-justmaki.html",
+      "videos": [
+        {
+          "videoId": "j6AIxxsdhFQ",
+          "url": "https://www.youtube.com/watch?v=j6AIxxsdhFQ",
+          "title": "This Transitional Map with an Unexpected Challenge",
+          "channel": "Sandals",
+          "uploadDate": "2026-07-18T11:58:42-07:00",
+          "timelineIndex": 214,
+          "score": 100,
+          "confidence": "high",
+          "reasons": [
+            "Confirmed by manual override"
+          ],
+          "matchedEventPlayers": [],
+          "inferredFromGap": false
+        },
+        {
+          "videoId": "DBzaHGpU0vU",
+          "url": "https://www.youtube.com/watch?v=DBzaHGpU0vU",
+          "title": "The Most Stressful Jumps in this Zeepkist Cup of the Day!",
+          "channel": "Lexer",
+          "uploadDate": "2026-07-19T08:00:53-07:00",
+          "timelineIndex": 215,
+          "score": 70,
+          "confidence": "medium",
+          "reasons": [
+            "Inferred by chronology gap-fill between two anchored events",
+            "COTD 153 sits between anchored event numbers"
+          ],
+          "matchedEventPlayers": [],
+          "inferredFromGap": true
+        }
+      ]
+    },
+    {
+      "eventType": "cotd",
+      "eventNumber": 154,
+      "eventLabel": "COTD 154",
+      "map": "COTD - MAD Funhouse",
+      "author": "Sorcerer_Lynx",
+      "jsonFileName": "cotd-154-cotd-mad-funhouse-sorcerer-lynx.json",
+      "htmlFileName": "cotd-154-cotd-mad-funhouse-sorcerer-lynx.html",
+      "videos": [
+        {
+          "videoId": "QzWK888ZemA",
+          "url": "https://www.youtube.com/watch?v=QzWK888ZemA",
+          "title": "Crossing Paths in This Zeepkist Cup of the Day!",
+          "channel": "Lexer",
+          "uploadDate": "2026-07-25T13:11:14-07:00",
+          "timelineIndex": 216,
           "score": 100,
           "confidence": "high",
           "reasons": [
