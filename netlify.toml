@@ -1,0 +1,6 @@
+[build]
+  command = "pnpm install && pnpm run generate:all"
+  publish = "dist"
+
+[build.environment]
+  NPM_FLAGS = "--version"
