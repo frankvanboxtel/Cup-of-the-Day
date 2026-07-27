@@ -82,6 +82,7 @@
   ],
   "agix": [
     "agix",
+    "[AgOH] agix",
     "[CTR] agix",
     "[GYMC] agix",
     "[SBC] agix"
@@ -210,6 +211,7 @@
   ],
   "Hydro": [
     "Hydro",
+    "[AgOH] Hydro",
     "[BFP] Hydro",
     "[RTR] Hydro",
     "[SLOW] Hydro",
@@ -243,6 +245,7 @@
     "[CD] SadD0ge",
     "[DNF] Jake",
     "[DNF] JakeAdjacent",
+    "[SOS] Jake",
     "[SWMG] SadD0ge"
   ],
   "Jakie": [
@@ -266,12 +269,14 @@
   "justMaki": [
     "justMaki",
     "[BAP] justMaki",
+    "[EG] justMaki",
     "[test] justMaki"
   ],
   "K410K3N": [
     "K410K3N",
     "[20x] K410K3N",
     "[20X] K410K3N",
+    "[CSC] K410K3N",
     "[Gwen] K410K3N",
     "[oiia] K410K3N"
   ],
@@ -281,6 +286,7 @@
   ],
   "Kernkob": [
     "Kernkob",
+    "[KBW] Kernkob",
     "[Nzt] Kernkob"
   ],
   "L3it3R": [
@@ -355,6 +361,7 @@
   "microways": [
     "microways",
     "[1618] microways",
+    "[KBW] microways",
     "[Quac] microways"
   ],
   "MMXD18": [
@@ -437,6 +444,10 @@
     "[IXB] Ploddip",
     "[IZB] Ploddip",
     "[ZET] Ploddip"
+  ],
+  "PlusMicron": [
+    "PlusMicron",
+    "[CSC] PlusMicron"
   ],
   "PoopSheriff": [
     "PoopSheriff",
@@ -641,6 +652,7 @@
     "Weak_Knees",
     "[Burp] Weak_Knees",
     "[COMY] Weak_Knees",
+    "[WSHD] Weak_Knees",
     "Weak_knees"
   ],
   "Wheelie": [
